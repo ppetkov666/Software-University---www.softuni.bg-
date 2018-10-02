@@ -1,0 +1,12 @@
+USE Minions
+
+ALTER TABLE Minions
+ADD TownId BIGINT
+GO
+SELECT * FROM Minions
+
+
+ALTER TABLE Minions
+ADD CONSTRAINT FK_Munions_Towns 
+FOREIGN KEY (TownId) 
+REFERENCES Towns(Id)

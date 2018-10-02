@@ -1,0 +1,4 @@
+BACKUP DATABASE [SoftUni] TO  DISK = N'F:\DataBaseBackUp' 
+WITH NOFORMAT, NOINIT,  NAME = N'SoftUni-Full Database Backup', 
+SKIP, NOREWIND, NOUNLOAD,  STATS = 10
+GO

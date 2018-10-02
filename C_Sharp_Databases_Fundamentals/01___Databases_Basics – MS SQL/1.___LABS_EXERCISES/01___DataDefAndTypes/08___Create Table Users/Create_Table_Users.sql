@@ -1,0 +1,32 @@
+CREATE Database Instagram 
+
+USE Instagram
+
+GO
+
+CREATE Table Users(
+	Id BIGINT Primary Key IDENTITY,
+	Username VARCHAR(30) NOT NULL UNIQUE,
+	[Password] BINARY(96) NOT NULL,
+	ProfilePicture VARBINARY(MAX),
+	LastLoginTime DATETIME,
+	IsDeleted BIT
+)
+GO
+
+INSERT INTO Users 
+(Username,[Password], ProfilePicture,
+LastLoginTime,IsDeleted) VALUES
+	('Petko',HASHBYTES('SHA1','0123456'), null, CONVERT(DATETIME,'22-11-2017',103),0),
+	('Ivan',HASHBYTES('SHA1','012345'),null, CONVERT(DATETIME,'21-11-2017',103),0),
+	('George',HASHBYTES('SHA1','01234'),null, CONVERT(DATETIME,'20-11-2017',103),0),
+	('Boris',HASHBYTES('SHA1','0123'),null ,CONVERT(DATETIME,'19-11-2017',103),0),
+	('John',HASHBYTES('SHA1','012'),null, CONVERT(DATETIME,'18-11-2017',103),0)
+GO
+
+SELECT * FROM USERS
+GO
+
+ALTER TABLE Users
+ADD CONSTRAINT CHK_ProfilePicture 
+CHECK (DATALENGTH (ProfilePicture) <= 900 * 1024)
