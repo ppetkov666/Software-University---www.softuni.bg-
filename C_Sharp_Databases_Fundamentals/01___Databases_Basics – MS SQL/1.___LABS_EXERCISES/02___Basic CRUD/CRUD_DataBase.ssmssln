@@ -1,0 +1,51 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# SQL Server Management Studio Solution File, Format Version 14.00
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "01___SoftUni", "01___SoftUni\01___SoftUni.ssmssqlproj", "{6C805380-51A6-47E3-B191-39E4FED92124}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "01___Geography", "01___Geography\01___Geography.ssmssqlproj", "{5009E679-EEB3-48C7-A9C5-0A3A43BD49E1}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "01___Diablo", "01___Diablo\01___Diablo.ssmssqlproj", "{296E3212-18B9-4AEA-AD03-76B52D8DE315}"
+EndProject
+
+
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Default|Default = Default|Default
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6C805380-51A6-47E3-B191-39E4FED92124}.Default|Default.ActiveCfg = Default
+		{5009E679-EEB3-48C7-A9C5-0A3A43BD49E1}.Default|Default.ActiveCfg = Default
+		{296E3212-18B9-4AEA-AD03-76B52D8DE315}.Default|Default.ActiveCfg = Default
+		{98EE22B2-5C8A-4EE8-A2FF-A53C74BBE7FB}.Default|Default.ActiveCfg = Default
+		{069B458B-DEF0-4B9E-B1CB-FBE0D183962C}.Default|Default.ActiveCfg = Default
+		{213CE88A-91B2-4056-925C-8F0D0F4C4EFF}.Default|Default.ActiveCfg = Default
+		{332FE679-B23A-4A30-A5FA-480886C0C290}.Default|Default.ActiveCfg = Default
+		{9A618A65-186A-4DDC-9C3C-BFB9C7C19D78}.Default|Default.ActiveCfg = Default
+		{40C7BE6A-FBD4-46F7-B2FF-EF74759F5063}.Default|Default.ActiveCfg = Default
+		{D1D5F706-3665-47F8-AD6C-58C6D7C13C34}.Default|Default.ActiveCfg = Default
+		{196B8407-2BDB-447D-AA6D-83D74B31CBF8}.Default|Default.ActiveCfg = Default
+		{3ADF874F-8207-4378-AAA3-D80598AC8BEF}.Default|Default.ActiveCfg = Default
+		{50A363EC-4A4B-4B09-86F5-1A29C24A3062}.Default|Default.ActiveCfg = Default
+		{68D03135-C1AD-4ED0-941C-05598988BF18}.Default|Default.ActiveCfg = Default
+		{F5BA1EED-5C63-4658-AB16-3E1C76E3015D}.Default|Default.ActiveCfg = Default
+		{4540DCA5-B5FD-4006-BF92-8BF285F6A9A8}.Default|Default.ActiveCfg = Default
+		{44BBB01E-51BA-4A49-97FA-D206AC962CAB}.Default|Default.ActiveCfg = Default
+		{EE042F14-0332-4FFF-81AA-0F5E7E61F29F}.Default|Default.ActiveCfg = Default
+		{3B28358A-0537-43A5-AD19-7DFC8370303D}.Default|Default.ActiveCfg = Default
+		{956FDBB6-9048-4D6E-9D7E-8FD0D768664A}.Default|Default.ActiveCfg = Default
+		{02FC7FAF-C0F9-4D47-8EF7-CB02104FD4A0}.Default|Default.ActiveCfg = Default
+		{9AB9C26A-0E4F-4083-977B-DB6A5438BA72}.Default|Default.ActiveCfg = Default
+		{9D549A43-E754-40CF-A1A8-0F899FDCB0CA}.Default|Default.ActiveCfg = Default
+		{51A99048-3FAE-42DD-854F-30F5E2F2547F}.Default|Default.ActiveCfg = Default
+		{784B836A-1F31-4CA7-9879-44BDAD849F3F}.Default|Default.ActiveCfg = Default
+		{DB1035A4-B890-4D37-8FEA-38319A1A080A}.Default|Default.ActiveCfg = Default
+		{7440460C-3789-4CD7-9D14-9224644547F2}.Default|Default.ActiveCfg = Default
+		{B25B46CF-C563-429C-B3DA-E94681927122}.Default|Default.ActiveCfg = Default
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
