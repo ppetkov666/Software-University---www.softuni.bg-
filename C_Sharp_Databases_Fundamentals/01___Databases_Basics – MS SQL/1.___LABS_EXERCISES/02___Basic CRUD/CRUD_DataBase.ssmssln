@@ -9,6 +9,54 @@ Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "01___Geography", "01___Geog
 EndProject
 Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "01___Diablo", "01___Diablo\01___Diablo.ssmssqlproj", "{296E3212-18B9-4AEA-AD03-76B52D8DE315}"
 EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "02___Find All Info", "02___Find All Info\02___Find All Info.ssmssqlproj", "{069B458B-DEF0-4B9E-B1CB-FBE0D183962C}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "03___Find all Department Names", "03___Find all Department Names\03___Find all Department Names.ssmssqlproj", "{213CE88A-91B2-4056-925C-8F0D0F4C4EFF}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "04__Find Salary of Each Employee", "04__Find Salary of Each Employee\04__Find Salary of Each Employee.ssmssqlproj", "{332FE679-B23A-4A30-A5FA-480886C0C290}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "05___Find Full Name of Each Employee", "05___Find Full Name of Each Employee\05___Find Full Name of Each Employee.ssmssqlproj", "{9A618A65-186A-4DDC-9C3C-BFB9C7C19D78}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "06___Find Email Address of Each Employee", "06___Find Email Address of Each Employee\06___Find Email Address of Each Employee.ssmssqlproj", "{40C7BE6A-FBD4-46F7-B2FF-EF74759F5063}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "07___Find All Diff Emp", "07___Find All Diff Emp\07___Find All Diff Emp.ssmssqlproj", "{D1D5F706-3665-47F8-AD6C-58C6D7C13C34}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "08___Find all Info", "08___Find all Info\08___Find all Info.ssmssqlproj", "{196B8407-2BDB-447D-AA6D-83D74B31CBF8}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "09___Find Names of All", "09___Find Names of All\09___Find Names of All.ssmssqlproj", "{3ADF874F-8207-4378-AAA3-D80598AC8BEF}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "10___Find Names of All Employees", "10___Find Names of All Employees\10___Find Names of All Employees.ssmssqlproj", "{50A363EC-4A4B-4B09-86F5-1A29C24A3062}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "11___Find All Employees Without Manager", "11___Find All Employees Without Manager\11___Find All Employees Without Manager.ssmssqlproj", "{68D03135-C1AD-4ED0-941C-05598988BF18}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "12___Find All Emp", "12___Find All Emp\12___Find All Emp.ssmssqlproj", "{F5BA1EED-5C63-4658-AB16-3E1C76E3015D}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "13___Find 5 Best Paid Employees", "13___Find 5 Best Paid Employees\13___Find 5 Best Paid Employees.ssmssqlproj", "{4540DCA5-B5FD-4006-BF92-8BF285F6A9A8}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "14___Find All Employees Except Marketing", "14___Find All Employees Except Marketing\14___Find All Employees Except Marketing.ssmssqlproj", "{44BBB01E-51BA-4A49-97FA-D206AC962CAB}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "15___Sort Employees Table", "15___Sort Employees Table\15___Sort Employees Table.ssmssqlproj", "{EE042F14-0332-4FFF-81AA-0F5E7E61F29F}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "16___Create View Employees with Salaries", "16___Create View Employees with Salaries\16___Create View Employees with Salaries.ssmssqlproj", "{3B28358A-0537-43A5-AD19-7DFC8370303D}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "17___Create View Emp", "17___Create View Emp\17___Create View Emp.ssmssqlproj", "{956FDBB6-9048-4D6E-9D7E-8FD0D768664A}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "18___Distinct Job Titles", "18___Distinct Job Titles\18___Distinct Job Titles.ssmssqlproj", "{02FC7FAF-C0F9-4D47-8EF7-CB02104FD4A0}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "19___Find First 10 Started Projects", "19___Find First 10 Started Projects\19___Find First 10 Started Projects.ssmssqlproj", "{9AB9C26A-0E4F-4083-977B-DB6A5438BA72}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "20___Last 7 Hired Employees", "20___Last 7 Hired Employees\20___Last 7 Hired Employees.ssmssqlproj", "{9D549A43-E754-40CF-A1A8-0F899FDCB0CA}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "21___Increase Salaries", "21___Increase Salaries\21___Increase Salaries.ssmssqlproj", "{51A99048-3FAE-42DD-854F-30F5E2F2547F}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "22___All Mountain Peaks", "22___All Mountain Peaks\22___All Mountain Peaks.ssmssqlproj", "{784B836A-1F31-4CA7-9879-44BDAD849F3F}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "23___Biggest Countries by Population", "23___Biggest Countries by Population\23___Biggest Countries by Population.ssmssqlproj", "{DB1035A4-B890-4D37-8FEA-38319A1A080A}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "24___Countries and", "24___Countries and\24___Countries and.ssmssqlproj", "{7440460C-3789-4CD7-9D14-9224644547F2}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "25___All Diablo Characters", "25___All Diablo Characters\25___All Diablo Characters.ssmssqlproj", "{B25B46CF-C563-429C-B3DA-E94681927122}"
+EndProject
 
 
 Global
