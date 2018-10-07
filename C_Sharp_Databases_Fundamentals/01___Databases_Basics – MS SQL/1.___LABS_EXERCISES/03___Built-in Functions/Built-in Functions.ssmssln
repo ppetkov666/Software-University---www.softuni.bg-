@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# SQL Server Management Studio Solution File, Format Version 14.00
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "01___17 Tasks in one Query", "01___17 Tasks in one Query\01___17 Tasks in one Query.ssmssqlproj", "{66D2BE02-CB53-4B62-8F21-2A50015FC78D}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "001___First Demo Data Base", "001___First Demo Data Base\001___First Demo Data Base.ssmssqlproj", "{A31B215C-3E58-4F89-A441-8A9CFAC15699}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "001___Second Demo DataBase", "001___Second Demo DataBase\001___Second Demo DataBase.ssmssqlproj", "{D08E1E38-BDE0-4FAB-8B2E-4E762AA2C326}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "00___SoftUni DataBase", "00___SoftUni DataBase\00___SoftUni DataBase.ssmssqlproj", "{E87E1C23-7A85-40B3-8DFF-C6C16201F422}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "00___Geography_DataBase", "00___Geography_DataBase\00___Geography_DataBase.ssmssqlproj", "{F3D6A009-CF70-4FDD-A893-BC50B2C5263D}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "00___Diablo_DataBase", "00___Diablo_DataBase\00___Diablo_DataBase.ssmssqlproj", "{D4F34222-095F-4D93-BF21-7AA21EE306CC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Default|Default = Default|Default
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{66D2BE02-CB53-4B62-8F21-2A50015FC78D}.Default|Default.ActiveCfg = Default
+		{B413AC63-D618-43E5-A6E5-DB5029CDB652}.Default|Default.ActiveCfg = Default
+		{A31B215C-3E58-4F89-A441-8A9CFAC15699}.Default|Default.ActiveCfg = Default
+		{D08E1E38-BDE0-4FAB-8B2E-4E762AA2C326}.Default|Default.ActiveCfg = Default
+		{E87E1C23-7A85-40B3-8DFF-C6C16201F422}.Default|Default.ActiveCfg = Default
+		{F3D6A009-CF70-4FDD-A893-BC50B2C5263D}.Default|Default.ActiveCfg = Default
+		{D4F34222-095F-4D93-BF21-7AA21EE306CC}.Default|Default.ActiveCfg = Default
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
