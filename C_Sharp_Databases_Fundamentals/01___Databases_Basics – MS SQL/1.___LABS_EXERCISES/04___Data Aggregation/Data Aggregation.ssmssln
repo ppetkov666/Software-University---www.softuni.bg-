@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# SQL Server Management Studio Solution File, Format Version 14.00
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "01___19 Tasks in one Query", "01___19 Tasks in one Query\01___19 Tasks in one Query.ssmssqlproj", "{D4CF6568-180F-4EE1-9354-99A3D48ADC64}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "00___SoftUni DataBase", "00___SoftUni DataBase\00___SoftUni DataBase.ssmssqlproj", "{C00F0B1A-75A3-48B4-B260-F7ED288DC4DB}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "00___Gringotts-Database", "00___Gringotts-Database\00___Gringotts-Database.ssmssqlproj", "{3D32B176-46E1-4565-A9B5-E1D405CCB5C0}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "00___Incomes DataBase", "00___Incomes DataBase\00___Incomes DataBase.ssmssqlproj", "{63090D31-7BD1-4DCA-A725-73FFC910AAD6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Default|Default = Default|Default
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D4CF6568-180F-4EE1-9354-99A3D48ADC64}.Default|Default.ActiveCfg = Default
+		{2F949497-12CF-45D4-806F-E7DC6666C35A}.Default|Default.ActiveCfg = Default
+		{C00F0B1A-75A3-48B4-B260-F7ED288DC4DB}.Default|Default.ActiveCfg = Default
+		{3D32B176-46E1-4565-A9B5-E1D405CCB5C0}.Default|Default.ActiveCfg = Default
+		{63090D31-7BD1-4DCA-A725-73FFC910AAD6}.Default|Default.ActiveCfg = Default
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
