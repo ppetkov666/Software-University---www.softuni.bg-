@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# SQL Server Management Studio Solution File, Format Version 14.00
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "01___9 Tasks in One Query", "01___9 Tasks in One Query\01___9 Tasks in One Query.ssmssqlproj", "{776133BC-6AB2-4B00-A050-D00A28DFD49B}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "00___Geography_Database", "00___Geography_Database\00___Geography_Database.ssmssqlproj", "{6748CDEC-8F1D-4481-82F9-58381D7E39B6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Default|Default = Default|Default
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{776133BC-6AB2-4B00-A050-D00A28DFD49B}.Default|Default.ActiveCfg = Default
+		{F493215B-ADEC-43DD-B86B-0DC3B6879B3B}.Default|Default.ActiveCfg = Default
+		{6748CDEC-8F1D-4481-82F9-58381D7E39B6}.Default|Default.ActiveCfg = Default
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
