@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# SQL Server Management Studio Solution File, Format Version 14.00
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "01___18 Tasks in One Query", "01___18 Tasks in One Query\01___18 Tasks in One Query.ssmssqlproj", "{E95B5583-7F1C-4E7D-8007-94AB4E546751}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "00___SoftUni DataBase", "00___SoftUni DataBase\00___SoftUni DataBase.ssmssqlproj", "{860B4826-C346-4E5D-B039-F0496EE59015}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "00___Geography_DataBase", "00___Geography_DataBase\00___Geography_DataBase.ssmssqlproj", "{CE9C6462-E214-4750-B7C0-36A907F91B7E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Default|Default = Default|Default
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E95B5583-7F1C-4E7D-8007-94AB4E546751}.Default|Default.ActiveCfg = Default
+		{658FB121-AF49-4031-9769-08B7D456E2DF}.Default|Default.ActiveCfg = Default
+		{860B4826-C346-4E5D-B039-F0496EE59015}.Default|Default.ActiveCfg = Default
+		{CE9C6462-E214-4750-B7C0-36A907F91B7E}.Default|Default.ActiveCfg = Default
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
