@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# SQL Server Management Studio Solution File, Format Version 14.00
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "01___22 Tasks in One Query", "01___22 Tasks in One Query\01___22 Tasks in One Query.ssmssqlproj", "{FE4DF941-4FC4-4D5E-B6A4-828EAC9B63C0}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "00___SoftUni DataBase", "00___SoftUni DataBase\00___SoftUni DataBase.ssmssqlproj", "{B174C504-EDE0-4709-AF0D-98F3F4F7512A}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "00___Bank DataBase", "00___Bank DataBase\00___Bank DataBase.ssmssqlproj", "{19083E56-805D-4020-B8B2-586859B707AF}"
+EndProject
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "00___Diablo DataBase", "00___Diablo DataBase\00___Diablo DataBase.ssmssqlproj", "{4A505147-9515-494E-A30A-9E2587517738}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Default|Default = Default|Default
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FE4DF941-4FC4-4D5E-B6A4-828EAC9B63C0}.Default|Default.ActiveCfg = Default
+		{B174C504-EDE0-4709-AF0D-98F3F4F7512A}.Default|Default.ActiveCfg = Default
+		{20EDABE1-42D9-4496-BA0B-A156A16E3C62}.Default|Default.ActiveCfg = Default
+		{19083E56-805D-4020-B8B2-586859B707AF}.Default|Default.ActiveCfg = Default
+		{4A505147-9515-494E-A30A-9E2587517738}.Default|Default.ActiveCfg = Default
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
