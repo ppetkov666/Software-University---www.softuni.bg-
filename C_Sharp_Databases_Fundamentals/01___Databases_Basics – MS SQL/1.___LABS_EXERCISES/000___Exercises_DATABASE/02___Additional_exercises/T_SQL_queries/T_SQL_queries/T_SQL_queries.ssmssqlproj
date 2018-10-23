@@ -12,6 +12,12 @@
           <AssociatedConnUserName />
           <FullPath>01___Simple_queries.sql</FullPath>
         </FileNode>
+        <FileNode Name="02___Querie_Lists.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>02___Querie_Lists.sql</FullPath>
+        </FileNode>
       </Items>
     </LogicalFolder>
     <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">
