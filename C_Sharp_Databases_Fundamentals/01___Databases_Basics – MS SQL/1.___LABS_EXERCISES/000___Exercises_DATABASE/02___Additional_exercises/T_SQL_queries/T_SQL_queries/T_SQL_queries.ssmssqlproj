@@ -12,11 +12,17 @@
           <AssociatedConnUserName />
           <FullPath>01___Simple_queries.sql</FullPath>
         </FileNode>
-        <FileNode Name="02___Querie_Lists.sql">
+        <FileNode Name="02___Querie_List.sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>02___Querie_Lists.sql</FullPath>
+          <FullPath>02___Querie_List_Of_T-SQL_Clauses.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03___NewTestConn.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-FCG26GG\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>DESKTOP-FCG26GG\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>03___NewTestConnectionForTempTables.sql</FullPath>
         </FileNode>
       </Items>
     </LogicalFolder>
