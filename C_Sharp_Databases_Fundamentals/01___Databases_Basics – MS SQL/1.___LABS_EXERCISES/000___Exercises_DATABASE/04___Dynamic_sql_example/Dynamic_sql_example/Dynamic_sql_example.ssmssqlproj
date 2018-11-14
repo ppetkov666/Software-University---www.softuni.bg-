@@ -25,11 +25,17 @@
           <AssociatedConnUserName />
           <FullPath>01___dynamic_sql_example.sql</FullPath>
         </FileNode>
-        <FileNode Name="SQLQuery1.sql">
+        <FileNode Name="02___updatedVersionOf_01_querie.sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
           <AssociatedConnUserName />
           <FullPath>02___updatedVersionOf_01_querie.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03___dynamic_order_with_cases.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>03___dynamic_order_with_cases.sql</FullPath>
         </FileNode>
       </Items>
     </LogicalFolder>
