@@ -399,3 +399,47 @@ EXEC udp_CreateTempTableAndDisplayIt
 
 select name from tempdb..sysobjects
 where name like '#Persons%'
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--																				LEAD 
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-- these are two 2 examples how LEAD works and how without lead is done but with diffent condition .Ih further example will be uploaded another version of the second querie 
+GO
+select e.EmployeeID,
+	   e.[row_number],
+	   e.FirstName, 
+	   e.LastName,
+	   e.Salary,
+	   e.next_row_salary,
+	   e.column_difference
+from (select emp.EmployeeID,
+			 ROW_NUMBER() over (order by emp.EmployeeID) [row_number],
+			 emp.FirstName,
+			 emp.LastName,
+			 emp.Salary,
+			 LEAD(emp.Salary) over (order by emp.EmployeeID) as next_row_salary,
+			 (emp.Salary - LEAD(emp.Salary) over (order by emp.EmployeeID)) column_difference
+		from Employees emp) e
+
+GO
+
+SELECT e.EmployeeID,
+       e.[row_number],
+	   e.FirstName,
+	   e.LastName,
+	   e.Salary,
+	   e.next_salary,
+	   e.column_difference	   
+FROM (SELECT emp.EmployeeID,
+			 ROW_NUMBER() OVER (ORDER BY EmployeeID) [row_number],
+			 emp.FirstName,
+			 emp.LastName,
+			 emp.Salary,
+			 (SELECT ie.Salary 
+			    FROM Employees ie 
+			   WHERE ie.EmployeeID = emp.EmployeeID + 1)			   AS next_salary,
+             (emp.Salary - (SELECT e1.Salary 
+						      FROM Employees e1 
+							 WHERE e1.EmployeeID = emp.EmployeeID + 1)) AS column_difference
+		FROM Employees AS emp ) e
