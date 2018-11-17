@@ -1,3 +1,7 @@
+
+
+
+SELECT * FROM UserInfoTable ORDER BY FirstName,LastName,Salary
 CREATE DATABASE UserInfo
 GO
 USE UserInfo
@@ -19,13 +23,13 @@ ADD Salary INT
 GO
 
 UPDATE UserInfoTable
-SET Salary = 100
-WHERE FirstName = 'IVAN'
+SET Salary = 600
+WHERE Id = 6 AND LastName = 'PETKOV'
 GO
 
 INSERT INTO UserInfoTable
 VALUES 
-('PETKO','PETKOV'),
+('PETKO','PETKOV',400),
 ('IVAN','IVANOV'),
 ('GEORGI','GEORGIEV')
 

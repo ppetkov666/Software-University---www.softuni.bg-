@@ -7,41 +7,69 @@ GO
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 GO
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        1        ||||||||||||||||||||||||||||||||||||||||||||||||| 
+-- CREATE PROCEDURE WITH TRY CATCH BLOCK AND TRANSACTION
+
 CREATE OR ALTER PROCEDURE f_MyCustomConcatProcedure 
 (
-@firstname VARCHAR(50),
-@lastname VARCHAR(50),
-@ConcatName VARCHAR(50) OUTPUT
+ @firstname VARCHAR(50),
+ @lastname VARCHAR(50),
+ @ConcatName VARCHAR(50) OUTPUT
 )
 AS
 BEGIN
-	
-	DECLARE @first varchar(max)
-	DECLARE @last varchar(max)
+  -- DECLARATION 
+  -- ===========
+  DECLARE @first varchar(max)       SET @first = (SELECT FirstName 
+													  FROM Employees e
+													 WHERE e.FirstName = @firstname 
+													   AND e.LastName = @lastname)
+  DECLARE @last varchar(max)        SET @last = (SELECT LastName 
+												     FROM Employees e
+													WHERE e.FirstName = @firstname 
+													  AND e.LastName = @lastname)
 
-	SET @first = (SELECT FirstName FROM Employees e
-	WHERE e.FirstName = @firstname and e.LastName = @lastname)
-    
-	SET @last = (SELECT LastName FROM Employees e
-	WHERE e.FirstName = @firstname and e.LastName = @lastname)
-	
+  -- INITIALIZATION
+  -- ==============
+  BEGIN TRY
+  BEGIN TRANSACTION
+	-- here is what actually store procedure does 
+	-- in this case it just simple concat function of two names which comes from input params
 	SET @ConcatName = @first + ' ' + @last;
-	-- THIS IS CUSTOM SET RETURN CODES
-	IF @ConcatName = @ConcatName BEGIN
-	  RETURN 18
-	END
-	ELSE 
-	  RETURN 23
-	
+	--custom set return codes just for test purposes
+	--IF @ConcatName = @ConcatName BEGIN
+	--RETURN 18
+	--END
+	--ELSE 
+	--RETURN 23
+    -- all end up here  and from this point further  whatever exception is thrown will be catched in the CATCH block and we will ROLLBACK the transaction
+	-- or if we have another condition we will also ROLLBACK the transaction
+	-- in this scenario if the name is longer than 50 will rollback the transaction and it will raiserror that "this name is too long" 
+	-- if i UNcomment the other case and comment this one  it will change the return code from it;s default value (0) to 18 (just a random number i picked) 
+  END TRY
+  BEGIN CATCH 
+    PRINT 'Error message In CATCH Block';
+	THROW;
+  END CATCH 
+  IF  DATALENGTH(@ConcatName) < 50  
+    BEGIN
+	  COMMIT TRANSACTION
+    END 
+  ELSE IF XACT_STATE() <> 0 
+    BEGIN 
+      RAISERROR('this name is too long',16,1)
+      ROLLBACK TRANSACTION
+    END
 END
+	
 GO
 -- CHECK THE RESULT FROM STORED PROCEDURE
 
 DECLARE @FullName NVARCHAR(max)
-EXEC dbo.f_MyCustomConcatProcedure @firstname = 'guy',@lastname = 'gilbert', @ConcatName = @FullName OUTPUT
-SELECT @FullName AS FULLNAME
+EXEC f_MyCustomConcatProcedure @firstname = 'guy',@lastname = 'gilbert', @ConcatName = @FullName OUTPUT
+SELECT @FullName AS fullname
 
 -- this is very important return code which in this case  we assign it to variable @TESTvar - 0 means no error
+-- but because i change it in SP it will be 18.
 
 DECLARE @TESTvar VARCHAR(MAX)
 EXEC @TESTvar = dbo.f_MyCustomConcatProcedure @firstname = 'guy',@lastname = 'gilbert', @ConcatName = @TESTvar OUTPUT
@@ -51,7 +79,8 @@ GO
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        2        ||||||||||||||||||||||||||||||||||||||||||||||||| 
 -- CREATE PROCEDURE WITH TRY CATCH BLOCK AND TRANSACTION
-
+select * from EmployeesProjects
+GO
  ALTER PROCEDURE dbo.udp_assign_employee_project
  (
    @employeeId INT ,
@@ -146,7 +175,7 @@ exec dbo.udp_GetInfoWithExperienceInYears 18
 GO
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        5        ||||||||||||||||||||||||||||||||||||||||||||||||| 
-
+-- sp without and WITH optional param
 GO
 
 CREATE OR ALTER PROCEDURE udp_add_numbers
@@ -163,6 +192,63 @@ EXEC DBO.udp_add_numbers 10, 100, @result = @answer OUTPUT
 SELECT CONCAT('the result is ',@answer) 'Final Answer'
 
 GO
+
+-- -----------------------------------------------------------
+-- basically it tells : Give me id,firstname, lastname and jobtitle from this table WHERE
+-- parameter is NULL OR the firstname is equal to the value of the paramm
+-- SO it will give me only these records which i entered in the params, if all params are empthy and missing, their default value is NULL because i set it
+-- and will give me all the records in this table
+go
+CREATE or ALTER PROCEDURE spDoSearch
+    @FirstName VARCHAR(25) = null,
+    @LastName VARCHAR(25) = null,
+    @JobTitle VARCHAR(25) = null
+AS
+    BEGIN
+       SELECT e.EmployeeID, e.FirstName, e.LastName,e.JobTitle 
+         FROM Employees e
+        WHERE (@FirstName IS NULL OR (e.FirstName = @FirstName))
+          AND (@LastName  IS NULL OR (e.LastName  = @LastName ))
+          AND (@JobTitle  IS NULL OR (e.JobTitle  = @JobTitle ))
+       OPTION (RECOMPILE) 
+    END
+
+EXEC spDoSearch 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELECT e.FirstName FROM Employees e GROUP BY e.FirstName HAVING COUNT(*) > 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        6        ||||||||||||||||||||||||||||||||||||||||||||||||| 
 
@@ -335,7 +421,7 @@ DECLARE @LastName VARCHAR(MAX)
 DECLARE @Salary MONEY
 
 DECLARE TestCursor CURSOR 
-	FOR SELECT e.FirstName, e.LastName, e.Salary FROM Employees e
+	FOR SELECT e.FirstName, e.LastName, e.Salary FROM Employees e 
 
 OPEN TestCursor
 
@@ -371,3 +457,119 @@ BEGIN
 	PRINT '====================='
 END
 GO
+
+-- |||||||||||||||||||||||||||||||||||||||||||||||||        2        ||||||||||||||||||||||||||||||||||||||||||||||||| 
+EXEC SP_CURSOR_TEST
+GO
+CREATE OR ALTER PROCEDURE SP_CURSOR_TEST 
+ AS
+ BEGIN
+ DECLARE @FirstName VARCHAR(MAX)
+ DECLARE @LastName VARCHAR(MAX)
+
+     DECLARE CustomCursor CURSOR 
+	FOR SELECT e.FirstName,e.LastName FROM Employees e ORDER BY e.FirstName
+
+OPEN CustomCursor
+	FETCH NEXT FROM CustomCursor
+	INTO  @FirstName, @LastName
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		
+		EXEC SP_PRINT_EMPLOYEE_DETAILS @FirstName,@LastName
+		FETCH NEXT FROM CustomCursor 
+		INTO  @FirstName, @LastName
+	END
+
+CLOSE CustomCursor
+DEALLOCATE CustomCursor
+ END
+
+GO
+
+CREATE TABLE EXAMPLE_TABLE_RECORDS (
+	Id INT PRIMARY KEY NOT NULL,
+	RecordsCounter MONEY NOT NULL
+)
+INSERT INTO EXAMPLE_TABLE_RECORDS
+VALUES
+(1,0),
+(2,0)
+GO
+
+CREATE OR ALTER PROC SP_PRINT_EMPLOYEE_DETAILS
+(
+  @FirstName VARCHAR(MAX),
+  @LastName  VARCHAR(MAX)
+)
+AS 
+BEGIN
+ DECLARE @ExampleVariable INT          SET @ExampleVariable = 0;
+ DECLARE @department_name VARCHAR(MAX) SET  @department_name = (SELECT d.name 
+																		 FROM Employees e JOIN Departments d 
+																		   ON d.DepartmentID = e.DepartmentID 
+																		WHERE e.FirstName = @Firstname 
+																		  and e.LastName = @LastName)
+		PRINT 'Hello i am ' + @Firstname + ' ' + @LastName + ' from ' + @department_name + ' department' + ' !'
+		PRINT '==============================================';
+		
+		SET @ExampleVariable += (SELECT e.Salary from Employees e WHERE e.FirstName = @Firstname and e.LastName = @LastName)
+		UPDATE EXAMPLE_TABLE_RECORDS
+		SET RecordsCounter += @ExampleVariable WHERE Id = 2;
+END
+GO
+SELECT * FROM EXAMPLE_TABLE_RECORDS
+SELECT * FROM Employees
+-- |||||||||||||||||||||||||||||||||||||||||||||||||        3        ||||||||||||||||||||||||||||||||||||||||||||||||| 
+
+-- ANOTHER OPTIONS - MOVE THROUGH EACH 10 ROW(IF WE USE -10 IT IS IN REVERSE ORDER)
+DECLARE CustomCursor CURSOR SCROLL
+	FOR SELECT e.FirstName,e.LastName FROM Employees e WHERE e.Salary > 30000
+
+OPEN CustomCursor
+	FETCH ABSOLUTE 10 FROM CustomCursor 	
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		
+		FETCH RELATIVE 10 FROM CustomCursor 
+
+	END
+
+CLOSE CustomCursor
+DEALLOCATE CustomCursor
+-- |||||||||||||||||||||||||||||||||||||||||||||||||        4        ||||||||||||||||||||||||||||||||||||||||||||||||| 
+
+DECLARE @FullName NVARCHAR(MAX) SET @FullName = ''
+DECLARE @FirstName NVARCHAR(MAX) 
+DECLARE @LastName NVARCHAR(MAX) 
+
+
+
+DECLARE CustomCursor CURSOR 
+	FOR SELECT e.FirstName,e.LastName FROM Employees e WHERE e.Salary > 30000
+
+OPEN CustomCursor
+	FETCH NEXT FROM CustomCursor
+	INTO  @FirstName, @LastName
+	 
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		 
+		FETCH NEXT FROM CustomCursor 
+
+	END
+
+CLOSE CustomCursor
+DEALLOCATE CustomCursor
+
+
+
+
+
+
+
+
+
+
+
+
