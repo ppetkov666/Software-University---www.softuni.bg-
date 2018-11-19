@@ -26,16 +26,27 @@ GO
 		 (SELECT avg(e.Salary)
 			FROM Employees e 
 		   WHERE e.DepartmentID = d.DepartmentID 
-		GROUP BY e.DepartmentID) average_salary_per_department,
+		GROUP BY e.DepartmentID) average_salary_per_department
     FROM Employees e
 	JOIN Departments d ON d.DepartmentID = e.DepartmentID
    WHERE e.Salary > (SELECT AVG(salary) averageSalaryPerDepartment 
 				       FROM Employees e1 
-					  WHERE e1.DepartmentID = e.DepartmentID   
-				   GROUP BY DepartmentID)
-	  
-	
-   
+					--WHERE e1.DepartmentID = e.DepartmentID   both options are legin(WHERE and HAVING)
+				   GROUP BY DepartmentID
+				     HAVING e1.DepartmentID = e.DepartmentID)
+
+	-- this is the same querie as above but with select statement implemented in JOIN 
+  SELECT e.FirstName,
+	     e.LastName,
+	     e.DepartmentID,
+	     e.Salary AS salary_per_person,
+		 emp.average_salary_per_dept
+    FROM Employees e
+	JOIN Departments d ON d.DepartmentID = e.DepartmentID
+	JOIN (SELECT AVG(e.Salary) average_salary_per_dept,DepartmentID 
+			FROM Employees e 
+		GROUP BY e.DepartmentID) emp ON emp.DepartmentID = e.DepartmentID
+   WHERE e.Salary > emp.average_salary_per_dept
 -- simular as the second solution but with additional aggregated functions and select statements on 2 diffferent positions - 
 -- better one is on the join statement
    SELECT e.FirstName,
@@ -104,23 +115,20 @@ INNER JOIN
    --WHERE e.Salary > Departments.AVERAGE  
 
 -- THIS IS SAME query but with over clause and again with complicated where clause
-SELECT e.FirstName,
-	       e.LastName, 
+    SELECT e.FirstName,
+	       e.LastName,
+		   e.DepartmentID, 
 		   e.Salary,
-		   e.DepartmentID,
 		   alias.average,
 		   COUNT(*)    OVER (PARTITION BY departmentId) total_each_department,
-		   AVG(Salary) OVER (PARTITION BY departmentId) 'AVERAGE FOR PEOPLE WITH HIGHER SALARY THAN AVERAGE SALARY IN DEPARTMENT',
-		   MIN(Salary) OVER (PARTITION BY departmentId) MINSALARY, 
-		   MAX(Salary) OVER (PARTITION BY departmentId) MAXSALARY	
+		   AVG(e.Salary) OVER (PARTITION BY departmentId) 'AVERAGE FOR PEOPLE WITH HIGHER SALARY THAN AVERAGE SALARY IN DEPARTMENT',
+		   MIN(e.Salary) OVER (PARTITION BY departmentId) MINSALARY, 
+		   MAX(e.Salary) OVER (PARTITION BY departmentId) MAXSALARY
 	  FROM Employees e
-	  JOIN (SELECT avg(d.Salary) average, d.DepartmentID dept 
+	  JOIN (SELECT AVG(d.Salary) average, d.DepartmentID dept 
 		      FROM Employees d 
 		  GROUP BY DepartmentID) alias ON alias.dept = e.DepartmentID
-	 WHERE e.Salary > (SELECT AVG(e1.Salary) 
-					     FROM Employees e1 
-					    WHERE e.DepartmentID = e1.DepartmentID 
-					 GROUP BY DepartmentID) 
+	 WHERE e.Salary > alias.average 
 	  
 
   SELECT e.DepartmentID, COUNT(*) 
@@ -132,35 +140,137 @@ GROUP BY e.DepartmentID
 --																				OVER 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+-- example 1
 GO
  SELECT e.FirstName,
 		e.LastName,
-		e.Salary, 
-		COUNT(*) OVER (PARTITION BY departmentID ) PeoplePerDepartment 
+		e.Salary,
+		e.DepartmentID, 
+		COUNT(*) OVER (PARTITION BY departmentID ) people_per_department ,
+		ROW_NUMBER() over (PARTITION BY departmentID order by departmentID) row_numbers_per_department,
+		COUNT(*) OVER (ORDER BY departmentID ) people_per_department_v2
    FROM Employees e
-   -- same result but done with group by clause 
-   SELECT e.FirstName,
+   -- same result but done with GROUP BY clause 
+    SELECT e.FirstName,
+	 	   e.LastName,
+		   e.Salary,  
+		   COUNT(*) count_of_people_per_group__first_name_last_name_salary
+     FROM Employees e
+ GROUP BY e.FirstName,
 		  e.LastName,
-		  e.Salary  
-		  
+		  e.Salary
+ 
+-- example 2 
+-- LEAD clause with OVER example 
+
+ SELECT e.FirstName,
+		e.LastName,
+		e.Salary,
+		e.DepartmentID,
+		LEAD(e.Salary, 2, -1) OVER (PARTITION BY e.departmentID order by e.Salary) as next_salary_from_salary
    FROM Employees e
-   
-   
-   GO
-SELECT e.Salary,
-	   (e.Salary + (SELECT e1.Salary FROM Employees e1 WHERE e1.EmployeeID = e.EmployeeID + 1)) salarysum,
-	   ROW_NUMBER() OVER (ORDER BY EmployeeId) rowNumber
- FROM Employees e
+
+select e.EmployeeID,
+	   e.FirstName,
+	   e.LastName,
+	   e.Salary,
+	   LEAD(e.Salary) OVER (order by e.employeeID)  next_salary
+  from Employees e
+
+-- -- example 3 - same thing as above but without LEAD clause !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  GO
+CREATE VIEW cte__custom_table_rows	
+AS
+(
+SELECT emp.EmployeeID,
+			  emp.FirstName,
+			  emp.LastName,
+			  emp.Salary,
+			  ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+			  FROM Employees emp
+)
+GO
+
+CREATE VIEW cte__table_rows_salary
+AS
+(
+SELECT emp.Salary,
+	   ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+  FROM Employees emp
+)
+GO
+
+-- first option
+SELECT ctr.EmployeeID,
+	   ctr.row_num,
+	   ctr.FirstName,
+	   ctr.LastName,
+	   ctr.Salary,
+	   (SELECT e.Salary 
+	      FROM cte__table_rows_salary e 
+		 WHERE e.row_num = ctr.row_num + 1) AS next_salary
+  FROM cte__custom_table_rows as ctr
+
+-- -- second option
+	 SELECT ctr.EmployeeID,
+			ctr.row_num,
+			ctr.FirstName,
+			ctr.LastName,
+			ctr.Salary,
+	        aNextSalary.Salary
+       FROM cte__custom_table_rows as ctr 
+ INNER JOIN (SELECT e.Salary, 
+					e.row_num
+	           FROM cte__table_rows_salary e ) aNextSalary on aNextSalary.row_num =  ctr.row_num + 1
+
+-- third option is without creating  VIEW  ---------------------------------------
+
+ SELECT ctr.EmployeeID,
+			ctr.row_num,
+			ctr.FirstName,
+			ctr.LastName,
+			ctr.Salary,
+	        aNextSalary.Salary
+       FROM (SELECT emp.EmployeeID,
+					emp.FirstName,
+					emp.LastName,
+					emp.Salary,
+					ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+			  FROM Employees emp) as ctr 
+ INNER JOIN (SELECT e.Salary, 
+					e.row_num
+	           FROM (SELECT emp.Salary,
+							ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+					   FROM Employees emp) e ) aNextSalary on aNextSalary.row_num =  ctr.row_num + 1
+ GO
+
+ -- example 4--------------
+ -- RANK and DENSE_RANK example 
+ -- RANK: 1,1,1,1,5,5,5,5,5,10,10.....; DENSE_RANK: 1,1,1,1,2,2,2,2,2,3,3.....
+
 
 SELECT e.FirstName,
 	   e.LastName,
 	   e.Salary, 
-	   RANK() OVER (ORDER BY e.salary) [rank],
+	   RANK() OVER (ORDER BY e.salary) [rank], 
 	   DENSE_RANK () OVER (ORDER BY e.salary) denseRank,
 	   ROW_NUMBER () OVER (ORDER BY e.salary) rowNumber
   FROM Employees e  
+
+-- example 5--------------
+
+SELECT TOP(1) 
+	   emp.FirstName,
+	   emp.LastName
+  FROM (SELECT e.FirstName,
+			   e.LastName,
+			   DENSE_RANK () OVER (ORDER BY e.salary) salary_rank 
+          FROM Employees e) emp
+  where emp.salary_rank = 3
+
+
+-- example 6--------------
+
 
 SELECT e.FirstName,
 	   e.LastName,
@@ -174,14 +284,57 @@ SELECT e.FirstName,
 	   ROW_NUMBER() OVER (ORDER BY EmployeeID) rowNumber 
  FROM Employees e
 
-
+ -- example 7--------------
+ 
   SELECT e.EmployeeID,
 		 e.FirstName,
 		 e.LastName,
 		 e.Salary, 
-		 SUM(e.Salary) OVER (ORDER BY e.employeeID) sumsalary 
+		 SUM(e.Salary) OVER (ORDER BY e.employeeID) sum_salary 
     FROM Employees e 
 ORDER BY e.EmployeeID
+
+
+-- example 8---------------
+-- this example shows what is happening when we join with the same table  and why the table rows are so much replicated 
+select  e.EmployeeID,
+		e.DepartmentID,
+		e.FirstName,
+		e.LastName,
+		e.Salary,
+		e.row_num,
+
+		e1.EmployeeID,
+		e1.DepartmentID,
+		e1.FirstName,
+		e1.LastName,
+		e1.Salary,
+		e1.row_num
+from (select emp.EmployeeID,
+			 emp.DepartmentID,
+			 emp.FirstName,
+			 emp.LastName,
+			 emp.Salary,
+			 ROW_NUMBER() over (order by employeeID) row_num
+		from Employees emp) e
+inner join (select emp1.EmployeeID,
+				   emp1.DepartmentID,
+				   emp1.FirstName,
+				   emp1.LastName,
+				   emp1.Salary,
+				   ROW_NUMBER() over (order by employeeID) row_num 
+	    from Employees emp1)e1 on e1.DepartmentID = e.DepartmentID
+
+
+-- example 9--------------
+-- it calculates the average for each row till the last one 
+
+select e.FirstName,
+	   e.LastName,
+	   e.Salary,
+	   e.DepartmentID,
+	   AVG(e.Salary) over(order by  e.Salary) average
+  from Employees e
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --																				WITH 
@@ -191,7 +344,8 @@ GO
 WITH cte_filter_by_count 
 AS 
 (
-   SELECT DepartmentID, COUNT(*) peoplePerGroup
+   SELECT DepartmentID, 
+		  COUNT(*) peoplePerGroup
    FROM Employees e
    GROUP BY DepartmentID
    HAVING COUNT(*) > 10
