@@ -330,7 +330,7 @@ BEGIN
 	SET a.Active = 'N'
 	FROM Accounts a
 	join deleted d ON d.username = a.username
-	WHERE d.active = 'Y'
+	WHERE d.Active = 'Y'
 END 
 
 DELETE FROM Accounts WHERE username = 'ivan'
@@ -554,8 +554,10 @@ OPEN CustomCursor
 	 
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
-		 
+	     set @FullName = @FirstName +' ' + @LastName
+		 print 'hello my full name is : ' + @FullName 
 		FETCH NEXT FROM CustomCursor 
+		INTO  @FirstName, @LastName
 
 	END
 
@@ -563,12 +565,47 @@ CLOSE CustomCursor
 DEALLOCATE CustomCursor
 
 
+-- |||||||||||||||||||||||||||||||||||||||||||||||||        5        ||||||||||||||||||||||||||||||||||||||||||||||||| 
 
+declare @Salary money;
+declare @row_num bigint;
 
+SELECT EmployeeID,
+	   FirstName,
+	   LastName,
+	   Salary,
+	   NULL as NextSalary,
+	   ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+	   into #tempEmp
+  FROM Employees 
 
+DECLARE TestCursor CURSOR FOR 
+	SELECT Salary, 
+		   ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+	  FROM Employees 
+  ORDER BY employeeID
 
+OPEN TestCursor
+FETCH NEXT FROM TestCursor INTO  @Salary, @row_num;
 
+WHILE @@FETCH_STATUS = 0
+BEGIN
 
+	UPDATE #tempEmp
+	SET NextSalary = @Salary
+	WHERE row_num = @row_num - 1
+	
+	FETCH NEXT FROM TestCursor INTO  @Salary, @row_num
+END
+
+CLOSE TestCursor
+DEALLOCATE TestCursor
+
+select * from #tempEmp
+drop table #tempEmp
+-- |||||||||||||||||||||||||||||||||||||||||||||||||        6        ||||||||||||||||||||||||||||||||||||||||||||||||| 
+
+GO
 
 
 
