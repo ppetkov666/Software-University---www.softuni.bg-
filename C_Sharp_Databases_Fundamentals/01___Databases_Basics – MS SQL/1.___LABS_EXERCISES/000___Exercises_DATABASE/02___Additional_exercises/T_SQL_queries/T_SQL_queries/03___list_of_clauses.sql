@@ -2,11 +2,21 @@ USE SoftUni
 GO
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--      																		MIX
+-- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --																				GROUP BY 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
  GO
-                                              
+
+-- ^^^^^^^^ example 1  ^^^^^^^^
+
  -- first solution - the original one
   SELECT e.FirstName,
 	     e.LastName,
@@ -17,6 +27,8 @@ GO
 					 FROM Employees e1
 					WHERE e.DepartmentID = e1.DepartmentID
 				 GROUP BY DepartmentID)
+
+-- ^^^^^^^^ example 2  ^^^^^^^^
 
 -- second solution - with advanced columns
   SELECT e.FirstName,
@@ -141,7 +153,8 @@ GROUP BY e.DepartmentID
 --																				OVER 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
--- example 1
+-- ^^^^^^^^ example 1  ^^^^^^^^
+
 GO
  SELECT e.FirstName,
 		e.LastName,
@@ -161,7 +174,8 @@ GO
 		  e.LastName,
 		  e.Salary
  
--- example 2 
+-- ^^^^^^^^ example 2  ^^^^^^^^
+
 -- LEAD clause with OVER example 
 
  SELECT e.FirstName,
@@ -178,7 +192,9 @@ select e.EmployeeID,
 	   LEAD(e.Salary) OVER (order by e.employeeID)  next_salary
   from Employees e
 
--- -- example 3 - same thing as above but without LEAD clause !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+-- ^^^^^^^^ example 3  ^^^^^^^^ 
+
+-- same thing as above but without LEAD clause !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  GO
 CREATE OR ALTER VIEW cte__custom_table_rows	
 AS
@@ -285,7 +301,8 @@ SELECT ctr.EmployeeID,
 					   FROM Employees emp) e ) aNextSalary on aNextSalary.row_num =  ctr.row_num + 1
  GO
 
- -- example 4--------------
+ -- ^^^^^^^^ example 4  ^^^^^^^^
+
  -- RANK and DENSE_RANK example 
  -- RANK: 1,1,1,1,5,5,5,5,5,10,10.....; DENSE_RANK: 1,1,1,1,2,2,2,2,2,3,3.....
 
@@ -298,7 +315,7 @@ SELECT e.FirstName,
 	   ROW_NUMBER () OVER (ORDER BY e.salary) rowNumber
   FROM Employees e  
 
--- example 5--------------
+-- ^^^^^^^^ example 5  ^^^^^^^^
 
 SELECT TOP(1) 
 	   emp.FirstName,
@@ -310,7 +327,7 @@ SELECT TOP(1)
   where emp.salary_rank = 3
 
 
--- example 6--------------
+-- ^^^^^^^^ example 6  ^^^^^^^^
 
 
 SELECT e.FirstName,
@@ -325,7 +342,7 @@ SELECT e.FirstName,
 	   ROW_NUMBER() OVER (ORDER BY EmployeeID) rowNumber 
  FROM Employees e
 
- -- example 7--------------
+ -- ^^^^^^^^ example 7  ^^^^^^^^
  
   SELECT e.EmployeeID,
 		 e.FirstName,
@@ -336,7 +353,8 @@ SELECT e.FirstName,
 ORDER BY e.EmployeeID
 
 
--- example 8---------------
+-- ^^^^^^^^ example 8  ^^^^^^^^
+
 -- this example shows what is happening when we join with the same table  and why the table rows are so much replicated 
 select  e.EmployeeID,
 		e.DepartmentID,
@@ -367,7 +385,8 @@ inner join (select emp1.EmployeeID,
 	    from Employees emp1)e1 on e1.DepartmentID = e.DepartmentID
 
 
--- example 9--------------
+-- ^^^^^^^^ example 9  ^^^^^^^^
+
 -- it calculates the average for each row till the last one 
 
 select e.FirstName,
@@ -377,7 +396,7 @@ select e.FirstName,
 	   AVG(e.Salary) over(order by  e.Salary) average
   from Employees e
 
--- example 9--------------
+-- ^^^^^^^^ example 10  ^^^^^^^^
 
 select e.EmployeeID,
 	   e.FirstName,
@@ -389,9 +408,7 @@ select e.EmployeeID,
 	   count(*) over (order by e.Salary ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) row_num_with_count_over_clause
   from Employees e
   
--- example 10--------------
-
-
+-- ^^^^^^^^ example 11  ^^^^^^^^
 
 SELECT e.FirstName,
 	   e.LastName,
@@ -402,7 +419,8 @@ SELECT e.FirstName,
   FROM Employees e
   ORDER BY e.DepartmentID
   
--- example 11--------------
+-- ^^^^^^^^ example 12  ^^^^^^^^
+
  select oe.FirstName,oe.LastName,oe.DepartmentID,oe.Salary,oe.rank_column from 
 (SELECT e.FirstName,
 	   e.LastName,
@@ -411,6 +429,10 @@ SELECT e.FirstName,
 	   dense_rank() over (partition by e.DepartmentID order by e.Salary ) rank_column
   FROM Employees e) oe
   where oe.rank_column = 3
+
+ -- ^^^^^^^^ example 13  ^^^^^^^^
+ 
+ 
   
 
 
@@ -419,11 +441,14 @@ SELECT e.FirstName,
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 GO
 
+-- ^^^^^^^^ example 1  ^^^^^^^^
+
+-- the querie returns all departments who has more than 10 people into it
 WITH cte_filter_by_count 
 AS 
 (
    SELECT DepartmentID, 
-		  COUNT(*) peoplePerGroup
+		  COUNT(*) people_per_group
    FROM Employees e
    GROUP BY DepartmentID
    HAVING COUNT(*) > 10
@@ -432,11 +457,17 @@ SELECT * FROM cte_filter_by_count
 
 GO
 
-WITH CTE_filter_first_names 
+-- ^^^^^^^^ example 2  ^^^^^^^^
+
+-- the querie returns only the firstnames of people who are from 'Engineering department'
+
+WITH cte_filter_first_names 
 AS
 (
       SELECT e.FirstName, 
-		     e.LastName 
+		     e.LastName,
+			 e.DepartmentID,
+			 d.[Name] 
         FROM Employees e
   INNER JOIN Departments d ON D.DepartmentID = E.DepartmentID
        WHERE d.Name = 'Engineering'
@@ -444,23 +475,30 @@ AS
  SELECT f.FirstName FROM CTE_filter_first_names f 
  GO
 
--- in this case the name of params does not have to be the same as the names of the colums , just the count must be the same 
-WITH CTE_filter_by_name(firstname, lastname)
+ -- ^^^^^^^^ example 2  ^^^^^^^^
+
+-- in this case the name of params does not have to be the same as the names of the colums , just the count must be the same
+WITH cte_filter_by_name(firstname, lastname)
 AS
 (
-	SELECT e.FirstName,e.LastName FROM Employees e
+	SELECT e.FirstName,
+		   e.LastName 
+	  FROM Employees e
 )
- select firstname from CTE_filter_by_name
-
+ SELECT c.firstname 
+   FROM cte_filter_by_name c 
 GO	
 
 
--- another example
+-- ^^^^^^^^ example 3  ^^^^^^^^
+
+-- the querie returns firstname, lastname, department name and count of people per department
  WITH CTE_Employee_Count(departmentID,employee_count_per_department)
 AS
 (
-	SELECT e.DepartmentID, COUNT(*) total_Count_Per_Department 
-	FROM Employees e
+	SELECT e.DepartmentID, 
+		   COUNT(*) total_count_per_department 
+	  FROM Employees e
 	GROUP BY DepartmentID
 )
 
@@ -470,18 +508,99 @@ INNER JOIN CTE_Employee_Count ec ON EC.departmentID = e.DepartmentID
 INNER JOIN Departments d ON D.DepartmentID = e.DepartmentID
 ORDER BY employee_count_per_department
 
-select e.FirstName from Employees e
-union all
-select LastName from Employees
 
+-- ^^^^^^^^ example 3  ^^^^^^^^
 
+-- the querie returns just update of lastname who follow the condition of the salary.
+-- this example whos one other important point that if we want to use WITH in transaction we should use ';'
+
+USE UserInfo
+
+begin transaction;
+
+with cte_simple_querie_test
+as
+(
+	select uit.FirstName,
+		   uit.LastName,
+		   uit.Salary 
+	  from UserInfoTable uit
+	 where uit.Salary > 200
+)
+
+update cte_simple_querie_test 
+   set LastName = 'test_family'
+ where Salary = 500
+ commit transaction
+
+ -- ^^^^^^^^ example 4  ^^^^^^^^
+
+-- the querie returns the third department with most people 
+
+ go
+ with cte_get_count_of_people_per_dep
+ as
+ (
+	SELECT e.DepartmentID, 
+		   COUNT(*) total_count_per_department,
+		   DENSE_RANK() OVER (ORDER BY count(*) desc) department_rank
+	  FROM Employees e
+  GROUP BY e.departmentID
+ )
+ SELECT * 
+   FROM cte_get_count_of_people_per_dep cte
+  WHERE cte.department_rank = 3
+
+-- this is same querie but without dense_rank and  and WITH , just with simple derived table
+  SELECT top 1 *
+	  from (
+  SELECT top 3 e.DepartmentID, 
+		 COUNT(*) total_count_per_department
+	  FROM Employees e
+  GROUP BY e.departmentID
+  order by total_count_per_department desc) x
+  order by total_count_per_department asc
+
+-- ^^^^^^^^ example 5  ^^^^^^^^
+
+-- the querie returns the department with more people than 20 
+  WITH cte_count_per_dept([name] ,dept,total)
+AS
+(
+  SELECT d.[Name],
+	     d.DepartmentID, 
+  	     COUNT(*) totalEmployees 
+    FROM Employees e
+    JOIN Departments d ON d.DepartmentID = e.DepartmentID
+GROUP BY d.[Name],
+		 d.DepartmentID
+)
+SELECT [name],
+	    total 
+  FROM cte_count_per_dept 
+ WHERE total > 20
+
+GO
+
+-- ^^^^^^^^ example 6  ^^^^^^^^
+
+-- the querie returns just added column for row numbers
+USE SoftUni   
+ WITH cte_customWiew AS
+ (
+	SELECT e.* , ROW_NUMBER() OVER (PARTITION BY departmentID ORDER BY e.employeeID ) AS rownumber 
+	  FROM Employees e
+ )
+
+ SELECT * FROM cte_customWiew
+ 
 
 
  -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 -- 																				VIEW (virtual table based on a SELECT query)
 -- /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 GO
-
+ -- ^^^^^^^^ example 1  ^^^^^^^^
   CREATE OR ALTER VIEW CTE_MyOwnFilter
   AS
 (
@@ -494,11 +613,32 @@ GO
 GO
   SELECT * FROM CTE_MyOwnFilter
 
+-- ^^^^^^^^ example 2  ^^^^^^^^
+
+ GO
+CREATE VIEW cte_another_version
+AS
+(
+SELECT d.[Name],
+	   d.DepartmentID, 
+	   COUNT(*) totalEmployees 
+  FROM Employees e
+  join Departments d ON d.DepartmentID = e.DepartmentID
+  GROUP BY d.[Name],d.DepartmentID
+)
+GO
+SELECT * 
+  FROM cte_another_version 
+ WHERE totalEmployees > 20
+
+
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 -- 																				TEMPORARY TABLES(Local and Global Examples)
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        1 - Local Temporary Table       |||||||||||||||||||||||||||||||||||||||||||||||||
+-- they are existing only for current window
+GO
 CREATE TABLE #PersonDetails( 
 Id INT PRIMARY KEY IDENTITY,
 [Name] NVARCHAR(50)
@@ -509,23 +649,39 @@ VALUES
 ('Ivan'),
 ('Georgi')
 
+
 SELECT * FROM tempdb..sysobjects
 
 SELECT [NAME] FROM tempdb..sysobjects
 WHERE NAME LIKE '%#PersonDetails%'
-GO
+
 -- insert in already created temp table
-  insert into #PersonDetails
-  select FirstName from Employees
- select * from #PersonDetails
+USE SoftUni
+
+  INSERT 
+    INTO #PersonDetails
+  SELECT e.FirstName 
+    FROM Employees e
+
+  SELECT FirstName
+    INTO #PersonDetails
+    FROM Employees
+
+ SELECT * FROM #PersonDetails
 DROP TABLE IF EXISTS #PersonDetails
  -- insert in # temp table with no need of creating
- go
- select *
- INTO #TEMP_TABLE 
- from #PersonDetails
+ 
+ SELECT firstname
+   INTO #temp_t
+   FROM Employees
+   GO
 
- SELECT * FROM #TEMP_TABLE
+  INSERT 
+    INTO #temp_t
+  SELECT FirstName 
+    FROM Employees
+
+ SELECT * FROM #temp_t
 	DROP TABLE IF EXISTS #TEMP_TABLE
 
 
@@ -550,7 +706,7 @@ END
 EXECUTE SP_TemporaryTable
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        2 - Global Temporary Table       |||||||||||||||||||||||||||||||||||||||||||||||||
-
+-- they are existing for all windows 
 CREATE TABLE ##EmployeeDetails( 
 Id INT PRIMARY KEY IDENTITY,
 [Name] NVARCHAR(50)
@@ -586,91 +742,113 @@ END
 EXECUTE SP_GlobalTemporaryTable
 
 
--- |||||||||||||||||||||||||||||||||||||||||||||||||        3 - Couple different examples       |||||||||||||||||||||||||||||||||||||||||||||||||
+-- |||||||||||||||||||||||||||||||||||||||||||||||||        3 - -- Table variable       |||||||||||||||||||||||||||||||||||||||||||||||||
 
+-- can be passed as param between stored procedures      
 
-SELECT d.[Name],
-	   d.DepartmentID, 
-	   COUNT(*) totalEmployees 
-  FROM Employees e
-  join Departments d ON d.DepartmentID = e.DepartmentID
-  GROUP BY d.[Name],d.DepartmentID
-  HAVING COUNT(*) > 20
+-- ^^^^^^^^ example 1  ^^^^^^^^
 
--- done with #temp_table
-  select d.Name, e.DepartmentID, count(*) sum_people_per_department 
-    into  #temp_petko_test
-    from Employees e
-    join Departments d on d.DepartmentID = e.DepartmentID
-group by d.Name, e.DepartmentID
+-- this querie returns department name and count of employees more than 20 for this particular department
+DECLARE @TableEmployeeCount TABLE(DepartmentName NVARCHAR(50), DepartmentId INT, TotalEmployees INT)
 
- select * from #temp_petko_test where sum_people_per_department > 20
-  DROP TABLE #temp_petko_test
-
-go
--- instead of having query like this with HAVING clause we can create VIEW or WITH or some other approaches
--- if we will use this query just once we dont need to create a view  that's why i will give another examples  futher down
-GO
-CREATE VIEW cte_another_version
-AS
-(
-SELECT d.[Name],
-	   d.DepartmentID, 
-	   COUNT(*) totalEmployees 
-  FROM Employees e
-  join Departments d ON d.DepartmentID = e.DepartmentID
-  GROUP BY d.[Name],d.DepartmentID
-)
-GO
-SELECT * FROM cte_another_version WHERE totalEmployees > 20
-
---  COMMON TABLE EXPRESSION WITH 
-WITH cte_count_per_dept([name] ,dept,total)
-AS
-(
-SELECT d.[Name],
-	   d.DepartmentID, 
-	   COUNT(*) totalEmployees 
-  FROM Employees e
-  join Departments d on d.DepartmentID = e.DepartmentID
-  GROUP BY d.[Name],d.DepartmentID
-)
-SELECT name,total FROM cte_count_per_dept WHERE total > 20
-
-GO
-
- GO
-
-
- -- Table variable  - can be passed as param between stored procedures
- DECLARE @TableEmployeeCount TABLE(DepartmentName NVARCHAR(50), DepartmentId INT, TotalEmployees INT)
-
- INSERT @TableEmployeeCount
- SELECT d.[Name],
-	    d.DepartmentID, 
-	    COUNT(*) totalEmployees 
-  FROM Employees e
-  join Departments d ON d.DepartmentID = e.DepartmentID
-  GROUP BY d.[Name],d.DepartmentID	
+  INSERT 
+    INTO @TableEmployeeCount
+  SELECT d.[Name],
+  	     d.DepartmentID, 
+    	 COUNT(*) totalEmployees 
+    FROM Employees e
+    JOIN Departments d ON d.DepartmentID = e.DepartmentID
+GROUP BY d.[Name],
+		 d.DepartmentID	
 
   SELECT DepartmentName,
 		 TotalEmployees		
   FROM @TableEmployeeCount 
   WHERE TotalEmployees > 20	 
 
-
-  -- DERIVED TABLE
-  SELECT Emp_Table_Result.Name,Emp_Table_Result.totalEmployees FROM 
-  (SELECT d.[Name],
-	    d.DepartmentID, 
-	    COUNT(*) totalEmployees 
-  FROM Employees e
-  join Departments d ON d.DepartmentID = e.DepartmentID
-  GROUP BY d.[Name],d.DepartmentID) AS Emp_Table_Result
-  WHERE Emp_Table_Result.totalEmployees > 20
-
   
+-- ^^^^^^^^ example 2  ^^^^^^^^
+
+-- this querie returns store procedure which use table variable as param and insert records into another table
+
+--first step
+CREATE TYPE table_variable AS TABLE
+(
+ FirstName NVARCHAR(50),
+ LastName NVARCHAR(50),
+ Salary INT
+)
+GO
+--second step
+CREATE or ALTER PROCEDURE sp__insert_employee
+(
+@table_variable  table_variable READONLY
+)
+AS
+BEGIN
+	INSERT 
+	  INTO UserInfoTable
+	SELECT * 
+	  FROM @table_variable
+END
+go
+-- third step
+DECLARE @table_variable_to_be_passed_to_sp table_variable 
+
+ INSERT 
+   INTO @table_variable_to_be_passed_to_sp
+ SELECT e.FirstName,
+   	    e.LastName, 
+        e.Salary 
+   FROM UserInfoTable e
+
+EXECUTE sp__insert_employee @table_variable_to_be_passed_to_sp
+
  
+
+
+-- |||||||||||||||||||||||||||||||||||||||||||||||||        4 - ExampleS  |||||||||||||||||||||||||||||||||||||||||||||||||
+
+-- ^^^^^^^^ example 1  ^^^^^^^^
+
+-- without temp table - first approach
+SELECT d.[Name],
+	   d.DepartmentID, 
+	   COUNT(*) totalEmployees 
+  FROM Employees e
+  JOIN Departments d ON d.DepartmentID = e.DepartmentID
+  GROUP BY d.[Name],d.DepartmentID
+  HAVING COUNT(*) > 20
+
+-- without temp table - second approach with derived table
+  SELECT emp_table_result.[Name],
+		 emp_table_result.DepartmentID,
+		 emp_table_result.total_employees 
+    FROM (SELECT d.[Name],
+				 d.DepartmentID, 
+				 COUNT(*) total_employees 
+		    FROM Employees e
+			JOIN Departments d ON d.DepartmentID = e.DepartmentID
+		GROUP BY d.[Name],d.DepartmentID) AS emp_table_result
+   WHERE emp_table_result.total_employees > 20
+
+-- instead of having query like this with HAVING clause or DERIVED table we can create temp table
+-- done with #temp_table
+  SELECT d.[Name], 
+		 e.DepartmentID, 
+		 count(*) sum_people_per_department 
+    INTO  #temp_petko_test
+    FROM Employees e
+    JOIN Departments d ON d.DepartmentID = e.DepartmentID
+GROUP BY d.[Name], e.DepartmentID
+
+ SELECT temp.* 
+   FROM #temp_petko_test temp
+  WHERE sum_people_per_department > 20
+
+  DROP TABLE #temp_petko_test
+
+GO
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --																				SUBSTRING
@@ -804,23 +982,6 @@ select @@ROWCOUNT
 
 select top 1 * from Employees e where e.FirstName like 'p%'
 select @@ROWCOUNT
-
-
-
- -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---      																		MIX
--- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
- GO
-  -- what it does : 
- -- temp table with name 
- 
- WITH cte_customWiew AS
- (
-	SELECT * , ROW_NUMBER() OVER (PARTITION BY departmentID ORDER BY e.employeeID ) AS rownumber FROM Employees e
- )
-
- SELECT * FROM cte_customWiew
- 
 
  
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -979,6 +1140,9 @@ SELECT ctr.EmployeeID,
 --																				NTILE() 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+-- ^^^^^^^^ example 1  ^^^^^^^^
+
+-- this querie just create temp table with some data inside and split it per 2 groups
 create table  #temp
 (
 StudentID char(2),    
@@ -995,8 +1159,43 @@ select NTILE(2) over(order by Marks),*
 from #temp
 order by Marks
 
+-- ^^^^^^^^ example 2  ^^^^^^^^
+
+ -- split the data into 3 groups  and each group has unique number, and in this example the whole data is grouped or partitioned by salary
+ -- it means each salary group is splitted by 3 
 SELECT e.FirstName,
 	   e.LastName,
 	   e.Salary,
 	   NTILE(3) over (partition by e.Salary order by e.salary) ntile_column			 
   FROM Employees e
+
+  -- ^^^^^^^^ example 3  ^^^^^^^^
+
+-- this querie split the data into 3 groups and you can use each group as you like :
+-- this querie  returns all the people from the first group 
+select  * from (
+SELECT e.FirstName,
+	   e.LastName,
+	   e.Salary,
+	   NTILE(3) over ( order by e.EmployeeID) ntile_groups			 
+  FROM Employees e) groups
+  where groups.ntile_groups = 1
+
+
+  -- ^^^^^^^^ example 4  ^^^^^^^^
+
+  -- this querie returns all the people from the first group who has salary equal to 10000
+  select  * from (
+SELECT e.FirstName,
+	   e.LastName,
+	   e.Salary,
+	   NTILE(3) over (partition by e.Salary order by e.EmployeeID) ntile_groups			 
+  FROM Employees e
+  where e.Salary = 10000) groups
+  where groups.ntile_groups = 1
+
+
+
+
+
+
