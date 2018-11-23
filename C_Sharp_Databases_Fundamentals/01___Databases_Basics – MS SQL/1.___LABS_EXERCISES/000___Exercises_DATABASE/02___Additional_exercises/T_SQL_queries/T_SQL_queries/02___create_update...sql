@@ -5,7 +5,7 @@ SELECT * FROM UserInfoTable ORDER BY FirstName,LastName,Salary
 CREATE DATABASE UserInfo
 GO
 USE UserInfo
-
+go
 CREATE TABLE UserInfoTable(
 Id INT PRIMARY KEY IDENTITY,
 FirstName NVARCHAR(50),
@@ -115,4 +115,99 @@ GO
   TRUNCATE TABLE People--
 SELECT COUNT(*) FROM People
 WHERE Firstname = 'ivan';TRUNCATE TABLE People --' AND Lastname = 'ivanov';
+
+-- -----------------------------------------------------------------------------------------------
+CREATE DATABASE Joins_Test_DB
+USE Joins_Test_DB
+
+CREATE TABLE Users(
+Id INT PRIMARY KEY IDENTITY,
+[Name] NVARCHAR(50),
+Gender NVARCHAR(10),
+Salary DECIMAL(16,4),
+DepartmentId  INT 
+)
+CREATE TABLE Department(
+Id INT PRIMARY KEY IDENTITY,
+DepartmentName NVARCHAR(50),
+[Location] NVARCHAR(50),
+DepartmentHead NVARCHAR(50)
+)
+
+ALTER TABLE [Users]  WITH NOCHECK --(not checking existing rows before adding the constraint)
+ADD  CONSTRAINT [fk__Users__Department] 
+FOREIGN KEY([DepartmentId])
+REFERENCES [Department] ([Id])
+
+INSERT INTO Users
+	VALUES
+	  ('emilia',		'female', NULL,null),
+	  ('josefine',	'female', NULL,null),
+	  ('ivan',			'male',		 100,1),
+	  ('jeko',			'male',		 200,2),
+	  ('georgi',		'male',		 300,3),
+	  ('borislava',	'female',  300,3),
+	  ('mihaela',		'female',  300,2)
+GO
+		INSERT INTO Department
+		VALUES
+		('Other','Sidney','Antony'),
+	  ('IT',			'new york',	 'Bob'),
+	  ('HR',			'london',		 'John'),
+	  ('TECH',		'tokio',		 'Kriss'),
+	  
+select * from Users u
+join Department d ON d.Id = u.DepartmentId
+select * from Department
+
+
+
+ALTER TABLE Users
+alter column DepartmentId int null
+
+-- --------------------------------------------------------------------------------
+
+CREATE DATABASE db_for_test_purposes
+USE db_for_test_purposes
+CREATE TABLE Employee(
+	EmployeeId INT NOT NULL,	
+	[Name] NVARCHAR(32),	
+	ManagerId INT
+
+	CONSTRAINT pk__Employee PRIMARY KEY (EmployeeId)
+)
+
+select * from Employee
+
+ALTER TABLE Employee 
+ADD CONSTRAINT fk__Employee__ManagerId 
+FOREIGN KEY (ManagerId) 
+REFERENCES Employee (EmployeeId)
+
+
+INSERT INTO Employee VALUES
+(1,'John',NULL),
+(2,'Maya',6),
+(3,'Silvia',6),
+(4,'Ted',6),
+(5,'Mark',6),
+(6,'Greta',1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

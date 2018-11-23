@@ -118,7 +118,120 @@ SET STATISTICS TIME OFF
 					GROUP BY DepartmentID) alias ON alias.dept = e.DepartmentID
 	 WHERE e.Salary > alias.average
 	  
- 
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--																				      																		JOINS 
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+GO
+USE Joins_Test_DB
+
+
+-- ^^^^^^^^ example 1  ^^^^^^^^
+
+-- inner join match only the common rows from both tables
+SELECT * FROM Users
+SELECT * FROM Department
+
+		SELECT u.[Name],
+					 u.Gender,
+					 u.Salary,
+					 d.DepartmentName 
+			FROM Users u
+INNER JOIN Department d on d.Id = u.DepartmentId
+
+-- ^^^^^^^^ example 2  ^^^^^^^^
+
+-- left join match all records from left table + common record from right table
+SELECT u.[Name],
+					 u.Gender,
+					 u.Salary,
+					 d.DepartmentName 
+			FROM Users u
+ LEFT JOIN Department d on d.Id = u.DepartmentId
+
+-- this is opposite 
+SELECT u.[Name],
+					 u.Gender,
+					 u.Salary,
+					 d.DepartmentName 
+			FROM Users u
+ LEFT JOIN Department d on d.Id = u.DepartmentId
+     WHERE u.DepartmentId is null
+
+
+-- ^^^^^^^^ example 3  ^^^^^^^^
+
+-- right join match all records from the right + common records from the left
+ SELECT u.[Name],
+					 u.Gender,
+					 u.Salary,
+					 d.DepartmentName 
+			FROM Users u
+ RIGHT JOIN Department d on d.Id = u.DepartmentId
+
+-- oppsite querie 
+ SELECT u.[Name],
+					 u.Gender,
+					 u.Salary,
+					 d.DepartmentName 
+			FROM Users u
+ RIGHT JOIN Department d on d.Id = u.DepartmentId
+			WHERE u.[Name] is null
+			
+ -- ^^^^^^^^ example 4  ^^^^^^^^
+
+-- full join - just join the full information from both tables
+ SELECT u.[Name],
+					 u.Gender,
+					 u.Salary,
+					 d.DepartmentName 
+			FROM Users u
+ FULL JOIN Department d on d.Id = u.DepartmentId
+
+-- oppsite querie
+ SELECT u.[Name],
+					 u.Gender,
+					 u.Salary,
+					 d.DepartmentName 
+			FROM Users u
+ FULL JOIN Department d on d.Id = u.DepartmentId
+		 WHERE d.DepartmentName IS NULL 
+				OR u.DepartmentId		IS NULL
+
+-- ^^^^^^^^ example 5  ^^^^^^^^
+
+-- cross join associate each record from first table with each reacord from second table example:
+-- first table users has 9 records and every row is assosiated with all 4 rows from the second table Department - total 36 rows in Cross Join statement
+ SELECT u.[Name],
+					 u.Gender,
+					 u.Salary,
+					 d.DepartmentName 
+			FROM Users u
+CROSS JOIN Department d 
+
+-- ^^^^^^^^ example 6  ^^^^^^^^
+
+-- this is great example for self join
+-- little explanation.. maya, silvia, ted and mark has manager id 6 which is greta.Greta is theirs manager , and she has manager id 1 , which means her manager is John
+-- John has no manager ID so which means he is on top 
+-- so basically we join the same table employee ON : we take from the second table Employee as M it's Employee id which is primary key  and has to be equal to 
+-- manager id from the first table
+USE db_for_test_purposes
+
+-- we will demonstrate couple different approaches how to replace null value if there is no manager accross the certain employee.
+SELECT * FROM Employee
+
+		SELECT e.[Name] employee,
+							--REPLACE(m.Name,'null','No Manager')						
+							--ISNULL(m.Name,'No Manager')
+							--COALESCE(m.Name,'No manager')
+							CASE 
+									WHEN M.Name IS NULL THEN 'No manager' 
+									ELSE m.Name 
+									 END 
+			FROM Employee e
+LEFT JOIN Employee m ON m.EmployeeId = e.ManagerId
+
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --																				      																		OVER 
@@ -1057,24 +1170,7 @@ GROUP BY d.[Name], e.DepartmentID
  -- in this case we will get only the UNIQUE records who are not duplicated and perform DISTINCT SORT
 	GO
 	GO
-	WITH cte_first_test(first_name, job_title)
-	AS
-	(
-		SELECT e.FirstName,
-					 e.JobTitle 
-			FROM Employees e
-	), cte_second_test(first_name2,job_title2)
-	AS
-	(
-		SELECT e2.FirstName,
-					 e2.JobTitle 
-		  FROM Employees e2
-	)
-
-	SELECT * FROM cte_first_test 
-	UNION 
-	SELECT * FROM cte_second_test
-
+	 
 
  -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --																				      																		CASE 
