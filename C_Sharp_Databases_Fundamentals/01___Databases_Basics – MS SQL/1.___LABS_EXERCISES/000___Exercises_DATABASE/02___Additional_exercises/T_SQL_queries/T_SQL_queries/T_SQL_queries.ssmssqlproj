@@ -6,6 +6,12 @@
     </LogicalFolder>
     <LogicalFolder Name="Queries" Type="0" Sorted="true">
       <Items>
+        <FileNode Name="0___how_to.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>0___how_to.sql</FullPath>
+        </FileNode>
         <FileNode Name="00___test_querie.sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
@@ -18,29 +24,29 @@
           <AssociatedConnUserName />
           <FullPath>01___constraints.sql</FullPath>
         </FileNode>
-        <FileNode Name="02___create_update...sql">
+        <FileNode Name="02___create_update_delete.sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>02___create_update...sql</FullPath>
+          <FullPath>02___create_update_delete.sql</FullPath>
         </FileNode>
-        <FileNode Name="03___list_of_clauses.sql">
+        <FileNode Name="03___list_of_clauses(simple ones).sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>03___list_of_clauses.sql</FullPath>
+          <FullPath>03___list_of_clauses(simple ones).sql</FullPath>
         </FileNode>
-        <FileNode Name="04___stor_proc_trig...sql">
+        <FileNode Name="04___stor_proc_trig_func_cursors(more complex clauses).sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-FCG26GG\SQLEXPRESS:True</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>DESKTOP-FCG26GG\SQLEXPRESS</AssociatedConnSrvName>
           <AssociatedConnUserName />
-          <FullPath>04___stor_proc_trig...sql</FullPath>
+          <FullPath>04___stor_proc_trig_func_cursors(more complex clauses).sql</FullPath>
         </FileNode>
-        <FileNode Name="05___new_test_conn.sql">
+        <FileNode Name="05___new_test_connection_for_temp_tables.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-FCG26GG\SQLEXPRESS:True</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>DESKTOP-FCG26GG\SQLEXPRESS</AssociatedConnSrvName>
           <AssociatedConnUserName />
-          <FullPath>05___new_test_conn.sql</FullPath>
+          <FullPath>05___new_test_connection_for_temp_tables.sql</FullPath>
         </FileNode>
         <FileNode Name="06___roles.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-FCG26GG\SQLEXPRESS:True</AssociatedConnectionMoniker>
