@@ -111,6 +111,7 @@ UNION ALL
 		 JOIN emp_cte mngr_table ON mngr_table.EmployeeID = emp_table.ManagerID
 -- further down i will break line by line how this recursive cte works
 -- step 1 -- execute first select statement ANCHOR and we take manager id == 16 to step 2
+-- because we use it as input param to the recursive member
 SELECT emp.EmployeeID,
 				  emp.FirstName,
 				  emp.LastName,
@@ -166,7 +167,44 @@ SELECT e.EmployeeID,
 		 where e.EmployeeID = 109
 
 -- this is the result set:
--- 109	Ken	Sanches	null
+-- 109	Ken	Sanches	null , and here the recursive cte stops 
+
+-- third option will rank the hierarchy starting from top to the bottom
+
+GO
+WITH rank_cte(EmployeeID, FirstName, LastName, ManagerID, [level])
+		AS
+		(
+	
+	 SELECT emp.EmployeeID,
+				  emp.FirstName,
+				  emp.LastName,
+		 	 	  emp.ManagerID,
+					1	 
+		 FROM Employees emp
+	  WHERE emp.ManagerID is NULL
+UNION ALL 
+	 SELECT e.EmployeeID,
+					e.FirstName,
+					e.LastName,
+					e.ManagerID,
+					cte.[level] + 1
+		 FROM Employees e
+		 JOIN rank_cte cte ON cte.EmployeeID = e.ManagerID
+		)
+
+		--select * from rank_cte
+		--order by rank_cte.level
+
+
+		select employees.EmployeeID,
+					 employees.FirstName,
+					 employees.LastName,
+					 ISNULL(cast(employees.ManagerID as nvarchar(50)),'he is his own boss')as manager_id, 
+					 ISNULL(managers.FirstName, 'Boss') AS Manager,
+					 employees.level
+		  from rank_cte employees
+ left join rank_cte managers ON managers.EmployeeID = employees.ManagerID
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             3
@@ -265,72 +303,215 @@ ORDER BY COUNT(*) DESC
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             7
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-																														-- HOW TO 
+																														-- HOW TO explain diffference between blocking and deadlocking
 
+--  BLOCKING 
+use UserInfo
+select * from UserInfoTable
+select * from People
 
+begin transaction
 
+update UserInfoTable 
+SET FirstName = 'testname' 
+where id = 27 
 
+commit transaction
 
+-- if i execute the same transaction from new querie  it will wait until this transaction is committed and then the second transaction will be executed
 
+-- DEADLOCKING
+-- in the following example if i execute from this session the UserInfoTable table and from another session the People table , these 2 tables will be locked, 
+-- then when i try to execute table people from this session and accordingly UserInfoTable from the other session the deadlock will occur and sql server will 
+-- choose one of both transactions as deadlock victim and it will be rollbacked and the other will be completed 
+begin transaction
 
+update UserInfoTable 
+SET FirstName = 'testname' 
+where id = 27 
 
+update People
+set Firstname = 'testname'
+where id = 2
+rollback
+commit transaction
 
-
+select @@trancount  -- check the number of active transactions
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             8
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-																														-- HOW TO 
+																														-- HOW TO find all names that start with certain letter without like operator
 
+USE SoftUni
+-- this is the first option but because of the point of this task i will show other 2 different ways how to be done
+SELECT * FROM Employees WHERE FirstName like 'm%'
 
-
-
-
-
-
-
-
-
-
-
-
-
+SELECT * FROM Employees WHERE CHARINDEX('m',FirstName) = 1;
+SELECT * FROM Employees WHERE left(FirstName,1) = 'm';
+SELECT * FROM Employees WHERE SUBSTRING(FirstName,1,1) = 'm'
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             9
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-																														-- HOW TO 
+																														-- HOW TO insert into many to many table
 
+-- purposely i did not created composite primary key to show what is going to happend when we insert same data into StudentCourses table which is 
+-- mapping table and has student id and course id.
+-- the result will be dublicated rows and that's why we need composite key
+GO
+use student_test_db
 
+GO
+SELECT * FROM Students
+SELECT * FROM Courses
+SELECT * FROM StudentCourses
 
+DECLARE @student_name NVARCHAR(50) SET @student_name = 'PETKO'
+DECLARE @course_name NVARCHAR(50)  SET @course_name = 'c#'
 
+DECLARE @student_id INT
+DECLARE @course_id INT
 
+SELECT @student_id = id 
+  FROM Students 
+ WHERE @student_name = student_name
 
+ SELECT @course_id = id 
+   FROM Courses
+	WHERE @course_name = course_name 
 
+IF(@student_id is null)
+BEGIN
+	INSERT INTO students VALUES(@student_name)
+	SELECT @student_id = SCOPE_IDENTITY()
+END
 
+IF(@course_id is null)
+BEGIN
+	INSERT INTO Courses VALUES(@course_name)
+	SELECT @course_id = SCOPE_IDENTITY()
+END
 
+insert into StudentCourses values (@student_id,@course_id)
 
+-- now after the result it is quite obvious i will alter the table and will create composite primary key but before that 
+-- because we will have dublicated rows we have to delete them from the records of the table
+DELETE FROM StudentCourses WHERE student_id = 2 and course_id = 2 -- just for an example
 
+ALTER TABLE StudentCourses 
+ADD CONSTRAINT  PK_StudentCourses PRIMARY KEY CLUSTERED(student_id,course_id)
 
+-- and because the right way to be done is by adding this script to store procedure i will do it in this way 
+GO
+CREATE OR ALTER PROCEDURE sp_insert_into_student_courses
 
+@student_name NVARCHAR(50), 
+@course_name NVARCHAR(50)  
+AS
+BEGIN
 
+DECLARE @student_id INT
+DECLARE @course_id  INT
 
+SELECT @student_id = id 
+  FROM Students 
+ WHERE @student_name = student_name
+
+ SELECT @course_id = id 
+   FROM Courses
+	WHERE @course_name = course_name 
+
+IF(@student_id is null)
+BEGIN
+	INSERT INTO students VALUES(@student_name)
+	SELECT @student_id = SCOPE_IDENTITY()
+END
+
+IF(@course_id is null)
+BEGIN
+	INSERT INTO Courses VALUES(@course_name)
+	SELECT @course_id = SCOPE_IDENTITY()
+END
+
+INSERT INTO StudentCourses VALUES (@student_id,@course_id)
+
+END
+
+EXEC sp_insert_into_student_courses 'PETKO', 'C#'
+SELECT * FROM StudentCourses
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             10
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-																														-- HOW TO 
+																														-- HOW TO get people after, before or between certain date
+
+GO
+USE SoftUni
+
+SELECT e.FirstName,
+			 e.LastName,
+			 CAST(e.HireDate AS DATE)  hire_date
+  FROM Employees e
+ WHERE CAST(e.HireDate AS DATE) >= '2000-04-29'
+
+SELECT e.FirstName,
+			 e.LastName,
+			 CAST(e.HireDate AS DATE)  hire_date
+  FROM Employees e
+ WHERE e.HireDate >= '2000-04-29'
+
+
+SELECT e.FirstName,
+			 e.LastName,
+			 CAST(e.HireDate AS DATE)  hire_date
+  FROM Employees e
+ WHERE CAST(e.HireDate AS DATE) BETWEEN '2000-04-29' AND '2002-04-29' 
+
+SELECT e.FirstName,
+			 e.LastName,
+			 CAST(e.HireDate AS DATE)  hire_date
+  FROM Employees e
+ WHERE Day(e.HireDate) BETWEEN '1' AND '2' 
+
+SELECT e.FirstName,
+			 e.LastName,
+			 CAST(e.HireDate AS DATE)  hire_date
+  FROM Employees e
+ WHERE Day(e.HireDate) = 2 AND MONTH(e.HireDate) = 1
+
+
+SELECT e.FirstName,
+			 e.LastName,
+			 CAST(e.HireDate AS DATE)  hire_date
+  FROM Employees e
+ WHERE cast(e.HireDate as date) < DATEADD(year,-17,cast(GETDATE() as date))
+
+ 
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                             12
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                             13
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                             14
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                             15
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
-
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                             16
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

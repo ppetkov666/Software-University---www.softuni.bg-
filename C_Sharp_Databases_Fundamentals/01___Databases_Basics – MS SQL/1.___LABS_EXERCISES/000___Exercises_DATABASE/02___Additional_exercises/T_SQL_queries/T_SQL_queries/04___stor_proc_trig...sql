@@ -19,14 +19,14 @@ AS
 BEGIN
   -- DECLARATION 
   -- ===========
-  DECLARE @first varchar(max)       SET @first = (SELECT FirstName 
-													  FROM Employees e
-													 WHERE e.FirstName = @firstname 
-													   AND e.LastName = @lastname)
-  DECLARE @last varchar(max)        SET @last = (SELECT LastName 
-												     FROM Employees e
-													WHERE e.FirstName = @firstname 
-													  AND e.LastName = @lastname)
+  DECLARE @first VARCHAR(MAX)       SET @first = (SELECT FirstName 
+																										FROM Employees e
+																									 WHERE e.FirstName = @firstname 
+																										 AND e.LastName = @lastname)
+  DECLARE @last VARCHAR(MAX)        SET @last = (SELECT LastName 
+																									 FROM Employees e
+																									WHERE e.FirstName = @firstname 
+																										AND e.LastName = @lastname)
 
   -- INITIALIZATION
   -- ==============
@@ -79,7 +79,7 @@ GO
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        2        ||||||||||||||||||||||||||||||||||||||||||||||||| 
 -- CREATE PROCEDURE WITH TRY CATCH BLOCK AND TRANSACTION
-select * from EmployeesProjects
+SELECT * FROM EmployeesProjects
 GO
  ALTER PROCEDURE dbo.udp_assign_employee_project
  (
@@ -129,11 +129,11 @@ CREATE OR ALTER PROCEDURE udp_GetemployerbyHiredDate
 AS
 BEGIN
 	SELECT e.FirstName,
-		   e.LastName, 
-		   DATEDIFF(YEAR,HireDate,GETDATE()) Experience 
+				 e.LastName, 
+				 DATEDIFF(YEAR,HireDate,GETDATE()) Experience 
 	  FROM Employees e
 	 WHERE DATEDIFF(YEAR,HireDate,GETDATE()) > 18
-  ORDER BY HireDate
+ORDER BY HireDate
 END
 
 EXEC DBO.udp_GetemployerbyHiredDate
@@ -152,9 +152,9 @@ AS
 BEGIN
 	DECLARE @COUNTER INT SET @COUNTER = 1
 	SELECT e.FirstName,
-		   e.LastName,
-		   e.HireDate,
-		   DATEDIFF(YEAR,HireDate,GETDATE()) Years 
+				 e.LastName,
+				 e.HireDate,
+				 DATEDIFF(YEAR,HireDate,GETDATE()) Years 
 	  FROM Employees e
 	 WHERE DATEDIFF(YEAR,HireDate,GETDATE()) > @years
 	    IF @COUNTER = 1 BEGIN
@@ -170,7 +170,7 @@ DECLARE @TEST INT
 EXEC @TEST = DBO.udp_GetInfoWithExperienceInYears 18
 SELECT @TEST
 
-exec dbo.udp_GetInfoWithExperienceInYears 18
+EXEC dbo.udp_GetInfoWithExperienceInYears 18
 
 GO
 
@@ -198,7 +198,7 @@ GO
 -- parameter is NULL OR the firstname is equal to the value of the paramm
 -- SO it will give me only these records which i entered in the params, if all params are empthy and missing, their default value is NULL because i set it
 -- and will give me all the records in this table
-go
+GO
 CREATE or ALTER PROCEDURE spDoSearch
     @FirstName VARCHAR(25) = null,
     @LastName VARCHAR(25) = null,
@@ -215,39 +215,7 @@ AS
 
 EXEC spDoSearch 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 SELECT e.FirstName FROM Employees e GROUP BY e.FirstName HAVING COUNT(*) > 1
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        6        ||||||||||||||||||||||||||||||||||||||||||||||||| 
@@ -293,7 +261,9 @@ GO
 CREATE OR ALTER TRIGGER tr_townUpdate ON Towns FOR UPDATE
  AS
  BEGIN
-	IF EXISTS(SELECT * FROM inserted WHERE Name IS NULL OR LEN(NAME) = 0) 
+	IF EXISTS(SELECT * 
+							FROM inserted 
+						 WHERE [Name] IS NULL OR LEN(NAME) = 0) 
 	BEGIN
 		RAISERROR('NAME CANNOT BE NULL OR EMPTHY',16,1)
 		ROLLBACK
@@ -302,7 +272,10 @@ CREATE OR ALTER TRIGGER tr_townUpdate ON Towns FOR UPDATE
  END
 
  UPDATE Towns
- SET NAME = '' WHERE TownID = 1
+	  SET [NAME] = '' 
+	WHERE TownID = 1
+
+	
 
  GO
  -- |||||||||||||||||||||||||||||||||||||||||||||||||        2        ||||||||||||||||||||||||||||||||||||||||||||||||| 
@@ -409,6 +382,9 @@ GO
 EXEC SP_call_cursor
 -- i purposelly type a wrong name which is not in the table Employee to show one interesting fact .This name does not have an address  so it won't return address info from this PROC
 EXEC sp_GetRecords 'GoY', 'GILBERT',12500
+-- and here i type it in the right way
+EXEC sp_GetRecords 'Guy', 'GILBERT',12500
+
 
 GO
 
@@ -417,11 +393,14 @@ CREATE OR ALTER PROCEDURE SP_call_cursor
 AS 
 BEGIN
 DECLARE @FirstName VARCHAR(MAX)
-DECLARE @LastName VARCHAR(MAX)
-DECLARE @Salary MONEY
+DECLARE @LastName  VARCHAR(MAX)
+DECLARE @Salary    MONEY
 
 DECLARE TestCursor CURSOR 
-	FOR SELECT e.FirstName, e.LastName, e.Salary FROM Employees e 
+	FOR SELECT e.FirstName, 
+						 e.LastName, 
+						 e.Salary 
+				FROM Employees e 
 
 OPEN TestCursor
 
@@ -449,8 +428,12 @@ CREATE OR ALTER PROCEDURE sp_GetRecords
 )
 AS
 BEGIN
-	DECLARE @Address VARCHAR(MAX)    SET @Address = (SELECT a.AddressText FROM Employees e join Addresses a ON a.AddressID = e.AddressID 
-							                         WHERE e.FirstName = @FirstName AND e.LastName = @LastName AND e.Salary = @Salary) 
+	DECLARE @Address VARCHAR(MAX)    SET @Address = (SELECT a.AddressText 
+																										 FROM Employees e 
+																										 JOIN Addresses a ON a.AddressID = e.AddressID 
+																										WHERE e.FirstName = @FirstName AND 
+																													e.LastName = @LastName   AND 
+																													e.Salary = @Salary) 
 	PRINT 'Hello i am ' + @Firstname + ' ' + @LastName  
 	PRINT 'This is my address: ' +  @Address 
 	PRINT 'This is my salary: ' + CAST(@Salary AS VARCHAR(MAX)) 
@@ -487,14 +470,12 @@ DEALLOCATE CustomCursor
 
 GO
 
-CREATE TABLE EXAMPLE_TABLE_RECORDS (
-	Id INT PRIMARY KEY NOT NULL,
-	RecordsCounter MONEY NOT NULL
+
+CREATE TABLE Salary_table (
+	Id INT PRIMARY KEY  IDENTITY NOT NULL,
+	full_name NVARCHAR(50) NOT NULL,
+	salary MONEY
 )
-INSERT INTO EXAMPLE_TABLE_RECORDS
-VALUES
-(1,0),
-(2,0)
 GO
 
 CREATE OR ALTER PROC SP_PRINT_EMPLOYEE_DETAILS
@@ -504,21 +485,43 @@ CREATE OR ALTER PROC SP_PRINT_EMPLOYEE_DETAILS
 )
 AS 
 BEGIN
- DECLARE @ExampleVariable INT          SET @ExampleVariable = 0;
- DECLARE @department_name VARCHAR(MAX) SET  @department_name = (SELECT d.name 
-																		 FROM Employees e JOIN Departments d 
-																		   ON d.DepartmentID = e.DepartmentID 
-																		WHERE e.FirstName = @Firstname 
-																		  and e.LastName = @LastName)
+ 
+ DECLARE @salary						INT										SET @salary = 0;
+ DECLARE @full_name					NVARCHAR(50)          SET @full_name = '';
+ DECLARE @exist					    INT					          SET @exist = 0;
+
+ DECLARE @department_name VARCHAR(MAX) SET  @department_name = (SELECT d.[name] 
+																																	FROM Employees e 
+																																	JOIN Departments d 
+																																	  ON d.DepartmentID = e.DepartmentID 
+																																 WHERE e.FirstName = @Firstname 
+																																	 AND e.LastName = @LastName)
 		PRINT 'Hello i am ' + @Firstname + ' ' + @LastName + ' from ' + @department_name + ' department' + ' !'
 		PRINT '==============================================';
+
+		SELECT @full_name = @FirstName + ' ' + @LastName;
+
+		SELECT @salary = e.Salary
+		  FROM Employees e
+		 WHERE e.FirstName = @FirstName
+		   AND e.LastName = @LastName
 		
-		SET @ExampleVariable += (SELECT e.Salary from Employees e WHERE e.FirstName = @Firstname and e.LastName = @LastName)
-		UPDATE EXAMPLE_TABLE_RECORDS
-		SET RecordsCounter += @ExampleVariable WHERE Id = 2;
+		SELECT @exist  = 1											
+		  FROM Salary_table st 
+	   WHERE st.full_name = @full_name
+			 AND st.salary = @salary
+		
+		IF(@exist = 0)
+		BEGIN
+		INSERT INTO Salary_table VALUES(@full_name,@salary)
+		END
 END
 GO
-SELECT * FROM EXAMPLE_TABLE_RECORDS
+
+EXEC SP_CURSOR_TEST
+SELECT * FROM Salary_table
+DELETE FROM Salary_table
+TRUNCATE table Salary_table
 SELECT * FROM Employees
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        3        ||||||||||||||||||||||||||||||||||||||||||||||||| 
 
@@ -554,8 +557,8 @@ OPEN CustomCursor
 	 
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
-	     set @FullName = @FirstName +' ' + @LastName
-		 print 'hello my full name is : ' + @FullName 
+	     SET @FullName = @FirstName +' ' + @LastName
+		 PRINT 'hello my full name is : ' + @FullName 
 		FETCH NEXT FROM CustomCursor 
 		INTO  @FirstName, @LastName
 
@@ -567,45 +570,42 @@ DEALLOCATE CustomCursor
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        5        ||||||||||||||||||||||||||||||||||||||||||||||||| 
 
-declare @Salary money;
-declare @row_num bigint;
+	DECLARE @Salary INT;
+	DECLARE @row_num BIGINT;
 
-SELECT EmployeeID,
-	   FirstName,
-	   LastName,
-	   Salary,
-	   NULL as NextSalary,
-	   ROW_NUMBER() OVER (ORDER BY employeeID) row_num
-	   into #tempEmp
-  FROM Employees 
+	SELECT EmployeeID,
+				 FirstName,
+				 LastName,
+				 Salary,
+				 NULL AS NextSalary,
+				 ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+		INTO #tempEmp
+		FROM Employees 
 
-DECLARE TestCursor CURSOR FOR 
-	SELECT Salary, 
-		   ROW_NUMBER() OVER (ORDER BY employeeID) row_num
-	  FROM Employees 
-  ORDER BY employeeID
+	DECLARE TestCursor CURSOR FOR 
+	 SELECT Salary, 
+			    ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+	   FROM Employees 
+ ORDER BY employeeID
 
-OPEN TestCursor
-FETCH NEXT FROM TestCursor INTO  @Salary, @row_num;
+		 OPEN TestCursor
+					FETCH NEXT FROM TestCursor INTO  @Salary, @row_num;
 
-WHILE @@FETCH_STATUS = 0
-BEGIN
-
-	UPDATE #tempEmp
-	SET NextSalary = @Salary
-	WHERE row_num = @row_num - 1
+					WHILE @@FETCH_STATUS = 0
+						BEGIN
+							UPDATE #tempEmp
+								 SET NextSalary = @Salary
+						   WHERE row_num = @row_num - 1
 	
-	FETCH NEXT FROM TestCursor INTO  @Salary, @row_num
-END
+					FETCH NEXT FROM TestCursor INTO  @Salary, @row_num
+							END
 
-CLOSE TestCursor
+  	 CLOSE TestCursor
 DEALLOCATE TestCursor
 
-select * from #tempEmp
-drop table #tempEmp
+	SELECT * FROM #tempEmp
+	DROP TABLE #tempEmp
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        6        ||||||||||||||||||||||||||||||||||||||||||||||||| 
-
-GO
 
 
 
