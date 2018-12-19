@@ -54,6 +54,42 @@
           <AssociatedConnUserName />
           <FullPath>06___roles.sql</FullPath>
         </FileNode>
+        <FileNode Name="07___test_for_web_app.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>07___test_for_web_app.sql</FullPath>
+        </FileNode>
+        <FileNode Name="08___coffeeDb_querie.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>08___coffeeDb_querie.sql</FullPath>
+        </FileNode>
+        <FileNode Name="09___functions....sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>09___functions....sql</FullPath>
+        </FileNode>
+        <FileNode Name="10___date_functions.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>10___date_functions.sql</FullPath>
+        </FileNode>
+        <FileNode Name="11___numeric_functions.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>11___numeric_functions.sql</FullPath>
+        </FileNode>
+        <FileNode Name="12___string_functions.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>12___string_functions.sql</FullPath>
+        </FileNode>
       </Items>
     </LogicalFolder>
     <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">
