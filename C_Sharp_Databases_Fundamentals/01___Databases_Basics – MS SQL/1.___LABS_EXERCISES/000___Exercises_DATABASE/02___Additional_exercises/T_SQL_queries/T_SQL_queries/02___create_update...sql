@@ -1,6 +1,23 @@
 
 
 
+select * from Employees
+USE SoftUni
+CREATE INDEX ix_employees_salary ON Employees (Salary ASC)
+
+drop index Employees.ix_employees_salary
+
+
+
+
+
+
+
+
+
+
+
+
 SELECT * FROM UserInfoTable ORDER BY FirstName,LastName,Salary
 CREATE DATABASE UserInfo
 GO
@@ -193,21 +210,102 @@ INSERT INTO Employee VALUES
 (5,'Mark',6),
 (6,'Greta',1)
 
+-- -------------------------------------------------------------------------------
+ CREATE DATABASE CoffeeDB
+ 
+
+ CREATE TABLE Drinks(
+ drink_id INT IDENTITY NOT NULL,
+ [drink_name] NVARCHAR(50) NOT NULL,
+ price DECIMAL(6,2)
+ CONSTRAINT [PK_Drinks] PRIMARY KEY ([drink_id]), 
+ )
+ 
+ CREATE TABLE Users(
+ [user_id] INT IDENTITY NOT NULL,
+ [first_name] NVARCHAR(50) NOT NULL,
+ [last_name] NVARCHAR(50),
+ CONSTRAINT [PK_Users] PRIMARY KEY ([user_id]),
+ )
+
+ CREATE TABLE Quantities(
+ [drink_id] INT ,
+ [user_id] INT ,
+ quantity DECIMAL(6,2) DEFAULT(0) NOT NULL 
+ CONSTRAINT PK_Quantities PRIMARY KEY(drink_id,[user_id]),
+ CONSTRAINT [fk__Quantities_Drinks] FOREIGN KEY(drink_id) REFERENCES Drinks(drink_id), 
+ CONSTRAINT [fk__Quantities_Users] FOREIGN KEY([user_id]) REFERENCES Users([user_id]) 
+)
+
+ 
+ INSERT INTO Drinks
+ VALUES
+ ('coffee',0.30),
+ ('tea',0.20),
+ ('mineral water - 1.5L',0.80),
+ ('Coca-Cola - 1.5L',1.20)
+ 
+
+ INSERT INTO Users
+ VALUES
+ ('Jeko','Minkov'),
+ ('Tihomir',''),
+ ('Kaloyan',''),
+ ('Petko','petkov')
 
 
 
+ -- -----------
+ select * from Quantities
+ select * from Users
 
 
+ 
+
+	-- ------------------------
 
 
+  SELECT u.first_name,
+				 u.last_name,
+			   d.drink_name,
+				 q.quantity,
+				 d.price,
+				 d.price * q.quantity total
+	  FROM Quantities q
+    JOIN Drinks d ON d.drink_id = q.drink_id
+    JOIN Users u  ON u.[user_id] = q.[user_id]
+ORDER BY u.first_name,d.drink_name DESC
+
+  SELECT u.[user_name],
+			   d.drink_name,
+				 sum(d.price * q.quantity) total
+	  FROM Quantities q
+    JOIN Drinks d ON d.drink_id = q.drink_id
+    JOIN Users u  ON u.[user_id] = q.[user_id]
+		group by u.user_name,d.drink_name
+ORDER BY u.[user_name],d.drink_name DESC
 
 
+-- -------------------------------------------------------------------------------
+ CREATE DATABASE student_test_db
+ 
 
+ CREATE TABLE Students(
+ id INT IDENTITY NOT NULL,
+ student_name NVARCHAR(50) NOT NULL
+ CONSTRAINT [PK_students] PRIMARY KEY ([id]), 
+ )
+ 
+ CREATE TABLE Courses(
+ id INT IDENTITY NOT NULL,
+ course_name NVARCHAR(50) NOT NULL
+ CONSTRAINT [PK_Courses] PRIMARY KEY ([id]),
+ )
 
-
-
-
-
-
-
+ CREATE TABLE StudentCourses(
+ [student_id] INT NOT NULL,
+ [course_id] INT NOT NULL 
+ CONSTRAINT [fk__StudentCourses_Courses] FOREIGN KEY(course_id) REFERENCES Courses(id), 
+ CONSTRAINT [fk__StudentCourses_Students] FOREIGN KEY(student_id) REFERENCES Students(id) 
+)
 

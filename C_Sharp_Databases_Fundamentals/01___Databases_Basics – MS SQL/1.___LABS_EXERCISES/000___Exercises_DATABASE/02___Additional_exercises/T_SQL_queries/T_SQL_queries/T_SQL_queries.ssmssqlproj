@@ -30,65 +30,65 @@
           <AssociatedConnUserName />
           <FullPath>03___list_of_clauses.sql</FullPath>
         </FileNode>
-        <FileNode Name="21___test_querie.sql">
+        <FileNode Name="04___functions....sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>21___test_querie.sql</FullPath>
+          <FullPath>04___functions....sql</FullPath>
         </FileNode>
-        <FileNode Name="22___new_test_conn.sql">
+        <FileNode Name="05___date_functions.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>05___date_functions.sql</FullPath>
+        </FileNode>
+        <FileNode Name="06___num_math_functions.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>06___num_math_functions.sql</FullPath>
+        </FileNode>
+        <FileNode Name="07___string_functions.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>07___string_functions.sql</FullPath>
+        </FileNode>
+        <FileNode Name="08___stor_proc_trig_func_.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-FCG26GG\SQLEXPRESS:True</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>DESKTOP-FCG26GG\SQLEXPRESS</AssociatedConnSrvName>
           <AssociatedConnUserName />
-          <FullPath>22___new_test_conn.sql</FullPath>
+          <FullPath>08___stor_proc_trig_func_.sql</FullPath>
         </FileNode>
-        <FileNode Name="23___roles.sql">
+        <FileNode Name="09___new_test_conn.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-FCG26GG\SQLEXPRESS:True</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>DESKTOP-FCG26GG\SQLEXPRESS</AssociatedConnSrvName>
           <AssociatedConnUserName />
-          <FullPath>23___roles.sql</FullPath>
+          <FullPath>09___new_test_conn.sql</FullPath>
         </FileNode>
-        <FileNode Name="24___test_for_web_app.sql">
+        <FileNode Name="10___test_for_web_app.sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>24___test_for_web_app.sql</FullPath>
+          <FullPath>10___test_for_web_app.sql</FullPath>
         </FileNode>
-        <FileNode Name="25___coffeeDb_querie.sql">
+        <FileNode Name="11___coffeeDb_querie.sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>25___coffeeDb_querie.sql</FullPath>
+          <FullPath>11___coffeeDb_querie.sql</FullPath>
         </FileNode>
-        <FileNode Name="26___functions....sql">
-          <AssociatedConnectionMoniker />
-          <AssociatedConnSrvName />
-          <AssociatedConnUserName />
-          <FullPath>26___functions....sql</FullPath>
-        </FileNode>
-        <FileNode Name="27___date_functions.sql">
-          <AssociatedConnectionMoniker />
-          <AssociatedConnSrvName />
-          <AssociatedConnUserName />
-          <FullPath>27___date_functions.sql</FullPath>
-        </FileNode>
-        <FileNode Name="28___numeric_functions.sql">
-          <AssociatedConnectionMoniker />
-          <AssociatedConnSrvName />
-          <AssociatedConnUserName />
-          <FullPath>28___numeric_functions.sql</FullPath>
-        </FileNode>
-        <FileNode Name="29___string_functions.sql">
-          <AssociatedConnectionMoniker />
-          <AssociatedConnSrvName />
-          <AssociatedConnUserName />
-          <FullPath>29___string_functions.sql</FullPath>
-        </FileNode>
-        <FileNode Name="30___functions....sql">
+        <FileNode Name="12___roles.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-FCG26GG\SQLEXPRESS:True</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>DESKTOP-FCG26GG\SQLEXPRESS</AssociatedConnSrvName>
           <AssociatedConnUserName />
-          <FullPath>30___functions....sql</FullPath>
+          <FullPath>12___roles.sql</FullPath>
+        </FileNode>
+        <FileNode Name="13___test_querie.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>13___test_querie.sql</FullPath>
         </FileNode>
       </Items>
     </LogicalFolder>

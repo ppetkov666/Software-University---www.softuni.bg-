@@ -10,9 +10,9 @@ ADD  CONSTRAINT [fk__my_table__other_table]
 FOREIGN KEY([column_name_one], [column_name_two], [column_name_three])
 REFERENCES [dbo].[other_table] ([column_name_one], [column_name_two], [column_name_three])
 GO
--- if it has to be explained it 'says': alter my table and add me a constraint with name which will include fk which is sign for foreign key then the name of my table
+-- if it has to be explained it 'says': alter my table and add me a constraint with name which will include 'fk' which is sign for foreign key then the name of my table
 -- and then the name of the next table.After that 'foreign key' are the columns in my table which are foreign keys and pointing to the other table
--- and the last part is references which include the name of the other table and it's columns 
+-- and the last part is references which include the name of the other table and it's columns primary keys
 -- ---------------------------------------------------------------- add default  --------------------------------------------------------------------------------
 
 ALTER TABLE [dbo].[my_table] 
