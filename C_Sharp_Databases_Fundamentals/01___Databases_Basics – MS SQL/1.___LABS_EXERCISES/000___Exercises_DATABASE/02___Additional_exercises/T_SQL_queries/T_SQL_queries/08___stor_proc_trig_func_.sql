@@ -1,4 +1,11 @@
 
+-- this querie consist the following : 
+-- STORED PROCEDURES
+-- TRIGGERS
+-- FUNCTIONS
+-- CURSORS
+
+
 USE SoftUni
 GO
 
@@ -7,7 +14,7 @@ GO
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 GO
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        1        ||||||||||||||||||||||||||||||||||||||||||||||||| 
--- CREATE PROCEDURE WITH TRY CATCH BLOCK AND TRANSACTION
+-- CREATE PROCEDURE WITH TRY CATCH BLOCK AND TRANSACTION PLUS OUTPUT PARAM
 
 CREATE OR ALTER PROCEDURE f_MyCustomConcatProcedure 
 (
@@ -19,15 +26,19 @@ AS
 BEGIN
   -- DECLARATION 
   -- ===========
-  DECLARE @first VARCHAR(MAX)       SET @first = (SELECT FirstName 
-																										FROM Employees e
-																									 WHERE e.FirstName = @firstname 
-																										 AND e.LastName = @lastname)
-  DECLARE @last VARCHAR(MAX)        SET @last = (SELECT LastName 
-																									 FROM Employees e
-																									WHERE e.FirstName = @firstname 
-																										AND e.LastName = @lastname)
-
+  DECLARE @first VARCHAR(MAX)       --SET @first = (SELECT FirstName 
+																		--								FROM Employees e
+																		--							 WHERE e.FirstName = @firstname 
+																		--								 AND e.LastName = @lastname)
+  DECLARE @last VARCHAR(MAX)        --SET @last = (SELECT LastName 
+																		--							 FROM Employees e
+																		--							WHERE e.FirstName = @firstname 
+																		--								AND e.LastName = @lastname)
+ -- here is the advantage of using select when we set a variables because here we can set more than one variable only with one statement
+ SELECT @first = FirstName , @last = LastName
+	 FROM Employees e 
+	WHERE e.FirstName = @firstname
+	  AND e.LastName = @lastname 
   -- INITIALIZATION
   -- ==============
   BEGIN TRY
@@ -41,7 +52,7 @@ BEGIN
 	--END
 	--ELSE 
 	--RETURN 23
-    -- all end up here  and from this point further  whatever exception is thrown will be catched in the CATCH block and we will ROLLBACK the transaction
+  -- all end up here  and from this point further  whatever exception is thrown will be catched in the CATCH block and we will ROLLBACK the transaction
 	-- or if we have another condition we will also ROLLBACK the transaction
 	-- in this scenario if the name is longer than 50 will rollback the transaction and it will raiserror that "this name is too long" 
 	-- if i UNcomment the other case and comment this one  it will change the return code from it;s default value (0) to 18 (just a random number i picked) 
@@ -68,13 +79,40 @@ DECLARE @FullName NVARCHAR(max)
 EXEC f_MyCustomConcatProcedure @firstname = 'guy',@lastname = 'gilbert', @ConcatName = @FullName OUTPUT
 SELECT @FullName AS fullname
 
--- this is very important return code which in this case  we assign it to variable @TESTvar - 0 means no error
--- but because i change it in SP it will be 18.
+-- i want to emphasise on one very important part : when we dont change the return code it will remain by default 0, but in the example below i will pusposely change it
+
+GO
+CREATE OR ALTER PROCEDURE f_my_custom_concat_procedure_version_return_type 
+(
+ @firstname VARCHAR(50),
+ @lastname VARCHAR(50),
+ @ConcatName VARCHAR(50) OUTPUT
+)
+AS
+BEGIN
+  
+	DECLARE @first VARCHAR(MAX)																		
+  DECLARE @last VARCHAR(MAX)        
+																		 
+ SELECT @first = FirstName , @last = LastName
+	 FROM Employees e 
+	WHERE e.FirstName = @firstname
+	  AND e.LastName = @lastname 
+  
+	SET @ConcatName = @first + ' ' + @last;
+
+	IF @ConcatName = @ConcatName BEGIN
+	RETURN 18
+	END
+	ELSE begin
+	RETURN 23
+  END
+END
+
 
 DECLARE @TESTvar VARCHAR(MAX)
-EXEC @TESTvar = dbo.f_MyCustomConcatProcedure @firstname = 'guy',@lastname = 'gilbert', @ConcatName = @TESTvar OUTPUT
+EXEC @TESTvar = f_my_custom_concat_procedure_version_return_type @firstname = 'guy',@lastname = 'gilbert', @ConcatName = @TESTvar OUTPUT
 SELECT @TESTvar AS finalPrint
-
 GO
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        2        ||||||||||||||||||||||||||||||||||||||||||||||||| 
@@ -90,8 +128,8 @@ AS
 BEGIN
   DECLARE @max_employee_projects_count INT  SET @max_employee_projects_count = 8
   DECLARE @employee_projects_count     INT  SET @employee_projects_count = (SELECT COUNT(*) 
- 										   FROM EmployeesProjects ep
- 										   WHERE ep.EmployeeID = @employeeId)
+ 																																							FROM EmployeesProjects ep
+ 																																							WHERE ep.EmployeeID = @employeeId)
   BEGIN TRY
   BEGIN TRANSACTION 
     INSERT INTO EmployeesProjects(EmployeeID,ProjectID)
@@ -175,20 +213,22 @@ EXEC dbo.udp_GetInfoWithExperienceInYears 18
 GO
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        5        ||||||||||||||||||||||||||||||||||||||||||||||||| 
--- sp without and WITH optional param
+-- sp WITHOUT and WITH optional param
 GO
 
 CREATE OR ALTER PROCEDURE udp_add_numbers
   @first_number  INT,
   @second_number INT,
-  @result		 INT OUTPUT	
+  @result				 INT OUTPUT	
+	-- when we add encryption this sp will be encrypted and once we try to open it we wont be able to see inside what contains as text
+	with encryption
 AS
 BEGIN
 	SET @result = @first_number + @second_number
 END	
  -- @result = @answer or just @answer on the param is the same 
 DECLARE @answer INT
-EXEC DBO.udp_add_numbers 10, 100, @result = @answer OUTPUT 
+EXEC DBO.udp_add_numbers 10, 100, @answer OUTPUT 
 SELECT CONCAT('the result is ',@answer) 'Final Answer'
 
 GO
@@ -203,6 +243,7 @@ CREATE or ALTER PROCEDURE spDoSearch
     @FirstName VARCHAR(25) = null,
     @LastName VARCHAR(25) = null,
     @JobTitle VARCHAR(25) = null
+		
 AS
     BEGIN
        SELECT e.EmployeeID, e.FirstName, e.LastName,e.JobTitle 
@@ -249,6 +290,46 @@ END
  EXEC DBO.udp_assign_employee_project 1,8
 
  GO
+
+ -- |||||||||||||||||||||||||||||||||||||||||||||||||        7        ||||||||||||||||||||||||||||||||||||||||||||||||| 
+ -- CREATE A PROCEDURE WITH OUTPUT PARAM
+
+CREATE OR ALTER PROCEDURE spe_with_output_param
+(
+ @department_name VARCHAR(50),
+ @count_of_people INT OUTPUT
+)
+AS
+BEGIN
+  																	 
+	SELECT @count_of_people = COUNT(e.EmployeeID) 
+		FROM Employees e
+		JOIN Departments d ON d.DepartmentID = e.DepartmentID
+	 WHERE d.[Name] = @department_name
+END
+
+DECLARE @count NVARCHAR(50)
+
+EXEC spe_with_output_param  @department_name = 'Production' ,@count_of_people = @count OUTPUT
+SELECT @count AS count_of_people_per_this_department
+
+GO
+-- in this case i can use return value of this sp also to return this count but:
+-- in real world return value of sp is used only to check for success or failure of sp and specially with nested sp 
+-- if we want to return something from sp we always use OUTPUT PARAM
+DECLARE @count NVARCHAR(50)
+declare @return_value INT
+exec @return_value  = spe_with_output_param  @department_name = 'Production' ,@count_of_people = @count OUTPUT
+select @return_value as return_value_from_sp  
+
+
+
+
+
+
+
+
+
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --																			TRIGERS 
@@ -312,13 +393,16 @@ GO
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---																			FUNCTIONS 
+--																																			FUNCTIONS 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+-- these are SCALAR FUNCTIONS because they accept 0 or more params and return single value 
+-- the advantage of functions are they can be used in SELECT or WHERE clause
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        1        ||||||||||||||||||||||||||||||||||||||||||||||||| 
 
 CREATE OR ALTER FUNCTION f_MyCustomFuntion (@firstname VARCHAR(50),@lastname VARCHAR(50))
 RETURNS VARCHAR(MAX)
+WITH SCHEMABINDING
 AS
 BEGIN
 	DECLARE @ConcatName varchar(max)
@@ -326,17 +410,20 @@ BEGIN
 	DECLARE @last varchar(max)
 
 	SET @first = (SELECT e.FirstName 
-					FROM Employees e 
-				   WHERE e.FirstName = @firstname and e.LastName = @lastname)
+									FROM dbo.Employees e 
+								 WHERE e.FirstName = @firstname and e.LastName = @lastname)
 
 	SET @last = (SELECT LastName 
-				   FROM Employees e
-				  WHERE e.FirstName = @firstname and e.LastName = @lastname)
+								 FROM dbo.Employees e
+								WHERE e.FirstName = @firstname and e.LastName = @lastname)
 
 	SET @ConcatName = @first + ' ' + @last;
 	RETURN @ConcatName;
 END
 GO
+
+-- when we use 'WITH SCHEMABINDING' we cannot drop the table because it is referenced
+DROP TABLE dbo.Employees
 
 SELECT FirstName,LastName,DBO.f_MyCustomFuntion(FirstName,LastName) AS 'FullName' 
   FROM Employees
@@ -353,6 +440,7 @@ SELECT e.FirstName,e.LastName, dbo.udf_get_salary (e.salary) salaryLevel FROM Em
 GO
 CREATE OR ALTER FUNCTION udf_get_salary (@Salary INT)
 RETURNS NVARCHAR(10)
+
 AS
 BEGIN
 	DECLARE @level NVARCHAR(10)
@@ -368,6 +456,49 @@ BEGIN
 	END
 	  RETURN @level 
 END
+
+-- this is inline function which return a table - it has a different syntax and can be used almost the same as parameterized views
+-- INLINE TABLE VALUE FUNCTIONS HAVE BETTER PERFOMANCE COMPARED WITH MULTISTATEMENT TABLE VALUES FUNCTIONS, AND THEY CAN BE UPDATED
+-- |||||||||||||||||||||||||||||||||||||||||||||||||        1        ||||||||||||||||||||||||||||||||||||||||||||||||| 
+GO
+CREATE OR ALTER FUNCTION udf_get_people_by_department_name 
+(
+@department_name NVARCHAR(50)
+)
+RETURNS TABLE
+AS
+
+	RETURN(SELECT e.FirstName,e.LastName,d.[Name]
+					 FROM Employees e
+					 JOIN Departments d ON d.DepartmentID = e.DepartmentID
+					WHERE d.[name] = @department_name) 
+GO
+
+SELECT * FROM  udf_get_people_by_department_name ('Marketing')
+--BEGIN TRANSACTION
+--UPDATE udf_get_people_by_department_name(1) SET NAME = 'TEST' WHERE FirstName = 'GUY'
+
+-- multistatement table-------------------------------------------
+select * from Employees
+
+GO
+CREATE OR ALTER FUNCTION udf_get_people_by_department_id
+(
+@department_id INT
+)
+RETURNS @table table(first_name varchar(50),last_name varchar(50))
+AS
+BEGIN
+				insert into @table  SELECT e.FirstName,
+																	 e.LastName
+															FROM Employees e
+														 WHERE e.DepartmentID = @department_id
+
+				return;
+END
+GO
+
+select * from udf_get_people_by_department_id(15)
 
 
 
