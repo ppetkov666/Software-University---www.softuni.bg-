@@ -1,0 +1,27 @@
+﻿
+/*must be added in the head - <link href="custom.css" rel="stylesheet"/>*/
+/*when we want specific colors, fonts and so one on div, h1 and so on this is how we can assign it and then to add the link */
+div {
+    color: #00ff34;
+    font-size: 70px
+}
+h1,h2 {
+    background-color: blue;
+}
+
+/*next step is when i want particual div to be with diffent color se use classes*/
+div.petko-custom {
+    color: red;
+    font-size: 35px;
+}
+#my-id{
+    font-size:200px;
+}
+
+.blue-color{
+    color:blue
+}
+.big-font{
+    font-size:90px;
+}
+

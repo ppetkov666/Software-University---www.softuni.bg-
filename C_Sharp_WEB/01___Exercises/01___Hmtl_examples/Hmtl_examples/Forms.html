@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <ul>
+        <li>
+            <a href="/welcome.html">Welcome Page</a>
+        </li>
+        <li>
+            <a href="/Index.html">Index Page</a>
+        </li>
+        <li>
+            <a href="/Table.html">Table page</a>
+        </li>
+    </ul>
+    <br />
+    <form method="post">
+
+        <div style="width:50%">
+            <span>First Name: </span>
+            <input type="text" name="first name" placeholder="enter your first name here" />
+        </div>
+        <br />
+        <div>
+            <span>Last Name: </span>
+            <input type="text" name="last name" placeholder="enter your last name here" />
+        </div>
+        <br />
+        <div>
+            <span style="background-color:red">Password: </span>
+            <input type="password" name="password" placeholder="8 symbols long" />
+        </div>
+        <br />
+        <span style="color: #ff6a00;font-size:20px">Choose one of the cars:</span>
+        <select name="car">
+            <option>Mercedes</option>
+            <option>Bmw</option>
+            <option>Audi</option>
+        </select>
+        <br />
+        <br />
+        <div>
+            <span style="font-size:2.5em">Age: </span>
+            <input type="number" min="0" max="120" step="2" name="age" />
+        </div>
+        <br />
+        <!-- tel for mobile device mostly type="tel" -->
+        <div>
+            <span>Check the button if you have a driver license</span>
+            <input type="checkbox" />
+        </div>
+        <br />
+        <div>
+            <span style="font-style: oblique;color:red;font-size:200%">Check one of all:</span><br />
+            <input type="radio" name="Check one of all" /> First<br />
+            <input type="radio" name="Check one of all" /> Second<br />
+            <input type="radio" name="Check one of all" /> Third<br />
+            <input type="radio" name="Check one of all" /> Fourth<br />
+        </div>
+        <br />
+        <textarea name="text"></textarea>
+        <br />
+        <br />
+
+        <div>
+            <input type="submit" name="save data" />
+        </div>
+    </form>
+
+</body>
+</html>
