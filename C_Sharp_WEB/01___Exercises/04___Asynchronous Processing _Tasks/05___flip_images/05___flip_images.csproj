@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <RootNamespace>_05___flip_images</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="bin\Debug\netcoreapp2.1\Result\flippedBeautiful-Dogs-Photos-HD-Wallpapers-Photos.jpg" />
+    <Content Include="bin\Debug\netcoreapp2.1\Result\flippedcute-dog-boo-1920x1080.jpg" />
+    <Content Include="bin\Debug\netcoreapp2.1\Result\flippedcute-dogs-and-puppies-wallpaper-1.jpg" />
+    <Content Include="bin\Debug\netcoreapp2.1\Result\flippedCute-Little-Dogs-Wallpapers-Hd-Images.jpg" />
+    <Content Include="bin\Debug\netcoreapp2.1\Result\flippedthumb-1920-102211.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Images\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CaptchaGen.NetCore" Version="1.0.2" />
+    <PackageReference Include="runtime.osx.10.10-x64.CoreCompat.System.Drawing" Version="5.6.20" />
+  </ItemGroup>
+
+</Project>
