@@ -1,0 +1,14 @@
+C:\Users\predator\source\repos\Cars\Cars.App\bin\Debug\netcoreapp2.2\Cars.App.deps.json
+C:\Users\predator\source\repos\Cars\Cars.App\bin\Debug\netcoreapp2.2\Cars.App.runtimeconfig.json
+C:\Users\predator\source\repos\Cars\Cars.App\bin\Debug\netcoreapp2.2\Cars.App.runtimeconfig.dev.json
+C:\Users\predator\source\repos\Cars\Cars.App\bin\Debug\netcoreapp2.2\Cars.App.dll
+C:\Users\predator\source\repos\Cars\Cars.App\obj\Debug\netcoreapp2.2\Cars.App.csprojAssemblyReference.cache
+C:\Users\predator\source\repos\Cars\Cars.App\obj\Debug\netcoreapp2.2\Cars.App.csproj.CoreCompileInputs.cache
+C:\Users\predator\source\repos\Cars\Cars.App\obj\Debug\netcoreapp2.2\Cars.App.AssemblyInfoInputs.cache
+C:\Users\predator\source\repos\Cars\Cars.App\obj\Debug\netcoreapp2.2\Cars.App.AssemblyInfo.cs
+C:\Users\predator\source\repos\Cars\Cars.App\bin\Debug\netcoreapp2.2\Cars.App.pdb
+C:\Users\predator\source\repos\Cars\Cars.App\bin\Debug\netcoreapp2.2\Cars.Data.dll
+C:\Users\predator\source\repos\Cars\Cars.App\bin\Debug\netcoreapp2.2\Cars.Data.pdb
+C:\Users\predator\source\repos\Cars\Cars.App\obj\Debug\netcoreapp2.2\Cars.App.csproj.CopyComplete
+C:\Users\predator\source\repos\Cars\Cars.App\obj\Debug\netcoreapp2.2\Cars.App.dll
+C:\Users\predator\source\repos\Cars\Cars.App\obj\Debug\netcoreapp2.2\Cars.App.pdb

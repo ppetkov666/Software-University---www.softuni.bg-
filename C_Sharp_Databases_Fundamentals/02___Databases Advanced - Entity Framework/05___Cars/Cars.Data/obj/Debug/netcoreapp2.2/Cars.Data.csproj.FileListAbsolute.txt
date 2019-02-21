@@ -1,0 +1,11 @@
+C:\Users\predator\source\repos\Cars\Cars.Data\bin\Debug\netcoreapp2.2\Cars.Data.deps.json
+C:\Users\predator\source\repos\Cars\Cars.Data\bin\Debug\netcoreapp2.2\Cars.Data.dll
+C:\Users\predator\source\repos\Cars\Cars.Data\obj\Debug\netcoreapp2.2\Cars.Data.csprojAssemblyReference.cache
+C:\Users\predator\source\repos\Cars\Cars.Data\obj\Debug\netcoreapp2.2\Cars.Data.csproj.CoreCompileInputs.cache
+C:\Users\predator\source\repos\Cars\Cars.Data\obj\Debug\netcoreapp2.2\Cars.Data.AssemblyInfoInputs.cache
+C:\Users\predator\source\repos\Cars\Cars.Data\obj\Debug\netcoreapp2.2\Cars.Data.AssemblyInfo.cs
+C:\Users\predator\source\repos\Cars\Cars.Data\bin\Debug\netcoreapp2.2\Cars.Data.runtimeconfig.json
+C:\Users\predator\source\repos\Cars\Cars.Data\bin\Debug\netcoreapp2.2\Cars.Data.runtimeconfig.dev.json
+C:\Users\predator\source\repos\Cars\Cars.Data\bin\Debug\netcoreapp2.2\Cars.Data.pdb
+C:\Users\predator\source\repos\Cars\Cars.Data\obj\Debug\netcoreapp2.2\Cars.Data.dll
+C:\Users\predator\source\repos\Cars\Cars.Data\obj\Debug\netcoreapp2.2\Cars.Data.pdb
