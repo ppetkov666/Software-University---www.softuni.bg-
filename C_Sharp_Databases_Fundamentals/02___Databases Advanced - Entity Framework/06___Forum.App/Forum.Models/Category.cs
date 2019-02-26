@@ -1,7 +1,9 @@
 ﻿
-namespace ForumCode_First.Data.Models
+namespace Forum.Models
 {
-    
+    using System.Collections;
+    using System.Collections.Generic;
+
     public class Category
     {
         public Category()
