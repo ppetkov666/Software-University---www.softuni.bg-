@@ -13,20 +13,28 @@
     {
         static void Main(string[] args)
         {
+            Console.OutputEncoding = Encoding.UTF8;
+            IServiceProvider serviceProvider = ConfigureServices();
+            Engine engine = new Engine(serviceProvider);
+            engine.Run();
             
         }
 
         private static IServiceProvider ConfigureServices()
         {
-
+            // it depend from installing Microsoft.Extensions.DependencyInjection package IServiceProvider:
             ServiceCollection serviceCollection = new ServiceCollection();
 
+            // we register our ForumDbContext 
             serviceCollection.AddDbContext<ForumDbContext>(options =>
             options.UseSqlServer(Configuration.ConnectionString));
 
-            serviceCollection.AddTransient<IUserService, UserService>();
+            // when we add them as transient service
             serviceCollection.AddTransient<IDataBaseInitializerService, DatabaseInitialzerService>();
-
+            serviceCollection.AddTransient<IUserService, UserService>();
+            serviceCollection.AddTransient<IPostService, PostService>();
+            serviceCollection.AddTransient<ICategoryService, CategoryService>();
+            serviceCollection.AddTransient<IReplyService, ReplyService>();
 
             ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
             return serviceProvider;

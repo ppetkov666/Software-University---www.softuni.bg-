@@ -1,9 +1,9 @@
-﻿using Forum.Data;
-using Forum.Models;
-using System.Linq;
-
-namespace Forum.Services
+﻿namespace Forum.Services
 {
+    using Forum.Data;
+    using Forum.Models;
+    using System.Linq;
+
     public class UserService : IUserService
     {
         private readonly ForumDbContext context;
@@ -20,13 +20,17 @@ namespace Forum.Services
 
         public User ByUsername(string username)
         {
-            User user = context.Users.Single(u => u.UserName == username);
+            User user = context
+                .Users
+                .SingleOrDefault(u => u.UserName == username);
             return user;
         }
 
         public User ByUsernameAndPassword(string username, string password)
         {
-            User user = context.Users.Single(u => u.UserName == username && u.Password == password);
+            User user = context
+                .Users
+                .SingleOrDefault(u => u.UserName == username && u.Password == password);
             return user;
         }
 

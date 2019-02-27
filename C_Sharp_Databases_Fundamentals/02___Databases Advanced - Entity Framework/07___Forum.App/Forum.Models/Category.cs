@@ -1,5 +1,4 @@
-﻿
-namespace Forum.Models
+﻿namespace Forum.Models
 {
     using System.Collections;
     using System.Collections.Generic;
