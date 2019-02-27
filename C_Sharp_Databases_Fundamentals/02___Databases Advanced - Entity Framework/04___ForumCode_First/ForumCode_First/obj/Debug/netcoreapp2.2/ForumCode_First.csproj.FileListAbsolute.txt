@@ -1,0 +1,2 @@
+C:\Users\user\Desktop\git\Software-University---www.softuni.bg-\C_Sharp_Databases_Fundamentals\02___Databases Advanced - Entity Framework\04___ForumCode_First\ForumCode_First\obj\Debug\netcoreapp2.2\ForumCode_First.csprojAssemblyReference.cache
+C:\Users\user\Desktop\git\Software-University---www.softuni.bg-\C_Sharp_Databases_Fundamentals\02___Databases Advanced - Entity Framework\04___ForumCode_First\ForumCode_First\obj\Debug\netcoreapp2.2\ForumCode_First.csproj.CoreCompileInputs.cache
