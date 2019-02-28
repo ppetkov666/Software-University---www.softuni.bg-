@@ -15,12 +15,12 @@
             string userName = arguments[0];
             string password = arguments[1];
 
-            var existingUser = userService.ByUsername(userName);
+            var existingUser = userService.ByUsername<User>(userName);
             if (existingUser != null)
             {
                 return "This user is already registered";
             }
-            userService.Create(userName,password);
+            userService.Create<User>(userName,password);
 
             return $"User created Successfully!";
         }

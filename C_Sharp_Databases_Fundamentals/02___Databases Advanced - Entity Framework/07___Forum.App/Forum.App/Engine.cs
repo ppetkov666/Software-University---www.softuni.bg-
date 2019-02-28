@@ -30,8 +30,8 @@
             //Console.WriteLine($"{userById.Id} {userById.UserName} {userById.Password}");  
 
 
-            IDataBaseInitializerService userServiceInitializeDB = serviceProvider.GetService<IDataBaseInitializerService>();
-            userServiceInitializeDB.InitializeDatabase();
+            //IDataBaseInitializerService userServiceInitializeDB = serviceProvider.GetService<IDataBaseInitializerService>();
+            //userServiceInitializeDB.InitializeDatabase();
 
             while (true)
             {
@@ -50,7 +50,6 @@
                 }
                 catch (InvalidOperationException e)
                 {
-
                     Console.WriteLine(e.Message);
                 }
 

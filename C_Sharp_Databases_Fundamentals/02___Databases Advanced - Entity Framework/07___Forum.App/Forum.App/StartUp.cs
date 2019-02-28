@@ -1,5 +1,7 @@
 ﻿namespace Forum.App
 {
+    using AutoMapper;
+    using Forum.App.Models;
     using Forum.Data;
     using Forum.Models;
     using Forum.Services;
@@ -15,9 +17,31 @@
         {
             Console.OutputEncoding = Encoding.UTF8;
             IServiceProvider serviceProvider = ConfigureServices();
+
+            InitializeAutoMapper();
+
             Engine engine = new Engine(serviceProvider);
             engine.Run();
-            
+
+
+            // these are all input commands:
+            //{PostDetails} {number}
+            //{Register} {name} {password}
+            //{Login} {Username} {password}
+            //{Logout}
+            //{exit}
+            //{ListPosts}
+            //{WhoAmI}
+            //{Exit}
+        }
+
+        private static void InitializeAutoMapper()
+        {
+            // we could initialize it directly in service collection and in general for every application 
+            // who use dependency injection , for this purpose we have to install additional package 
+            //AutoMapper.Extensions.Microsoft.DependencyInjection and we add it directly inside the method ConfigureServices()
+            //serviceCollection.AddAutoMapper(cfg => cfg.AddProfile<ForumProfile>());
+            Mapper.Initialize(cfg => cfg.AddProfile<ForumProfile>());
         }
 
         private static IServiceProvider ConfigureServices()
@@ -35,6 +59,8 @@
             serviceCollection.AddTransient<IPostService, PostService>();
             serviceCollection.AddTransient<ICategoryService, CategoryService>();
             serviceCollection.AddTransient<IReplyService, ReplyService>();
+
+            //serviceCollection.AddAutoMapper(cfg => cfg.AddProfile<ForumProfile>());
 
             ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
             return serviceProvider;

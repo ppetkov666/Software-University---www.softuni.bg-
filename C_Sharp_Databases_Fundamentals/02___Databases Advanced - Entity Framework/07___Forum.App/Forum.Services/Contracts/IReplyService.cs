@@ -3,7 +3,8 @@
     using Forum.Models;
     public interface IReplyService
     {
-        Reply Create(string replyText, int postId, int authorId);
+        TModel Create<TModel>(string replyText, int postId, int authorId);
+        //Reply Create(string replyText, int postId, int authorId);
         void Delete(int replyId); 
     }
 }

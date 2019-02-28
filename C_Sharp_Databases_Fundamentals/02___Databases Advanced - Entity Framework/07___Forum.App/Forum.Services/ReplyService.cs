@@ -1,5 +1,6 @@
 ﻿namespace Forum.Services
 {
+    using AutoMapper;
     using Forum.Data;
     using Forum.Models;
     using Forum.Services.Contracts;
@@ -14,7 +15,7 @@
             this.context = context;
         }
 
-        public Reply Create(string replyText, int postId, int authorId)
+        public TModel Create<TModel>(string replyText, int postId, int authorId)
         {
             Reply reply = new Reply
             {
@@ -24,8 +25,23 @@
             };
             context.Replies.Add(reply);
             context.SaveChanges();
-            return reply;
+
+            TModel dto = Mapper.Map<TModel>(reply);
+            return dto;
         }
+
+        //public Reply Create(string replyText, int postId, int authorId)
+        //{
+        //    Reply reply = new Reply
+        //    {
+        //        Content = replyText,
+        //        PostId = postId,
+        //        AuthorId = authorId
+        //    };
+        //    context.Replies.Add(reply);
+        //    context.SaveChanges();
+        //    return reply;
+        //}
 
         public void Delete(int replyId)
         {
