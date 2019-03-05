@@ -1,0 +1,13 @@
+<products>
+  <product>
+    <Description>Let's the air in</Description>
+    <Name>Window</Name>
+  </product>
+  <product>
+    <Description>Open the door</Description>
+    <Name>Door hinge</Name>
+  </product>
+  <product>
+    <Name>Car</Name>
+  </product>
+</products>
