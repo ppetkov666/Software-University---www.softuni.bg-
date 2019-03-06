@@ -16,7 +16,7 @@
         public Station DestinationStation { get; set; }
 
         [Required]
-        public DateTime Departuretime { get; set; }
+        public DateTime DepartureTime { get; set; }
 
         [Required]
         public DateTime ArrivalTime { get; set; }

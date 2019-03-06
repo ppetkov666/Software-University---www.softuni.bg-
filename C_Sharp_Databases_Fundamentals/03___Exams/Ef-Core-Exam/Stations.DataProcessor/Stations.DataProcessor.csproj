@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Dto\" />
+    <Folder Include="Dto\Export\" />
   </ItemGroup>
 
 </Project>

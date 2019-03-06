@@ -1,4 +1,4 @@
-﻿namespace Stations.Models
+﻿ namespace Stations.Models
 {
     using Stations.Models.Enums;
     using System.Collections.Generic;
@@ -10,7 +10,7 @@
 
         [Required]
         [MaxLength(10)]
-        public int TrainNumber { get; set; } 
+        public string TrainNumber { get; set; } 
 
         public TrainType? Type { get; set; }
 

@@ -4,6 +4,6 @@
     {
         HighSpeed,
         LongDistance,
-        Freight,
+        Freight
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Data.SqlClient;
 using System.IO;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Stations.Data;
 
 namespace Stations.App
@@ -9,7 +11,7 @@ namespace Stations.App
 	{
 		public static void Main(string[] args)
 		{
-			var context = new StationsDbContext();
+			StationsDbContext context = new StationsDbContext();
 			ResetDatabase(context);
 
 			Console.WriteLine("Database Reset.");
@@ -20,11 +22,11 @@ namespace Stations.App
 			ExportEntities(context);
 		}
 
-		private static void ImportEntities(StationsDbContext context, string baseDir = @"..\Datasets\")
+		private static void ImportEntities(StationsDbContext context, string baseDir = @"..\..\..\..\Datasets\")
 		{
-			const string exportDir = "./ImportResults/";
+			const string exportDir = @"..\..\..\ImportResults\";
 
-			var stations = DataProcessor.Deserializer.ImportStations(context, File.ReadAllText(baseDir + "stations.json"));
+			string stations = DataProcessor.Deserializer.ImportStations(context, File.ReadAllText(baseDir + "stations.json"));
 			PrintAndExportEntityToFile(stations, exportDir + "Stations.txt");
 
 			var classes = DataProcessor.Deserializer.ImportClasses(context, File.ReadAllText(baseDir + "classes.json"));
@@ -33,7 +35,9 @@ namespace Stations.App
 			var trains = DataProcessor.Deserializer.ImportTrains(context, File.ReadAllText(baseDir + "trains.json"));
 			PrintAndExportEntityToFile(trains, exportDir + "Trains.txt");
 
-			var trips = DataProcessor.Deserializer.ImportTrips(context, File.ReadAllText(baseDir + "trips.json"));
+            Environment.Exit(0);
+
+            var trips = DataProcessor.Deserializer.ImportTrips(context, File.ReadAllText(baseDir + "trips.json"));
 			PrintAndExportEntityToFile(trips, exportDir + "Trips.txt");
 
 			var cards = DataProcessor.Deserializer.ImportCards(context, File.ReadAllText(baseDir + "cards.xml"));
@@ -62,10 +66,40 @@ namespace Stations.App
 			File.WriteAllText(outputPath, entityOutput.TrimEnd());
 		}
 
-		private static void ResetDatabase(StationsDbContext context)
-		{
-			context.Database.EnsureDeleted();
-			context.Database.EnsureCreated();
-		}
-	}
+        //private static void ResetDatabase(StationsDbContext context)
+        //{
+        //	context.Database.EnsureDeleted();
+        //	context.Database.EnsureCreated();
+        //}
+
+        
+        private static void ResetDatabase(StationsDbContext context, bool shouldDeleteDatabase = false)
+        {
+            if (shouldDeleteDatabase)
+            {
+                context.Database.EnsureDeleted();
+                context.Database.EnsureCreated();
+            }
+
+            context.Database.EnsureCreated();
+
+            var disableIntegrityChecksQuery = "EXEC sp_MSforeachtable @command1='ALTER TABLE ? NOCHECK CONSTRAINT ALL'";
+            context.Database.ExecuteSqlCommand(disableIntegrityChecksQuery);
+
+            var deleteRowsQuery = "EXEC sp_MSforeachtable @command1='DELETE FROM ?'";
+            context.Database.ExecuteSqlCommand(deleteRowsQuery);
+
+            var enableIntegrityChecksQuery = "EXEC sp_MSforeachtable @command1='ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL'";
+            context.Database.ExecuteSqlCommand(enableIntegrityChecksQuery);
+
+            var reseedQuery = "EXEC sp_MSforeachtable @command1='DBCC CHECKIDENT(''?'', RESEED, 0)'";
+            try
+            {
+                context.Database.ExecuteSqlCommand(reseedQuery);
+            }
+            catch (SqlException) // OrderItems table has no identity column, which isn't a problem
+            {
+            }
+        }
+    }
 }
