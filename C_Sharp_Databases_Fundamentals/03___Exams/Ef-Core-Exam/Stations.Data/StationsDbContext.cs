@@ -52,7 +52,7 @@
 			builder.Entity<Station>()
 				.HasMany(s => s.TripsTo)
 				.WithOne(t => t.DestinationStation)
-				.HasForeignKey(t => t.OriginStationId)
+				.HasForeignKey(t => t.DestinationStationId)
 				.OnDelete(DeleteBehavior.Restrict);
 
 		}

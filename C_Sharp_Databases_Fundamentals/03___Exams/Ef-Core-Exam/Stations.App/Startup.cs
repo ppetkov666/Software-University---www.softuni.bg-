@@ -29,22 +29,24 @@ namespace Stations.App
 			string stations = DataProcessor.Deserializer.ImportStations(context, File.ReadAllText(baseDir + "stations.json"));
 			PrintAndExportEntityToFile(stations, exportDir + "Stations.txt");
 
-			var classes = DataProcessor.Deserializer.ImportClasses(context, File.ReadAllText(baseDir + "classes.json"));
+			
+			string classes = DataProcessor.Deserializer.ImportClasses(context, File.ReadAllText(baseDir + "classes.json"));
 			PrintAndExportEntityToFile(classes, exportDir + "Classes.txt");
 
-			var trains = DataProcessor.Deserializer.ImportTrains(context, File.ReadAllText(baseDir + "trains.json"));
+			string trains = DataProcessor.Deserializer.ImportTrains(context, File.ReadAllText(baseDir + "trains.json"));
 			PrintAndExportEntityToFile(trains, exportDir + "Trains.txt");
+	
 
-            Environment.Exit(0);
-
-            var trips = DataProcessor.Deserializer.ImportTrips(context, File.ReadAllText(baseDir + "trips.json"));
+			string trips = DataProcessor.Deserializer.ImportTrips(context, File.ReadAllText(baseDir + "trips.json"));
 			PrintAndExportEntityToFile(trips, exportDir + "Trips.txt");
 
-			var cards = DataProcessor.Deserializer.ImportCards(context, File.ReadAllText(baseDir + "cards.xml"));
+            string cards = DataProcessor.Deserializer.ImportCards(context, File.ReadAllText(baseDir + "cards.xml"));
 			PrintAndExportEntityToFile(cards, exportDir + "Cards.txt");
 
-			var tickets = DataProcessor.Deserializer.ImportTickets(context, File.ReadAllText(baseDir + "tickets.xml"));
+
+			string tickets = DataProcessor.Deserializer.ImportTickets(context, File.ReadAllText(baseDir + "tickets.xml"));
 			PrintAndExportEntityToFile(tickets, exportDir + "Tickets.txt");
+			Environment.Exit(0);
 		}
 
 		private static void ExportEntities(StationsDbContext context)
@@ -66,40 +68,40 @@ namespace Stations.App
 			File.WriteAllText(outputPath, entityOutput.TrimEnd());
 		}
 
-        //private static void ResetDatabase(StationsDbContext context)
-        //{
-        //	context.Database.EnsureDeleted();
-        //	context.Database.EnsureCreated();
-        //}
+		//private static void ResetDatabase(StationsDbContext context)
+		//{
+		//	context.Database.EnsureDeleted();
+		//	context.Database.EnsureCreated();
+		//}
 
-        
-        private static void ResetDatabase(StationsDbContext context, bool shouldDeleteDatabase = false)
-        {
-            if (shouldDeleteDatabase)
-            {
-                context.Database.EnsureDeleted();
-                context.Database.EnsureCreated();
-            }
+		
+		private static void ResetDatabase(StationsDbContext context, bool shouldDeleteDatabase = false)
+		{
+			if (shouldDeleteDatabase)
+			{
+				context.Database.EnsureDeleted();
+				context.Database.EnsureCreated();
+			}
 
-            context.Database.EnsureCreated();
+			context.Database.EnsureCreated();
 
-            var disableIntegrityChecksQuery = "EXEC sp_MSforeachtable @command1='ALTER TABLE ? NOCHECK CONSTRAINT ALL'";
-            context.Database.ExecuteSqlCommand(disableIntegrityChecksQuery);
+			var disableIntegrityChecksQuery = "EXEC sp_MSforeachtable @command1='ALTER TABLE ? NOCHECK CONSTRAINT ALL'";
+			context.Database.ExecuteSqlCommand(disableIntegrityChecksQuery);
 
-            var deleteRowsQuery = "EXEC sp_MSforeachtable @command1='DELETE FROM ?'";
-            context.Database.ExecuteSqlCommand(deleteRowsQuery);
+			var deleteRowsQuery = "EXEC sp_MSforeachtable @command1='DELETE FROM ?'";
+			context.Database.ExecuteSqlCommand(deleteRowsQuery);
 
-            var enableIntegrityChecksQuery = "EXEC sp_MSforeachtable @command1='ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL'";
-            context.Database.ExecuteSqlCommand(enableIntegrityChecksQuery);
+			var enableIntegrityChecksQuery = "EXEC sp_MSforeachtable @command1='ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL'";
+			context.Database.ExecuteSqlCommand(enableIntegrityChecksQuery);
 
-            var reseedQuery = "EXEC sp_MSforeachtable @command1='DBCC CHECKIDENT(''?'', RESEED, 0)'";
-            try
-            {
-                context.Database.ExecuteSqlCommand(reseedQuery);
-            }
-            catch (SqlException) // OrderItems table has no identity column, which isn't a problem
-            {
-            }
-        }
-    }
+			var reseedQuery = "EXEC sp_MSforeachtable @command1='DBCC CHECKIDENT(''?'', RESEED, 0)'";
+			try
+			{
+				context.Database.ExecuteSqlCommand(reseedQuery);
+			}
+			catch (SqlException) // OrderItems table has no identity column, which isn't a problem
+			{
+			}
+		}
+	}
 }
