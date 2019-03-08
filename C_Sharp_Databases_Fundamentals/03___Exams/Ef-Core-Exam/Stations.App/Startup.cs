@@ -28,30 +28,27 @@ namespace Stations.App
 
 			string stations = DataProcessor.Deserializer.ImportStations(context, File.ReadAllText(baseDir + "stations.json"));
 			PrintAndExportEntityToFile(stations, exportDir + "Stations.txt");
-
-			
+		
 			string classes = DataProcessor.Deserializer.ImportClasses(context, File.ReadAllText(baseDir + "classes.json"));
 			PrintAndExportEntityToFile(classes, exportDir + "Classes.txt");
 
 			string trains = DataProcessor.Deserializer.ImportTrains(context, File.ReadAllText(baseDir + "trains.json"));
 			PrintAndExportEntityToFile(trains, exportDir + "Trains.txt");
 	
-
 			string trips = DataProcessor.Deserializer.ImportTrips(context, File.ReadAllText(baseDir + "trips.json"));
 			PrintAndExportEntityToFile(trips, exportDir + "Trips.txt");
 
             string cards = DataProcessor.Deserializer.ImportCards(context, File.ReadAllText(baseDir + "cards.xml"));
 			PrintAndExportEntityToFile(cards, exportDir + "Cards.txt");
 
-
 			string tickets = DataProcessor.Deserializer.ImportTickets(context, File.ReadAllText(baseDir + "tickets.xml"));
 			PrintAndExportEntityToFile(tickets, exportDir + "Tickets.txt");
-			Environment.Exit(0);
+			
 		}
 
 		private static void ExportEntities(StationsDbContext context)
 		{
-			const string exportDir = "./ImportResults/";
+			const string exportDir = @"..\..\..\ImportResults\";
 
 			var jsonOutput = DataProcessor.Serializer.ExportDelayedTrains(context, "01/01/2017");
 			Console.WriteLine(jsonOutput);
