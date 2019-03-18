@@ -1,0 +1,14 @@
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.DataProcessor\obj\Debug\netcoreapp2.0\Stations.DataProcessor.csprojAssemblyReference.cache
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.DataProcessor\obj\Debug\netcoreapp2.0\Stations.DataProcessor.csproj.CoreCompileInputs.cache
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.DataProcessor\obj\Debug\netcoreapp2.0\Stations.DataProcessor.AssemblyInfoInputs.cache
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.DataProcessor\obj\Debug\netcoreapp2.0\Stations.DataProcessor.AssemblyInfo.cs
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.DataProcessor\bin\Debug\netcoreapp2.0\Stations.DataProcessor.deps.json
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.DataProcessor\bin\Debug\netcoreapp2.0\Stations.DataProcessor.dll
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.DataProcessor\bin\Debug\netcoreapp2.0\Stations.DataProcessor.pdb
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.DataProcessor\bin\Debug\netcoreapp2.0\Stations.Data.dll
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.DataProcessor\bin\Debug\netcoreapp2.0\Stations.Models.dll
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.DataProcessor\bin\Debug\netcoreapp2.0\Stations.Data.pdb
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.DataProcessor\bin\Debug\netcoreapp2.0\Stations.Models.pdb
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.DataProcessor\obj\Debug\netcoreapp2.0\Stations.DataProcessor.csproj.CopyComplete
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.DataProcessor\obj\Debug\netcoreapp2.0\Stations.DataProcessor.dll
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.DataProcessor\obj\Debug\netcoreapp2.0\Stations.DataProcessor.pdb

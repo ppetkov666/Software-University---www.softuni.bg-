@@ -1,0 +1,5 @@
+{
+	"ConnetionsString": {
+	"Default": "Server:  Database: Employee_EF_Core; Integrated Security=True"
+	}
+}

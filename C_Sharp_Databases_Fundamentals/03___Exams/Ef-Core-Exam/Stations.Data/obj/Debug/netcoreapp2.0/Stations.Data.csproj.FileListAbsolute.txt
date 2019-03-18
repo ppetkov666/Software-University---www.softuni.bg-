@@ -1,0 +1,12 @@
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.Data\obj\Debug\netcoreapp2.0\Stations.Data.csprojAssemblyReference.cache
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.Data\obj\Debug\netcoreapp2.0\Stations.Data.csproj.CoreCompileInputs.cache
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.Data\obj\Debug\netcoreapp2.0\Stations.Data.AssemblyInfoInputs.cache
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.Data\obj\Debug\netcoreapp2.0\Stations.Data.AssemblyInfo.cs
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.Data\bin\Debug\netcoreapp2.0\Stations.Data.deps.json
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.Data\bin\Debug\netcoreapp2.0\Stations.Data.dll
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.Data\bin\Debug\netcoreapp2.0\Stations.Data.pdb
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.Data\bin\Debug\netcoreapp2.0\Stations.Models.dll
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.Data\bin\Debug\netcoreapp2.0\Stations.Models.pdb
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.Data\obj\Debug\netcoreapp2.0\Stations.Data.csproj.CopyComplete
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.Data\obj\Debug\netcoreapp2.0\Stations.Data.dll
+C:\Users\predator\source\repos\Ef-Core-Exam\Stations.Data\obj\Debug\netcoreapp2.0\Stations.Data.pdb
