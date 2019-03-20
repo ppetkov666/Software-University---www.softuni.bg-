@@ -359,6 +359,29 @@ CREATE OR ALTER TRIGGER tr_townUpdate ON Towns FOR UPDATE
 	
 
  GO
+
+
+ CREATE OR ALTER TRIGGER tr_townInsert ON Towns FOR INSERT
+ AS
+ BEGIN 
+	DECLARE @test BIT SET @test = 0 ;
+		SET @test = (SELECT TownID 
+					   FROM inserted 
+			          WHERE LEN(NAME) < 3)
+		IF	(@test = 1)
+		BEGIN
+		ROLLBACK
+		RAISERROR('name cannot be less than 3 symbols',16,1)
+		END
+ END
+
+ insert into Towns values ('woe')
+ select * from Towns
+ begin transaction
+ delete  from Towns where TownID = 37
+ commit
+
+
  -- |||||||||||||||||||||||||||||||||||||||||||||||||        2        ||||||||||||||||||||||||||||||||||||||||||||||||| 
  -- delete trigger 
  GO
@@ -737,7 +760,74 @@ DEALLOCATE TestCursor
 	SELECT * FROM #tempEmp
 	DROP TABLE #tempEmp
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        6        ||||||||||||||||||||||||||||||||||||||||||||||||| 
+-- view example : it shows how after update one field from the table is changed on both tables
+GO
+CREATE OR ALTER VIEW cte__temp_result	
+  AS
+  (
+   SELECT EmployeeID,
+		  FirstName,
+		  LastName,
+		  Salary,
+		  NULL AS NextSalary,
+		  ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+	 FROM Employees 
+	
+  )
+ GO
+ 
+  UPDATE cte__tempresult
+     SET Salary = 12000
+   WHERE FirstName = 'Guy' and LastName = 'Gilbert'
 
+ SELECT * FROM employees
+ SELECT * FROM cte__temp_result
+ 
+ -- temp table - it shows how after update - the changed field is only in the temp table but not in the original one 
+
+SELECT EmployeeID,
+	   FirstName,
+	   LastName,
+	   Salary,
+	   NULL AS NextSalary,
+	   ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+  INTO temp_result_table
+  FROM Employees 
+
+UPDATE temp_result_table
+   SET Salary = 12500
+ WHERE FirstName = 'Guy' and LastName = 'Gilbert'
+
+SELECT * FROM temp_result_table
+SELECT * FROM employees
+DROP TABLE tempresult
+
+
+GO
+
+DECLARE @Salary   INT;	  SET @Salary = 0
+DECLARE @row_num  INT     SET @row_num = 1;
+DECLARE @num      INT     SET @num = 0
+DECLARE @id_count INT     SET @id_count = (SELECT count(employeeId) 
+										     FROM Employees)
+
+WHILE(@num <= @id_count)
+BEGIN 
+ SET @num +=1
+
+ SET @Salary  = (SELECT Salary 
+				   FROM temp_result_table 
+				  WHERE row_num = @row_num)
+  PRINT @salary
+ UPDATE temp_result_table
+	SET NextSalary = @Salary
+  WHERE row_num = @row_num -1
+SET @row_num += 1
+END
+
+
+SELECT * FROM temp_result_table
+SELECT * FROM employees
 
 
 
