@@ -291,44 +291,233 @@ go
 
 ------------------------------------------------------------------ task 16
 
+select * from Parts -- stock qty  is what we have available in stock
+select * from PartsNeeded -- Quantity  is how many parts we need for the particular job 
+select * from Orders -- delivered are how many are delivered for particular job 
+select * from OrderParts -- for each order and part id we have  the quantities 
 
-    select p.PartId,
+-- it is a tricky querie because if we dont include null records it won't return the right results
+-- and it is the same for isnull function
+
+    SELECT p.PartId,
 	       p.[Description],
-	       sum(pn.Quantity) as [Required], 
-	       sum(p.StockQty) as [In Stock],
-	       isnull(sum(op.Quantity),0) as Ordered 
-      from Parts p
-      join PartsNeeded pn on pn.PartId = p.PartId
-      join Jobs j on j.JobId = pn.JobId
-left  join Orders o on o.JobId = j.JobId
-left  join OrderParts op on op.OrderId = o.OrderId
-     where j.[Status] <> 'Finished'
-  group by p.PartId, p.[Description]
-    having sum(pn.Quantity) > sum(p.StockQty) + isnull(sum(op.Quantity),0)
+	       SUM(pn.Quantity)           AS [Required], 
+	       SUM(p.StockQty)            AS [In Stock],
+	       ISNULL(SUM(op.Quantity),0) AS Ordered 
+      FROM Parts p
+      JOIN PartsNeeded pn ON  pn.PartId = p.PartId
+      JOIN Jobs j         ON    j.JobId = pn.JobId
+LEFT  JOIN Orders o       ON    o.JobId = j.JobId
+LEFT  JOIN OrderParts op  ON op.OrderId = o.OrderId
+     WHERE j.[Status] <> 'Finished'
+  GROUP BY p.PartId, p.[Description]
+    HAVING SUM(pn.Quantity) > SUM(p.StockQty) + isnull(sum(op.Quantity),0)
 
 
 ------------------------------------------------------------------ task 17
+GO
 
+-- could be done in with case and if else 
+-- i also added another solution just for test purposes to show how to return a table result from function
+CREATE OR ALTER FUNCTION udf_GetCost(@Job_id int)
+RETURNS DECIMAL(16,2)
+AS
+BEGIN 
+DECLARE @Result DECIMAL(16,2)
+    SET @Result = (SELECT SUM(op.Quantity *  p.Price) as Result
+   FROM Jobs j
+   JOIN Orders o      ON o.JobId = j.JobId
+   JOIN OrderParts op ON op.OrderId = o.OrderId
+   JOIN Parts p       ON p.PartId = op.PartId
+  WHERE j.JobId = @Job_id)
+  
+  SELECT @Result =  CASE WHEN (ISNULL(@Result, 0) = 0) THEN 0 ELSE @result END
+   
+   --if (ISNULL(@Result, 0) = 0) 
+   --begin
+   --set @result = 0
+   --end
+ RETURN @result
+END
 
+GO
+SELECT dbo.udf_GetCost(2)
+
+GO
+
+-- ------------------------------------------------------------------------
+CREATE FUNCTION test_version(@job_id INT)
+RETURNS  @rtnTable TABLE 
+(
+    -- columns returned by the function
+    ID INT NOT NULL,
+    Result DECIMAL(16,2) NOT NULL
+)
+AS
+BEGIN 
+
+    INSERT INTO @rtnTable
+    SELECT p.PartId, SUM(op.Quantity *  p.Price) AS Result
+      FROM Jobs j
+      JOIN Orders o      ON o.JobId = j.JobId
+      JOIN OrderParts op ON op.OrderId = o.OrderId
+      JOIN Parts p       ON p.PartId = op.PartId
+     WHERE j.JobId = @job_id
+  GROUP BY p.PartId
+ RETURN; 
+
+END
+GO
+
+SELECT * FROM dbo.test_version(1)
 
 
 ------------------------------------------------------------------ task 18
 
+SELECT * FROM Orders o WHERE o.JobId = 1 and ISNULL(o.IssueDate, '') = ''
+SELECT * FROM Orders
+GO
+CREATE PROC usp_PlaceOrder
+(
+@job_id INT,
+@part_serial_number VARCHAR(50),
+@quantity INT
+)
+AS
+BEGIN
+ BEGIN TRY 
+	DECLARE @order_id INT   SET @order_id = (SELECT TOP(1) o.OrderId -- this select could return more than one record and because we need just the order id
+											   FROM Orders o  -- we put TOP 1
+											  WHERE o.JobId = @job_id 
+											    AND ISNULL(o.IssueDate, '') = '')
+	DECLARE @part_id INT    SET @part_id = (SELECT p.PartId 
+											  FROM Parts p 
+											 WHERE p.SerialNumber = @part_serial_number)
+	
+	-- throw exceptions section
+	-- if this job  id is not null it means we have finished job  and we must throw an exception
+	IF(ISNULL((SELECT j.JobId FROM Jobs j WHERE j.JobId = @job_id and j.[Status] = 'Finished'),0) <> 0)
+	BEGIN
+		;THROW 50011, 'This job is not active!', 1
+	END
+	
+	IF (@quantity <= 0)
+	BEGIN
+		;THROW 50012, 'Part quantity must be more than zero!', 1
+	END
+
+	IF(ISNULL((SELECT j.JobId FROM Jobs j WHERE j.JobId = @job_id),0) = 0)
+	BEGIN
+		;THROW 50013, 'Job not found!', 1
+		
+	END
+
+	IF(ISNULL(@part_id,'') = '')
+	BEGIN
+		;THROW 50014, 'Part not found!', 1
+		
+	END
+	-- ----------------------------------------------------------------------------------------------------
 
 
+	IF(isnull(@order_id, 0) = 0 )
+	BEGIN
+		INSERT INTO Orders(JobId, IssueDate)
+		VALUES
+		(@job_id, null)
+		DECLARE @order_generated_id INT  SET @order_generated_id = (SELECT TOP(1) 
+																		   o.OrderId 
+																	  FROM Orders o 
+																	 WHERE o.JobId = @job_id)
 
+		INSERT INTO OrderParts(OrderId,PartId,Quantity)
+		VALUES
+		(@order_generated_id, @part_id, @quantity)
+	END
+	ELSE
+	BEGIN
+		IF(ISNULL((SELECT op.PartId FROM OrderParts op WHERE op.OrderId = @order_id and op.PartId = @part_id),0) != 0 )
+		BEGIN
+			UPDATE OrderParts
+			   SET Quantity += @quantity
+			 WHERE OrderId = @order_id and PartId = @part_id 
+		END
+		ELSE
+			BEGIN
+			 INSERT INTO OrderParts(OrderId,PartId,Quantity)
+			 VALUES
+			 (@order_id,@part_id,@quantity)
+			END
+		END
+ END TRY 
+ BEGIN CATCH 
+
+ END CATCH 
+END
+GO
 
 
 ------------------------------------------------------------------ task 19
 
 
 
+SELECT * FROM Orders
+SELECT * FROM OrderParts
 
 
+go
+CREATE OR ALTER TRIGGER tr_update_quantity ON Orders FOR Update 
+AS
+
+-- checking what records goes to table inserted and deleted 
+ --select * from inserted i 
+ --select * from deleted d 
+
+ --select * 
+ --  from inserted i
+ --  join deleted d  on d.OrderId = i.OrderId
+
+	UPDATE Parts
+	   SET StockQty += op.Quantity
+	  FROM Parts p
+	  JOIN OrderParts op ON op.PartId = p.PartId
+	  JOIN Orders o      ON o.OrderId = op.OrderId
+	  JOIN inserted i    ON o.OrderId = i.OrderId
+	  JOIN deleted d     ON d.OrderId = i.OrderId
+	
+
+-- just to test the result 
+	GO
+	BEGIN TRANSACTION
+	UPDATE Orders
+	   SET Delivered = 1
+     WHERE OrderId = 21
+  ROLLBACK
+
+SELECT * FROM Parts
 ------------------------------------------------------------------ task 20
 
 
-
-
-
+SELECT CONCAT(m.FirstName,' ',m.LastName) AS Mechanic,
+	   v.[Name],
+	   SUM(op.Quantity) AS Parts,
+	   CONCAT(FLOOR((CAST(SUM(op.Quantity)AS FLOAT) / CAST(alias.[percent] AS FLOAT)) * 100),'%') as [Percentage]
+  FROM Mechanics m 
+  JOIN Jobs j        ON j.MechanicId = m.MechanicId
+  JOIN Orders o      ON o.JobId = j.JobId
+  JOIN OrderParts op ON op.OrderId = o.OrderId
+  JOIN Parts p       ON p.PartId = op.PartId
+  JOIN Vendors v     ON v.VendorId = p.VendorId
+  
+  JOIN (SELECT m.MechanicId mech_id,
+			   SUM(op.Quantity) [percent] 
+		  FROM Mechanics m 
+          JOIN Jobs j                  ON j.MechanicId = m.MechanicId
+          JOIN Orders o                ON o.JobId = j.JobId
+          JOIN OrderParts op           ON op.OrderId = o.OrderId
+          JOIN Parts p                 ON p.PartId = op.PartId
+          JOIN Vendors v               ON v.VendorId = p.VendorId 
+	  GROUP BY m.MechanicId ) AS alias ON   alias.mech_id = m.MechanicId
+  GROUP BY m.FirstName, m.LastName,v.[name],alias.[percent]
+  ORDER BY Mechanic, sum(op.Quantity)DESC, v.[Name]
 
