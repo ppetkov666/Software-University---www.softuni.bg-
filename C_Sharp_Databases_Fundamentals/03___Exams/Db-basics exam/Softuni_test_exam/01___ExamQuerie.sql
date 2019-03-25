@@ -386,45 +386,49 @@ CREATE PROC usp_PlaceOrder
 AS
 BEGIN
  BEGIN TRY 
-	DECLARE @order_id INT   SET @order_id = (SELECT TOP(1) o.OrderId -- this select could return more than one record and because we need just the order id
-											   FROM Orders o  -- we put TOP 1
+	DECLARE @order_id INT   SET @order_id = (SELECT TOP(1).OrderId -- WE CAN HAVE COUPLE ORDERS WITH THE SAME JOB ID AND THAT IS WHY SE USE top(1) 
+											   FROM Orders o  
 											  WHERE o.JobId = @job_id 
 											    AND ISNULL(o.IssueDate, '') = '')
+	-- because serial number is unique  we can have only one partId												
 	DECLARE @part_id INT    SET @part_id = (SELECT p.PartId 
 											  FROM Parts p 
 											 WHERE p.SerialNumber = @part_serial_number)
 	
 	-- throw exceptions section
-	-- if this job  id is not null it means we have finished job  and we must throw an exception
+	-- if there is such a job id it means that will get in the if statement and will throw the error
 	IF(ISNULL((SELECT j.JobId FROM Jobs j WHERE j.JobId = @job_id and j.[Status] = 'Finished'),0) <> 0)
 	BEGIN
 		;THROW 50011, 'This job is not active!', 1
 	END
 	
-	IF (@quantity <= 0)
-	BEGIN
-		;THROW 50012, 'Part quantity must be more than zero!', 1
-	END
-
 	IF(ISNULL((SELECT j.JobId FROM Jobs j WHERE j.JobId = @job_id),0) = 0)
 	BEGIN
 		;THROW 50013, 'Job not found!', 1
 		
 	END
 
-	IF(ISNULL(@part_id,'') = '')
+	IF (@quantity <= 0)
+	BEGIN
+		;THROW 50012, 'Part quantity must be more than zero!', 1
+	END
+
+
+	IF(ISNULL(@part_id, 0) = 0)
 	BEGIN
 		;THROW 50014, 'Part not found!', 1
 		
 	END
 	-- ----------------------------------------------------------------------------------------------------
 
-
+	-- IF @order_id IS NULL IT MEANS WE JUST HAVE TO INSERT NEW RECORD INTO TABLE ORDERS
 	IF(isnull(@order_id, 0) = 0 )
 	BEGIN
 		INSERT INTO Orders(JobId, IssueDate)
 		VALUES
 		(@job_id, null)
+		-- BECAUSE OrderId IS IDENTITY COLUMN WE NEED TO HAVE IT TO INSERT IN THE OTHER TABLE - OrderParts
+		-- THIS IS WHY I DECLARE @order_generated_id AND USE IT IN THE NEXT INSERT STATEMENT
 		DECLARE @order_generated_id INT  SET @order_generated_id = (SELECT TOP(1) 
 																		   o.OrderId 
 																	  FROM Orders o 
@@ -436,22 +440,37 @@ BEGIN
 	END
 	ELSE
 	BEGIN
-		IF(ISNULL((SELECT op.PartId FROM OrderParts op WHERE op.OrderId = @order_id and op.PartId = @part_id),0) != 0 )
-		BEGIN
-			UPDATE OrderParts
-			   SET Quantity += @quantity
-			 WHERE OrderId = @order_id and PartId = @part_id 
-		END
-		ELSE
+		-- IF PartId IS NULL IN THE MAPPING TABLE WE DO THE SAME AS ABOVE - INSERT THE NEW RECORD IN OrderParts.
+		IF(ISNULL((SELECT op.PartId FROM OrderParts op WHERE op.OrderId = @order_id and op.PartId = @part_id),0) = 0 )
 			BEGIN
-			 INSERT INTO OrderParts(OrderId,PartId,Quantity)
-			 VALUES
-			 (@order_id,@part_id,@quantity)
+			   INSERT INTO OrderParts(OrderId,PartId,Quantity)
+			   VALUES
+			   (@order_id,@part_id,@quantity)
 			END
-		END
+		ELSE
+		-- WE UPDATE THE QUANTITY BECAUSE WE ALREADY CHECKED THAT SUCH A RECORD EXIST IN THE TABLE OrderParts
+			BEGIN
+				UPDATE OrderParts
+				   SET Quantity += @quantity
+			     WHERE OrderId = @order_id and PartId = @part_id 
+			END
+	END
+		-- THIS COULB BE DONE WITH REVERSE CHECK BUT I THINK THE FIRST ONE IS EASIER TO READ
+		--IF(ISNULL((SELECT op.PartId FROM OrderParts op WHERE op.OrderId = @order_id and op.PartId = @part_id),0) != 0 )
+		--BEGIN
+		--	UPDATE OrderParts
+		--	   SET Quantity += @quantity
+		--	 WHERE OrderId = @order_id and PartId = @part_id 
+		--END
+		--ELSE
+		--	BEGIN
+		--	 INSERT INTO OrderParts(OrderId,PartId,Quantity)
+		--	 VALUES
+		--	 (@order_id,@part_id,@quantity)
+		--	END
+		--END
  END TRY 
  BEGIN CATCH 
-
  END CATCH 
 END
 GO
@@ -520,4 +539,7 @@ SELECT CONCAT(m.FirstName,' ',m.LastName) AS Mechanic,
 	  GROUP BY m.MechanicId ) AS alias ON   alias.mech_id = m.MechanicId
   GROUP BY m.FirstName, m.LastName,v.[name],alias.[percent]
   ORDER BY Mechanic, sum(op.Quantity)DESC, v.[Name]
+
+  ------------------------------------------------------------------ test
+  
 
