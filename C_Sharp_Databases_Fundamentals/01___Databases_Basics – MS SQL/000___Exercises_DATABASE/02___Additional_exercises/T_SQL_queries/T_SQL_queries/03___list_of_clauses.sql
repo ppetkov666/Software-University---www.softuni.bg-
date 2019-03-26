@@ -303,6 +303,8 @@ GROUP BY e.FirstName,
   )
 GO
 
+
+
 	CREATE OR ALTER VIEW cte__table_rows_salary
 	AS
 	(
@@ -745,8 +747,11 @@ INNER JOIN Departments d ON D.DepartmentID = E.DepartmentID
 	)
 GO
 	SELECT * 
-    FROM cte_another_version 
+    FROM cte_another_version
    WHERE totalEmployees > 20
+
+   sp_helptext cte_filter_by_department
+
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1058,8 +1063,8 @@ ORDER BY FirstName
 
 -- add a column with string description for a salary if has certain values or if not just type 'default'
      SELECT e.FirstName,
-						e.LastName,
-						e.Salary,
+			e.LastName,
+			e.Salary,
 	     CASE e.Salary
             WHEN 100 THEN 'HUNDRED'
 						WHEN 400 THEN 'FOUR_HUNDRED'

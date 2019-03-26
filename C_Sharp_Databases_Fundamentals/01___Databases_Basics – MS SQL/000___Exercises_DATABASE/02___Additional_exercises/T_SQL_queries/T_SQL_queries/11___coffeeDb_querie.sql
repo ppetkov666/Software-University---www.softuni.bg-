@@ -181,7 +181,7 @@ AS
 BEGIN
  SELECT u.first_name as 'First name',
 				 u.last_name as 'Last name',
-			   d.drink_name as 'type of drink',
+			     d.drink_name as 'type of drink',
 				 q.quantity,
 				 d.price as 'Price in leva',
 				 d.price * q.quantity 'total in leva'
@@ -201,9 +201,7 @@ CREATE  or alter PROCEDURE [dbo].[spe_get_custom_report]
 @last_name			NVARCHAR(50)
 AS
 BEGIN
-  SELECT u.first_name as 'First name',
-				 u.last_name as 'Last name',
-			   d.drink_name as 'type of drink',
+  SELECT d.drink_name as 'type of drink',
 				 q.quantity,
 				 d.price as 'Price in leva',
 				 d.price * q.quantity 'total'

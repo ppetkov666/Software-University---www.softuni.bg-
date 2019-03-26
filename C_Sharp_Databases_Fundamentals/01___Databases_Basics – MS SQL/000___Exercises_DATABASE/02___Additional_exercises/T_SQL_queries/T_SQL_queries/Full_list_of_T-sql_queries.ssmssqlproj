@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+<SqlWorkbenchSqlProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="Full_list_of_T-sql_queries">
+  <Items>
+    <LogicalFolder Name="Connections" Type="2" Sorted="true">
+      <Items>
+        <ConnectionNode Name="DESKTOP-FCG26GG\SQLEXPRESS:NEW\User">
+          <Created>2018-11-21T14:04:37.7357468+02:00</Created>
+          <Type>SQL</Type>
+          <Server>DESKTOP-FCG26GG\SQLEXPRESS</Server>
+          <UserName />
+          <Authentication>Windows Authentication</Authentication>
+          <InitialDB />
+          <LoginTimeout>30</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
+        </ConnectionNode>
+        <ConnectionNode Name="new\SQLEXPRESS:NEW\User">
+          <Created>2019-03-18T16:45:01.1474219+02:00</Created>
+          <Type>SQL</Type>
+          <Server>new\SQLEXPRESS</Server>
+          <UserName />
+          <Authentication>Windows Authentication</Authentication>
+          <InitialDB />
+          <LoginTimeout>30</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
+        </ConnectionNode>
+        <ConnectionNode Name="the_myth_3014\SQLEXPRESS:NEW\User">
+          <Created>2019-03-08T15:59:50.3300293+02:00</Created>
+          <Type>SQL</Type>
+          <Server>the_myth_3014\SQLEXPRESS</Server>
+          <UserName />
+          <Authentication>Windows Authentication</Authentication>
+          <InitialDB />
+          <LoginTimeout>30</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
+        </ConnectionNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Queries" Type="0" Sorted="true">
+      <Items>
+        <FileNode Name="0___how_to.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>new\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>0___how_to.sql</FullPath>
+        </FileNode>
+        <FileNode Name="01___constraints.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>new\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>01___constraints.sql</FullPath>
+        </FileNode>
+        <FileNode Name="02___create_update_delete.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>new\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>02___create_update_delete.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03___list_of_clauses.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>new\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>03___list_of_clauses.sql</FullPath>
+        </FileNode>
+        <FileNode Name="04___functions....sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>new\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>04___functions....sql</FullPath>
+        </FileNode>
+        <FileNode Name="05___date_functions.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-FCG26GG\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>DESKTOP-FCG26GG\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>05___date_functions.sql</FullPath>
+        </FileNode>
+        <FileNode Name="06___num_math_functions.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:the_myth_3014\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>the_myth_3014\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>06___num_math_functions.sql</FullPath>
+        </FileNode>
+        <FileNode Name="07___string_functions.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>new\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>07___string_functions.sql</FullPath>
+        </FileNode>
+        <FileNode Name="08___stor_proc_trig_func_.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>new\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>08___stor_proc_trig_func_.sql</FullPath>
+        </FileNode>
+        <FileNode Name="09___new_test_connection_for_temp_tables.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-FCG26GG\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>DESKTOP-FCG26GG\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>09___new_test_connection_for_temp_tables.sql</FullPath>
+        </FileNode>
+        <FileNode Name="10___test_for_web_app.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>new\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>10___test_for_web_app.sql</FullPath>
+        </FileNode>
+        <FileNode Name="11___coffeeDb_querie.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>new\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>11___coffeeDb_querie.sql</FullPath>
+        </FileNode>
+        <FileNode Name="12___roles.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-FCG26GG\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>DESKTOP-FCG26GG\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>12___roles.sql</FullPath>
+        </FileNode>
+        <FileNode Name="13___Indexes.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>new\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>13___Indexes.sql</FullPath>
+        </FileNode>
+        <FileNode Name="199___test_querie.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>new\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>199___test_querie.sql</FullPath>
+        </FileNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">
+      <Items />
+    </LogicalFolder>
+  </Items>
+</SqlWorkbenchSqlProject>

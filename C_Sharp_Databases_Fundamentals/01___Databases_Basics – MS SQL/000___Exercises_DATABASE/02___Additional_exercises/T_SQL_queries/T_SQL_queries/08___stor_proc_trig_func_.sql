@@ -86,7 +86,7 @@ CREATE OR ALTER PROCEDURE f_my_custom_concat_procedure_version_return_type
 (
  @firstname VARCHAR(50),
  @lastname VARCHAR(50),
- @ConcatName VARCHAR(50) OUTPUT
+ @ConcatName VARCHAR(100) OUTPUT
 )
 AS
 BEGIN
@@ -109,10 +109,15 @@ BEGIN
   END
 END
 
+-- this is an example about return code of the store proc, output param and changed return code
+DECLARE @TESTvar int
+DECLARE @FullName NVARCHAR(max)
 
-DECLARE @TESTvar VARCHAR(MAX)
-EXEC @TESTvar = f_my_custom_concat_procedure_version_return_type @firstname = 'guy',@lastname = 'gilbert', @ConcatName = @TESTvar OUTPUT
+EXEC @TESTvar = f_my_custom_concat_procedure_version_return_type @firstname = 'guy',@lastname = 'gilbert', @ConcatName = @FullName OUTPUT
+Select @@ERROR
 SELECT @TESTvar AS finalPrint
+SELECT @FullName AS finalPrint
+
 GO
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        2        ||||||||||||||||||||||||||||||||||||||||||||||||| 
@@ -337,14 +342,20 @@ select @return_value as return_value_from_sp
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        1        ||||||||||||||||||||||||||||||||||||||||||||||||| 
 -- update trigger
+-- after insert/update/delete
+-- instead of insert/update/delete
+
+-- inserted and deleted tables lives in the scope of the trigger and has the structure of the tables which trigger use
+-- they are temp tables 
+
 GO
 
 CREATE OR ALTER TRIGGER tr_townUpdate ON Towns FOR UPDATE
  AS
  BEGIN
 	IF EXISTS(SELECT * 
-							FROM inserted 
-						 WHERE [Name] IS NULL OR LEN(NAME) = 0) 
+				FROM inserted 
+			   WHERE ISNULL([Name],'') = '' OR LEN(NAME) = 0) 
 	BEGIN
 		RAISERROR('NAME CANNOT BE NULL OR EMPTHY',16,1)
 		ROLLBACK
@@ -352,14 +363,16 @@ CREATE OR ALTER TRIGGER tr_townUpdate ON Towns FOR UPDATE
 	END
  END
 
- UPDATE Towns
-	  SET [NAME] = '' 
+   UPDATE Towns
+	  SET [NAME] = 'Seatle' 
+	 FROM Towns
 	WHERE TownID = 1
 
-	
+	select * from Towns
 
  GO
 
+ -- -------------------------------------------------------------------------
 
  CREATE OR ALTER TRIGGER tr_townInsert ON Towns FOR INSERT
  AS
@@ -380,7 +393,6 @@ CREATE OR ALTER TRIGGER tr_townUpdate ON Towns FOR UPDATE
  begin transaction
  delete  from Towns where TownID = 37
  commit
-
 
  -- |||||||||||||||||||||||||||||||||||||||||||||||||        2        ||||||||||||||||||||||||||||||||||||||||||||||||| 
  -- delete trigger 
@@ -403,11 +415,13 @@ GO
 CREATE OR ALTER TRIGGER TR_DELETE ON Accounts INSTEAD OF DELETE 
 AS 
 BEGIN 
+
 	UPDATE a
-	SET a.Active = 'N'
-	FROM Accounts a
-	join deleted d ON d.username = a.username
-	WHERE d.Active = 'Y'
+	   SET a.Active = 'N'
+	  FROM Accounts a
+	  JOIN deleted d 
+		ON d.username = a.username
+	 WHERE d.Active = 'Y'
 END 
 
 DELETE FROM Accounts WHERE username = 'ivan'
@@ -604,8 +618,9 @@ CREATE OR ALTER PROCEDURE SP_CURSOR_TEST
  DECLARE @FirstName VARCHAR(MAX)
  DECLARE @LastName VARCHAR(MAX)
 
-     DECLARE CustomCursor CURSOR 
-	FOR SELECT e.FirstName,e.LastName FROM Employees e ORDER BY e.FirstName
+     DECLARE CustomCursor CURSOR FOR SELECT e.FirstName,e.LastName 
+									   FROM Employees e 
+								   ORDER BY e.FirstName
 
 OPEN CustomCursor
 	FETCH NEXT FROM CustomCursor
@@ -645,11 +660,11 @@ BEGIN
  DECLARE @exist					    INT					          SET @exist = 0;
 
  DECLARE @department_name VARCHAR(MAX) SET  @department_name = (SELECT d.[name] 
-																																	FROM Employees e 
-																																	JOIN Departments d 
-																																	  ON d.DepartmentID = e.DepartmentID 
-																																 WHERE e.FirstName = @Firstname 
-																																	 AND e.LastName = @LastName)
+													   			  FROM Employees e 
+													   			  JOIN Departments d 
+													   			    ON d.DepartmentID = e.DepartmentID 
+													   		     WHERE e.FirstName = @Firstname 
+													   			   AND e.LastName = @LastName)
 		PRINT 'Hello i am ' + @Firstname + ' ' + @LastName + ' from ' + @department_name + ' department' + ' !'
 		PRINT '==============================================';
 
@@ -662,8 +677,8 @@ BEGIN
 		
 		SELECT @exist  = 1											
 		  FROM Salary_table st 
-	   WHERE st.full_name = @full_name
-			 AND st.salary = @salary
+	     WHERE st.full_name = @full_name
+		   AND st.salary = @salary
 		
 		IF(@exist = 0)
 		BEGIN
@@ -681,7 +696,9 @@ SELECT * FROM Employees
 
 -- ANOTHER OPTIONS - MOVE THROUGH EACH 10 ROW(IF WE USE -10 IT IS IN REVERSE ORDER)
 DECLARE CustomCursor CURSOR SCROLL
-	FOR SELECT e.FirstName,e.LastName FROM Employees e WHERE e.Salary > 30000
+	FOR SELECT e.FirstName,e.LastName 
+	      FROM Employees e 
+		 WHERE e.Salary > 30000
 
 OPEN CustomCursor
 	FETCH ABSOLUTE 10 FROM CustomCursor 	
@@ -723,7 +740,7 @@ DEALLOCATE CustomCursor
 
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        5        ||||||||||||||||||||||||||||||||||||||||||||||||| 
-
+go
 	DECLARE @Salary INT;
 	DECLARE @row_num BIGINT;
 
@@ -736,6 +753,7 @@ DEALLOCATE CustomCursor
 		INTO #tempEmp
 		FROM Employees 
 
+		select * from #tempEmp
 	DECLARE TestCursor CURSOR FOR 
 	 SELECT Salary, 
 			    ROW_NUMBER() OVER (ORDER BY employeeID) row_num
@@ -800,7 +818,7 @@ UPDATE temp_result_table
 
 SELECT * FROM temp_result_table
 SELECT * FROM employees
-DROP TABLE tempresult
+DROP TABLE temp_result_table
 
 
 GO
@@ -828,6 +846,4 @@ END
 
 SELECT * FROM temp_result_table
 SELECT * FROM employees
-
-
 
