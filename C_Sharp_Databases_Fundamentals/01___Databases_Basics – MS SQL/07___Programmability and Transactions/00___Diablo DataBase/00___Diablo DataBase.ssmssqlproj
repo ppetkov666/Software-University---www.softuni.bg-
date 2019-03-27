@@ -3,10 +3,22 @@
   <Items>
     <LogicalFolder Name="Connections" Type="2" Sorted="true">
       <Items>
-        <ConnectionNode Name="DESKTOP-FCG26GG\SQLEXPRESS:DESKTOP-FCG26GG\predator">
+        <ConnectionNode Name="DESKTOP-FCG26GG\SQLEXPRESS:NEW\User">
           <Created>2018-07-27T02:56:05.1199948+03:00</Created>
           <Type>SQL</Type>
           <Server>DESKTOP-FCG26GG\SQLEXPRESS</Server>
+          <UserName />
+          <Authentication>Windows Authentication</Authentication>
+          <InitialDB>Bank</InitialDB>
+          <LoginTimeout>30</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
+        </ConnectionNode>
+        <ConnectionNode Name="new\SQLEXPRESS:NEW\User">
+          <Created>2019-03-27T11:58:43.8531305+02:00</Created>
+          <Type>SQL</Type>
+          <Server>new\SQLEXPRESS</Server>
           <UserName />
           <Authentication>Windows Authentication</Authentication>
           <InitialDB>Bank</InitialDB>
@@ -20,8 +32,8 @@
     <LogicalFolder Name="Queries" Type="0" Sorted="true">
       <Items>
         <FileNode Name="SQLQuery1.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-FCG26GG\SQLEXPRESS:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>DESKTOP-FCG26GG\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>new\SQLEXPRESS</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>SQLQuery1.sql</FullPath>
         </FileNode>

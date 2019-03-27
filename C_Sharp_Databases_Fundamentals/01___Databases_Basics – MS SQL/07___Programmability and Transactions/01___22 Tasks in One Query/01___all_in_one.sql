@@ -1,4 +1,4 @@
-
+  
 /*****************************************************
 --Section I. Functions and Procedures
 --Part 1. Queries for SoftUni Database
@@ -311,23 +311,65 @@ ON Accounts
 FOR UPDATE
 AS
 BEGIN
+		--select * from inserted
+		--select * from deleted
 		DECLARE @accountID INT = (SELECT Id FROM inserted)
 		DECLARE @oldSum DECIMAL(15,4) = (SELECT Balance FROM deleted)
 		DECLARE @newSum DECIMAL(15,4) = (SELECT Balance FROM inserted)
 
-		INSERT INTO Logs VALUES
+		INSERT INTO Logs 
+		VALUES
 		(@accountID, @oldSum,@newSum)
 		
 END
 
-UPDATE Accounts SET Balance = 6666 WHERE Id = 2
+UPDATE Accounts 
+   SET Balance = 9999 WHERE Id = 2
 SELECT * FROM Accounts
 SELECT * FROM Logs
 SELECT * FROM AccountHolders
 
+
 /*****************************************************
 Problem 15. Create Table Emails
 ******************************************************/
+go
+create table notification_emails(
+	Id INT IDENTITY NOT NULL, 
+	Recipient INT NOT NULL, 
+	[Subject] VARCHAR(64), 
+	Body VARCHAR(MAX)
+)
+ALTER TABLE notification_emails
+ADD CONSTRAINT PK_notification_email PRIMARY KEY(Id)
+-- RECIPIENT could be foregn key but for the purpose of this task it does not matter 
+-- in this way is much easier for readING
+GO
+create OR ALTER trigger tr_email_notification
+on Logs
+for insert
+as
+begin
+		declare @Id  int  set @id = (select i.AccountId from inserted i )
+		declare @recipient varchar(64) set @recipient = (select concat('Balance change for account: ',(select i.AccountId from inserted i)))
+		declare @old_sum decimal(15,4) set @old_sum = (select i.OldSum from inserted i)
+		declare @new_sum decimal(15,4) set @new_sum = (select i.NewSum from inserted i)
+
+		declare @body varchar(max)  set @body = (select CONCAT('On ', GETDATE(), ' your balance was changed from ', @old_sum, ' to ', @new_sum, '.'))
+		insert into notification_emails 
+		values (@Id,@recipient, @body)
+
+end
+
+INSERT INTO Logs(AccountId,OldSum,NewSum)
+VALUES
+(2,777,999)
+SELECT * FROM notification_emails
+SELECT * FROM Logs
+
+
+-- --------------------------------------------------------------------------
+
 
 GO
 CREATE TABLE NotificationEmails(
@@ -385,26 +427,41 @@ AS
 BEGIN
 	IF(@moneyAmount < 0)
 		BEGIN
+			ROLLBACK
 			RAISERROR('Negative Deposit Amount, Enter positive value', 16, 1);
+			RETURN
 		END;
+	-- we could check if the amount is <=  0 or in separate if with different message , but because of the purpose of the task  we won't do it, and 
+	-- i will just add another if in the transaction because there is no need to make an update without actual change in the table 
+	--IF(@moneyAmount = 0)
+	--	BEGIN
+	--		RAISERROR('Deposit amount is Zero, Please enter amount bigger than 0 !', 16, 1);
+	--	END;
 	ELSE
 		BEGIN
+			--IF(ISNULL(@accountId, 0) = 0 or ISNULL(@moneyAmount, 0) = 0)
 			IF(@accountId IS NULL  OR @moneyAmount IS NULL)
 				BEGIN
-					RAISERROR('Missing value', 16, 1);
+					ROLLBACK
+					RAISERROR('Please enter a value', 16, 1);
+					RETURN
 				END;
 		END;
          
 	BEGIN TRANSACTION;
+	if(@moneyAmount > 0)
+	BEGIN
 		UPDATE Accounts 
 			SET Balance+=@moneyAmount
 		    WHERE Id = @accountId;
-				IF(@@ROWCOUNT < 1)
+				-- if we have different amount of affected rows which in this case is 1 we raiserror and rollback  the transaction
+				IF(@@ROWCOUNT <> 1)
 				BEGIN
-					RAISERROR('Account doesn''t exists', 16, 1);
 					ROLLBACK;
-				END;
-   COMMIT;
+					RAISERROR('Account doesn''t exists', 16, 1);
+				END;	
+	END
+	COMMIT
 END;
 
 /*****************************************************
@@ -412,6 +469,7 @@ Problem 17. Withdraw Money
 ******************************************************/
 
 GO
+
 CREATE PROCEDURE usp_WithdrawMoney(
                  @accountId   INT,
                  @moneyAmount DECIMAL(15,4))
@@ -419,39 +477,35 @@ AS
 BEGIN
 	IF(@moneyAmount < 0)
 		BEGIN
-			RAISERROR('Negative Withdraw Amount, Enter positive value', 16, 1);
+			RAISERROR('Negative Amount,Please Enter positive value', 16, 1);
 		END;
 	ELSE
 		BEGIN
 			IF(@accountId IS NULL OR @moneyAmount IS NULL)
 				BEGIN
-					RAISERROR('Missing value', 16, 1);
+					RAISERROR('Please enter a value', 16, 1);
                 END;
          END;
+
+		 DECLARE @actualBallance DECIMAL(15,4) = (SELECT Balance FROM Accounts WHERE Id = @accountId)
+
 BEGIN TRANSACTION;
-	UPDATE Accounts
-		SET Balance-=@moneyAmount
-		WHERE Id = @accountId;
-	IF(@@ROWCOUNT <> 1)
-		BEGIN
-			RAISERROR('Account does not  exists', 16, 1);
-			ROLLBACK;
-         END;
-	ELSE
-		BEGIN
-		DECLARE @nessesaryBallance DECIMAL(15,4) = 0;
-		DECLARE @actualBallance DECIMAL(15,4) = 
-			   (SELECT Balance
-				FROM Accounts
-				WHERE Id = @accountId)
-			IF(@nessesaryBallance >= @actualBallance)
+	-- if we dont have enough money we won't make the transaction at all, so that's why i check only if i my ballance is >= of @moneyAmount
+	IF(@actualBallance >= @moneyAmount)
+	BEGIN
+		UPDATE Accounts
+		   SET Balance -= @moneyAmount
+		 WHERE Id = @accountId;
+		IF(@@ROWCOUNT <> 1)
 			BEGIN
 				ROLLBACK;
-				RAISERROR('Not Enough Ballance', 16, 1);
+				RAISERROR('Account does not  exists', 16, 1);
+				RETURN
 			END;
-		END;
-	COMMIT;
+	END
+	COMMIT
 END;
+
 
 /*****************************************************
 Problem 18. Money Transfer
@@ -469,59 +523,282 @@ AS
          IF(@amount < 0)
              BEGIN
                  RAISERROR('Cannot transfer negative amount', 16, 1);
-         END;
-             ELSE
+			 END;
+         ELSE
              BEGIN
-                 IF(@senderId IS NULL
-                    OR @receiverId IS NULL
-                    OR @amount IS NULL)
+                 IF(@senderId	   IS NULL
+                 OR @receiverId    IS NULL
+                 OR @amount        IS NULL)
                      BEGIN
                          RAISERROR('Missing value', 16, 1);
-                 END;
-         END;
-
+					 END;
+		     END;
 -- Withdraw from the sender
-         BEGIN TRANSACTION;
-         UPDATE Accounts
-           SET
-               Balance-=@amount
-         WHERE Id = @senderId;
-         IF(@@ROWCOUNT < 1)
+		 DECLARE @actualBallance DECIMAL(15,4) = (SELECT Balance FROM Accounts WHERE Id = @senderId)
+         
+		 BEGIN TRANSACTION;
+		 IF(@amount > @actualBallance)
              BEGIN
                  ROLLBACK;
-                 RAISERROR('Sender''s account doesn''t exists', 16, 1);
-         END;
+                 RAISERROR('Not enough funds', 16, 1)
+				 RETURN
+			 END
 
--- Check sender's current balance
-         IF(0 >
-           (
-               SELECT Balance
-               FROM Accounts
-               WHERE ID = @senderId
-           ))
-             BEGIN
-                 ROLLBACK;
-                 RAISERROR('Not enough funds', 16, 1);
-         END;
-
+			UPDATE Accounts
+			  SET Balance-=@amount
+			WHERE Id = @senderId;
+			IF(@@ROWCOUNT < 1)
+			    BEGIN
+			        ROLLBACK;
+			        RAISERROR('Sender''s account doesn''t exists', 16, 1);
+					RETURN
+				END;
 -- Add money to the receiver
-         UPDATE Accounts
-           SET
-               Balance+=@amount
-         WHERE ID = @receiverId;
-         IF(@@ROWCOUNT < 1)
-             BEGIN
-                 ROLLBACK;
-                 RAISERROR('Receiver''s account doesn''t exists', 16, 1);
-         END;
-         COMMIT;
-     END;
+		 IF(@amount > 0)
+		 BEGIN
+			 UPDATE Accounts
+			    SET Balance+=@amount
+			  WHERE ID = @receiverId;
+			 IF(@@ROWCOUNT < 1)
+			     BEGIN
+			         ROLLBACK;
+			         RAISERROR('Receiver''s account doesn''t exists', 16, 1);
+				 END
+		 END	 
+		COMMIT
+     END
 
 /*****************************************************
 Part 2. Queries for Diablo Database
 Problem 19. Trigger
 ******************************************************/
+-- SUB TASK 1
 
+go
+select * from Users
+select * from Games
+select * from UsersGames
+select * from Items
+select * 
+  from Users u
+  join UsersGames ug on ug.UserId = u.Id
+  where ug.id = 2 -- linda williams level 30 
+
+ 
+select * 
+from UserGameItems ugi
+join UsersGames ug on ug.Id = ugi.UserGameId
+join Users u on u.Id = ug.UserId 
+join Items i on i.Id = ugi.ItemId
+where ug.Id = 2
+
+delete from UserGameItems
+insert into UserGameItems(ItemId, UserGameId)
+values
+(5,2)
+
+select * from UserGameItems where UserGameId = 2 and ItemId = 4 -- itemId = 6 is level 78  itemId 4 = 20 
+-- so with the first item won't be allowed , with second will be inserted
+-- to be easier i have added  print message to show us the result
+
+go
+create or alter trigger tr_restrict 
+on UserGameItems 
+instead of insert
+as
+begin
+	declare @item_id int set @item_id = (select i.ItemId from inserted i )
+	declare @user_games_id int set @user_games_id = (select i.UserGameId from inserted i )
+	
+	declare @item_level int set @item_level = (select i.MinLevel from Items i where i.Id  = @item_id)
+	declare @user_level int set @user_level = (select ug.Level from UsersGames ug where ug.Id  = @user_games_id)
+
+	if(@user_level >= @item_level)
+	begin
+		insert into UserGameItems
+		values(@item_id,@user_games_id)
+		print 'You successfully inserted one row in the table UserGameItems'
+	end
+	else
+	begin
+		Print 'Sorry but values your are trying to insert are not allowed'
+	end
+end
+
+-- SUB TASK 1 ------------------------------------------------------------------------------------------------------
+
+
+select * 
+  from UsersGames ug
+  join Games g on g.Id = ug.GameId
+  join Users u on u.Id = ug.UserId
+ where g.Name = 'Bali' -- if we i dont put a bracket on the second condition will get wrong result !!!!
+   and (u.Username like 'baleremuda' or
+		u.Username like 'loosenoise' or
+		u.Username like 'inguinalself' or
+		u.Username like 'buildingdeltoid' or
+		u.Username like 'monoxidecos') 
+
+	
+	-- first approach
+	declare @game_id int  set @game_id = (select g.Id from Games g where g.Name = 'Bali')
+update UsersGames
+   set  Cash += 50000
+ where UserId in (select u.Id from Users u where u.Username in ('baleremuda', 'loosenoise', 'inguinalself', 'buildingdeltoid', 'monoxidecos'))
+   and GameId = @game_id
+
+   -- second approach
+	update ug
+	 set  Cash += 50000
+	 from UsersGames ug
+	 join Users u
+	 on u.Id = ug.UserId
+	 join Games g
+	 on g.Id = ug.GameId
+  where u.Username in ('baleremuda', 'loosenoise', 'inguinalself', 'buildingdeltoid', 'monoxidecos')
+    and g.Name = 'Bali'
+
+
+	--  third approach but WRONG !!! it will work but it is bad practice !!!
+	DECLARE @v_user_id int
+	DECLARE @v_game_id int
+	
+	select @v_game_id = g.Id from Games g where g.Name = 'Bali'
+
+	DECLARE cur cursor for
+	select u.Id from Users u where u.Username in ('baleremuda', 'loosenoise', 'inguinalself', 'buildingdeltoid', 'monoxidecos')
+	
+	OPEN cur
+	FETCH NEXT FROM cur INTO @v_user_id 
+
+	  WHILE @@FETCH_STATUS <> -1 BEGIN
+	 update UsersGames
+		set  Cash += 50000
+	  where UserId = @v_user_id
+		and GameId = @v_game_id
+	  FETCH NEXT FROM cur INTO @v_user_id 
+	END
+	close cur
+	deallocate cur
+
+
+	-- fourth approach  - that is who cursor must be done - always by PRIMARY KEY
+	DECLARE @v_usergames_id  int
+	
+	DECLARE cur cursor for
+   select ug.Id
+	 from UsersGames ug
+	 join Users u on u.Id = ug.UserId
+	 join Games g on g.Id = ug.GameId
+    where u.Username in ('baleremuda', 'loosenoise', 'inguinalself', 'buildingdeltoid', 'monoxidecos')
+    and g.Name = 'Bali'
+	
+	OPEN cur
+	FETCH NEXT FROM cur INTO @v_usergames_id 
+
+	WHILE @@FETCH_STATUS <> -1 BEGIN
+	 update UsersGames
+		set  Cash += 50000
+	  where Id = @v_usergames_id
+		
+	  FETCH NEXT FROM cur INTO @v_usergames_id 
+	END
+	close cur
+	deallocate cur
+
+-- SUB TASK 3 -----------------------------------------------------------------------------------------------------
+
+select * from UsersGames where GameId = 212
+
+
+declare @counter int	 set @counter = 251
+declare @counter_max int set @counter_max = 299
+
+while(@counter <= @counter_max)
+	begin
+		
+		exec sp_item_to_buy 12, @counter, 212
+		exec sp_item_to_buy 22, @counter, 212
+		exec sp_item_to_buy 37, @counter, 212
+		exec sp_item_to_buy 52, @counter, 212
+		exec sp_item_to_buy 61, @counter, 212
+
+
+		set @counter += 1
+	end
+go
+declare @counter int	 set @counter = 501
+declare @counter_max int set @counter_max = 539
+while(@counter <= @counter_max)
+	begin
+		
+		exec sp_item_to_buy 12, @counter, 212
+		exec sp_item_to_buy 22, @counter, 212
+		exec sp_item_to_buy 37, @counter, 212
+		exec sp_item_to_buy 52, @counter, 212
+		exec sp_item_to_buy 61, @counter, 212
+
+
+		set @counter += 1
+	end
+
+go
+create or alter proc sp_item_to_buy
+(
+@user_id int, 
+@item_id int,
+@game_id int 
+)
+as
+begin
+
+begin transaction
+	-- first we check the input  params 
+	declare @user_exist int  set @user_exist = (select u.Id from Users u where u.Id = @user_id)
+	declare @item_exist int  set @item_exist = (select i.Id from Items i where i.Id = @item_id)
+	declare @game_exist int  set @game_exist = (select g.Id from Games g where g.Id = @game_id)
+	
+	if(ISNULL(@user_exist, 0) = 0 or isnull(@item_exist, 0) = 0 or isnull(@game_exist, 0) = 0)
+		begin
+			rollback
+			raiserror('Invalid input parameters!', 16, 1)
+			return 
+		end
+	
+	declare @cash_user      decimal(16,2)       set @cash_user = (select ug.Cash from UsersGames ug where ug.UserId = @user_id and ug.GameId = @game_id)
+	declare @price_for_item decimal(16,2)       set @price_for_item = (select i.Price from Items i where i.Id = @item_id)
+	declare @user_game_id   decimal(16,2)       set @user_game_id = (select ug.Id from UsersGames ug where ug.UserId = @user_id and ug.GameId = @game_id)
+
+	if(@cash_user < @price_for_item)
+	begin
+		rollback
+		raiserror('Not enough money!', 16, 2)
+		return 
+	end
+	else
+		begin
+			update UsersGames
+			   set Cash -= @price_for_item
+			 where GameId = @game_id
+			   and UserId = @user_id
+			   
+			insert into UserGameItems
+			values
+			(@item_id, @user_game_id) 
+		end
+commit
+end
+
+-- SUB TASK 4 -----------------------------------------------------------------------------------------------------
+
+select u.Username,g.[Name],ug.Cash,i.[Name] 
+  from Users u
+  join UsersGames ug         on ug.UserId =u.Id
+  join Games g               on g.Id = ug.GameId
+  join UserGameItems ugi     on ugi.UserGameId = ug.Id
+  join Items i               on i.Id = ugi.ItemId
+  where g.[Name] = 'Bali'
+  order by u.Username, i.[Name] 
 
 
 /*****************************************************
