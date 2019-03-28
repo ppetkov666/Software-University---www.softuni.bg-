@@ -607,11 +607,11 @@ on UserGameItems
 instead of insert
 as
 begin
-	declare @item_id int set @item_id = (select i.ItemId from inserted i )
-	declare @user_games_id int set @user_games_id = (select i.UserGameId from inserted i )
+	declare @item_id int set @item_id = (select top(1) i.ItemId from inserted i )
+	declare @user_games_id int set @user_games_id = (select top(1) i.UserGameId from inserted i )
 	
-	declare @item_level int set @item_level = (select i.MinLevel from Items i where i.Id  = @item_id)
-	declare @user_level int set @user_level = (select ug.Level from UsersGames ug where ug.Id  = @user_games_id)
+	declare @item_level int set @item_level = (select top(1) i.MinLevel from Items i where i.Id  = @item_id)
+	declare @user_level int set @user_level = (select top (1) ug.Level from UsersGames ug where ug.Id  = @user_games_id)
 
 	if(@user_level >= @item_level)
 	begin
@@ -804,16 +804,185 @@ select u.Username,g.[Name],ug.Cash,i.[Name]
 /*****************************************************
 Problem 20. *Massive Shopping
 ******************************************************/
+-- stamat -id 9
+-- safflower - id - 87
+select * from Users u  where u.username = 'stamat'
+select * from Games g where g.Name = 'safflower'
+select * from items i where (i.MinLevel between 11 and 12)
+select * from UserGameItems
+go
+ declare @user_game_id int set @user_game_id = (select ug.Id 
+                                                  from UsersGames ug  
+												 where ug.UserId = 9 
+											       and ug.GameId = 87)
 
+ declare @user_stamat_money decimal (16,2) set @user_stamat_money = (select ug.Cash 
+																	   from UsersGames ug 
+																	  where ug.Id = @user_game_id)
+
+ declare @items_total_price  decimal(16,2) set @items_total_price =  (select sum(i.Price) 
+																		from Items i 
+																	   where (i.MinLevel between 11 and 12))
+
+
+
+ if(@user_stamat_money >= @items_total_price)
+	begin
+		begin transaction
+		update UsersGames
+		   set Cash -= @items_total_price
+		 where Id = @user_game_id
+
+		insert into UserGameItems(ItemId, UserGameId)
+		select i.Id, @user_game_id 
+		  from Items i 
+		 where (i.MinLevel between 11 and 12)
+		commit
+	end
+
+
+ set @items_total_price =  (select sum(i.Price) 
+							 from Items i 
+						    where (i.MinLevel between 19 and 21))
+
+ if(@user_stamat_money >= @items_total_price)
+	begin
+		begin transaction
+		update UsersGames
+		set Cash -= @items_total_price
+		where Id = @user_game_id
+
+		insert into UserGameItems(ItemId, UserGameId)
+		select i.Id, @user_game_id 
+		  from Items i 
+		 where (i.MinLevel between 19 and 21)
+		 commit
+	end
+
+
+	select i.Name 
+  from Users u
+  join UsersGames ug on ug.UserId = u.Id
+  join Games g on g.Id = ug.GameId
+  join UserGameItems ugi on ugi.UserGameId = ug.Id
+  join Items i on i.Id = ugi.ItemId
+  where u.Username = 'Stamat' and g.Name = 'Safflower'
+  order by i.Name
+
+
+select i.id 
+  from Items i 
+  where (i.MinLevel between 11 and 12) or (i.MinLevel between 19 and 21)
 
 
 /*****************************************************
 Part 3. Queries for SoftUni Database
 Problem 21. Employees with Three Projects
 ******************************************************/
+use SoftUni
+select * from Employees 
+select * from Projects 
+select * from EmployeesProjects
+
+select ep.EmployeeID, count(ep.ProjectID)  count_of_projects
+  from EmployeesProjects ep
+  group by ep.EmployeeID
+  having count(ep.ProjectID) < 3
 
 
+select *
+ from Employees e
+ join EmployeesProjects ep on ep.EmployeeID = e.EmployeeID
+ join Projects p on p.ProjectID = ep.ProjectIDemployee_exist
+   
+
+
+create proc usp_AssignProject
+(
+@emloyeeId int, 
+@projectID int 
+)
+as
+begin
+begin transaction
+	declare @employee_exist int		set @employee_exist  = (select e.EmployeeID 
+														   from Employees e 
+														  where e.EmployeeID = @emloyeeId)
+
+	declare @project_exist int		set @project_exist  = (select p.ProjectID 
+														   from Projects p 
+														  where p.ProjectID = @projectID)
+
+	declare @count_of_projects int  set @count_of_projects = (select count(ep.ProjectID) 
+																from EmployeesProjects ep 
+															   where ep.EmployeeID = @emloyeeId)
+
+
+	if(ISNULL(@employee_exist, 0) = 0 or ISNULL(@project_exist, 0) = 0)
+		begin
+			rollback
+			raiserror('Invalid Input params!', 16, 1)
+			return
+		end
+	if(@count_of_projects >= 3)
+		begin
+			rollback
+			raiserror('The employee has too many projects!', 16, 1)
+			return
+		end
+	else
+		begin
+			insert into EmployeesProjects(EmployeeID, ProjectID)
+			values
+			(@emloyeeId, @projectID)
+		end
+	commit
+end
+
+exec usp_AssignProject 219, 1
 
 /*****************************************************
 Problem 22. Delete Employees
 ******************************************************/
+go
+
+create table Deleted_Employees
+(
+EmployeeId int primary key,
+FirstName varchar(50),
+LastName varchar(50),
+MiddleName varchar(50),
+JobTitle varchar(50),
+DepartmentId int, 
+Salary decimal (16,2)
+)
+go
+create trigger tr_deleted_employees on Employees for delete 
+as
+begin
+
+	insert into Deleted_Employees(FirstName, LastName, MiddleName, JobTitle, DepartmentId, Salary)
+	select 
+		   d.FirstName, 
+		   d.LastName, 
+		   d.MiddleName, 
+		   d.JobTitle, 
+		   d.DepartmentID, 
+		   d.Salary 
+	  from deleted d
+
+	-- thit is another syntax but it wont work in this case 
+	--insert into Deleted_Employees(FirstName, LastName, MiddleName, JobTitle, DepartmentId, Salary)
+	--select 
+	--	   d.FirstName, 
+	--	   d.LastName, 
+	--	   d.MiddleName, 
+	--	   d.JobTitle, 
+	--	   d.DepartmentID, 
+	--	   d.Salary 
+	--  into Deleted_Employees_temp
+	--  from deleted d
+end 
+
+
+	  
