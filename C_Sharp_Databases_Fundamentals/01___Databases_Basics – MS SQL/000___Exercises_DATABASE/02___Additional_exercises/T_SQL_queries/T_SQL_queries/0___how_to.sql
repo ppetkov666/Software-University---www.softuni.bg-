@@ -8,213 +8,254 @@
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             $1
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-																													-- HOW TO take a employee with 3-rd highest salary
+                                                          -- HOW TO take a employee with 3-rd highest salary
 -- off course here row number will not work quite correctly in some cases but this is not the case for this example
 
 select * from Employees
 
 SELECT emp.FirstName,
-			 emp.LastName,
-			 emp.Salary
+       emp.LastName,
+       emp.Salary
   FROM (SELECT e.FirstName,
-							 e.LastName,
-							 e.Salary,
-							 ROW_NUMBER() OVER (ORDER BY e.salary DESC) 'row number' 
-					FROM Employees e ) AS emp
+               e.LastName,
+               e.Salary,
+               ROW_NUMBER() OVER (ORDER BY e.salary DESC) 'row number' 
+          FROM Employees e ) AS emp
  WHERE [row number] = 3
 
  GO
  -- second option 
  SELECT TOP 1 emp2.FirstName,
-							emp2.LastName,
-							emp2.Salary 
-				FROM (SELECT DISTINCT TOP 3 emp.FirstName,
-						 			 								  emp.LastName,
-							    								  emp.Salary 
-															 FROM Employees emp
-													 ORDER BY emp.Salary DESC) AS emp2
-		ORDER BY Salary
- -- third option - but this time we will take 7-th highest salary BUT the second person with 7th highes salary 
- 
+        emp2.LastName,
+        emp2.Salary 
+  FROM (SELECT DISTINCT TOP 3 emp.FirstName,
+                              emp.LastName,
+                              emp.Salary 
+                         FROM Employees emp
+                     ORDER BY emp.Salary DESC) AS emp2
+ORDER BY Salary
+ -- third option - but this time we will take 7-th highest salary BUT the second person with 7th highest salary 
+ -- could be done with "WITH" or VIEW - i will demonstrate both cases
  WITH mid_result
  AS
  (
-	SELECT TOP 10 emp.FirstName,	
-				 emp.LastName,
-				 emp.Salary,
-				 DENSE_RANK() OVER (ORDER BY emp.salary DESC) 'dense rank'
-    FROM Employees emp
-ORDER BY emp.Salary DESC
+  SELECT TOP 10 emp.FirstName,  
+         emp.LastName,
+         emp.Salary,
+         DENSE_RANK() OVER (ORDER BY emp.salary DESC) 'dense rank'
+      FROM Employees emp
+  ORDER BY emp.Salary DESC
  )
  
-	SELECT tbl2.FirstName,
-				 tbl2.LastName,
-				 tbl2.Salary 
-		FROM (SELECT tbl.FirstName,
-								 tbl.LastName,
-								 tbl.Salary,
-								 ROW_NUMBER() OVER(ORDER BY salary) [ROWS] 
-						FROM (SELECT * 
-										FROM mid_result 
-									 WHERE [dense rank] = 7) tbl) tbl2
-									 WHERE [rows] = 2
-	
+  SELECT tbl2.FirstName,
+         tbl2.LastName,
+         tbl2.Salary 
+    FROM (SELECT tbl.FirstName,
+                 tbl.LastName,
+                 tbl.Salary,
+                 ROW_NUMBER() OVER(ORDER BY salary) [ROWS] 
+            FROM (SELECT * 
+                    FROM mid_result 
+                   WHERE [dense rank] = 7) tbl) tbl2
+                   WHERE [rows] = 2
+  
+-- done with VIEW
+go
+SELECT tbl2.FirstName,
+     tbl2.LastName,
+       tbl2.Salary 
+ FROM cte_mid_result_external tbl2
+ WHERE [row_number] = 2
+
+
+
+
+ -- with the first internal view we use dense rank and order the querie by salary in desc 
+ go
+create or alter view cte_mid_result_internal
+AS
+(
+  SELECT emp.FirstName,  
+         emp.LastName,
+         emp.Salary,
+         DENSE_RANK() OVER (ORDER BY emp.salary DESC) 'salary_rank'
+    FROM Employees emp
+ )
+ go
+ -- with the external view we get the row numbers of particular salary rank 
+create or alter view cte_mid_result_external
+as
+(
+SELECT  tbl.FirstName,
+        tbl.LastName,
+        tbl.Salary,
+        ROW_NUMBER() OVER(ORDER BY salary) [row_number] 
+  FROM (SELECT * 
+          FROM cte_mid_result_internal 
+          WHERE salary_rank = 7)tbl
+)
+
+  
+
+
+
+
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             $2
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-																														-- HOW TO take all managers of particular employee
+                                -- HOW TO take all managers of particular employee
   -- first option just shows each employee with his manager 
-	select * from Employees
-	GO 
-	
-	 SELECT e.EmployeeID,
-					e.FirstName,
-					e.LastName,
-					e.ManagerID,
-					m.EmployeeID,
-					m.EmployeeID as 'manager ID',
-					m.FirstName,
-		 			m.LastName,
-	 				m.ManagerID as 'his manager ID'
-     FROM Employees AS e
-     JOIN Employees AS m ON m.EmployeeID= e.ManagerID
-ORDER BY e.EmployeeID
-		
+  select * from Employees
+  GO 
+  
+   SELECT e.EmployeeID,
+          e.FirstName,
+          e.LastName,
+          e.ManagerID,
+          m.EmployeeID,
+          m.EmployeeID AS 'manager ID',
+          m.FirstName,
+          m.LastName,
+          isnull(CAST(m.ManagerID AS NVARCHAR(20)), 'No')
+     FROM Employees    AS e
+     JOIN Employees    AS m ON m.EmployeeID= e.ManagerID
+ ORDER BY e.EmployeeID
+    
 
 GO
-	-- second option shows all managers of certain employee 
+  -- second option shows all managers of certain employee 
 GO
  DECLARE @employee_id INT  SET @employee_id = 1;
 
-		WITH emp_cte
-		AS
-		(
-	-- recursive CTE has 2 members 
-	-- first one is ANCHOR
-	 SELECT emp.EmployeeID,
-				  emp.FirstName,
-				  emp.LastName,
-		 	 	  emp.ManagerID		 
-		 FROM Employees emp
-	  WHERE emp.EmployeeID = @employee_id
-UNION ALL 
-	-- second one is recursive member
-	 SELECT e.EmployeeID,
-					e.FirstName,
-					e.LastName,
-					e.ManagerID 
-		 FROM Employees e
-		 JOIN emp_cte cte ON cte.ManagerID = e.EmployeeID
-		)
+WITH emp_cte
+AS
+(
+-- recursive CTE has 2 members 
+-- first one is ANCHOR
+   SELECT emp.EmployeeID,
+          emp.FirstName,
+          emp.LastName,
+          emp.ManagerID     
+     FROM Employees emp
+    WHERE emp.EmployeeID = @employee_id
+    UNION ALL 
+  -- second one is recursive member
+   SELECT e.EmployeeID,
+          e.FirstName,
+          e.LastName,
+          e.ManagerID 
+     FROM Employees e
+     JOIN emp_cte cte ON cte.ManagerID = e.EmployeeID
+)
 
-	 SELECT emp_table.EmployeeID,
-					emp_table.FirstName,
-					emp_table.LastName,
-					ISNULl(mngr_table.FirstName +' '+ mngr_table.LastName,'no Boss') AS 'manager' 
-	   FROM emp_cte emp_table
-		 JOIN emp_cte mngr_table ON mngr_table.EmployeeID = emp_table.ManagerID
+   SELECT emp_table.EmployeeID,
+          emp_table.FirstName,
+          emp_table.LastName,
+          ISNULl(mngr_table.FirstName +' '+ mngr_table.LastName,'no Boss') AS 'manager' 
+     FROM emp_cte emp_table
+     JOIN emp_cte mngr_table ON mngr_table.EmployeeID = emp_table.ManagerID
 -- further down i will break line by line how this recursive cte works
 -- step 1 -- execute first select statement ANCHOR and we take manager id == 16 to step 2
 -- because we use it as input param to the recursive member
 SELECT emp.EmployeeID,
-				  emp.FirstName,
-				  emp.LastName,
-		 	 	  emp.ManagerID		 
-		 FROM Employees emp
-	  WHERE emp.EmployeeID = 1
+       emp.FirstName,
+       emp.LastName,
+       emp.ManagerID     
+  FROM Employees emp
+ WHERE emp.EmployeeID = 1
 -- this is the result set:
--- 1	Guy	Gilbert	16
+-- 1  Guy  Gilbert  16
 
 -- step 2 - execute second select statement RECURSIVE MEMBER without join just with where clause and managerID == 16
-	 SELECT e.EmployeeID,
-					e.FirstName,
-					e.LastName,
-					e.ManagerID 
-		 FROM Employees e
-		 --JOIN emp_cte cte ON cte.ManagerID = e.EmployeeID
-		 where e.EmployeeID = 16
+   SELECT e.EmployeeID,
+          e.FirstName,
+          e.LastName,
+          e.ManagerID 
+     FROM Employees e
+     --JOIN emp_cte cte ON cte.ManagerID = e.EmployeeID
+     where e.EmployeeID = 16
 
 -- this is the result set:
--- 16	Jo	Brown	21
+-- 16  Jo  Brown  21
 
 -- step 3 - execute RECURSIVE MEMBER again
 
 SELECT e.EmployeeID,
-					e.FirstName,
-					e.LastName,
-					e.ManagerID 
-		 FROM Employees e
-		 where e.EmployeeID = 21
+          e.FirstName,
+          e.LastName,
+          e.ManagerID 
+     FROM Employees e
+     where e.EmployeeID = 21
 
 -- this is the result set:
--- 21	Peter	Krebs	148
+-- 21  Peter  Krebs  148
 
 -- step 4 - execute RECURSIVE MEMBER again
 
 SELECT e.EmployeeID,
-					e.FirstName,
-					e.LastName,
-					e.ManagerID 
-		 FROM Employees e
-		 where e.EmployeeID = 148
+          e.FirstName,
+          e.LastName,
+          e.ManagerID 
+     FROM Employees e
+     where e.EmployeeID = 148
 
 -- this is the result set:
--- 148	James	Hamilton	109
+-- 148  James  Hamilton  109
 
 -- step 5 - execute RECURSIVE MEMBER again
 
 SELECT e.EmployeeID,
-					e.FirstName,
-					e.LastName,
-					e.ManagerID 
-		 FROM Employees e
-		 where e.EmployeeID = 109
+          e.FirstName,
+          e.LastName,
+          e.ManagerID 
+     FROM Employees e
+     where e.EmployeeID = 109
 
 -- this is the result set:
--- 109	Ken	Sanches	null , and here the recursive cte stops 
+-- 109  Ken  Sanches  null , and here the recursive cte stops 
 
 -- third option will rank the hierarchy starting from top to the bottom
 
 GO
 WITH rank_cte(EmployeeID, FirstName, LastName, ManagerID, [level])
-		AS
-		(
-	
-	 SELECT emp.EmployeeID,
-				  emp.FirstName,
-				  emp.LastName,
-		 	 	  emp.ManagerID,
-					1	 
-		 FROM Employees emp
-	  WHERE emp.ManagerID is NULL
+    AS
+    (
+  
+   SELECT emp.EmployeeID,
+          emp.FirstName,
+          emp.LastName,
+            emp.ManagerID,
+          1   
+     FROM Employees emp
+    WHERE emp.ManagerID is NULL
 UNION ALL 
-	 SELECT e.EmployeeID,
-					e.FirstName,
-					e.LastName,
-					e.ManagerID,
-					cte.[level] + 1
-		 FROM Employees e
-		 JOIN rank_cte cte ON cte.EmployeeID = e.ManagerID
-		)
+   SELECT e.EmployeeID,
+          e.FirstName,
+          e.LastName,
+          e.ManagerID,
+          cte.[level] + 1
+     FROM Employees e
+     JOIN rank_cte cte ON cte.EmployeeID = e.ManagerID
+    )
 
-		--select * from rank_cte
-		--order by rank_cte.level
+    --select * from rank_cte
+    --order by rank_cte.level
 
 
-		select employees.EmployeeID,
-					 employees.FirstName,
-					 employees.LastName,
-					 ISNULL(cast(employees.ManagerID as nvarchar(50)),'he is his own boss')as manager_id, 
-					 ISNULL(managers.FirstName, 'Boss') AS Manager,
-					 employees.level
-		  from rank_cte employees
+    select employees.EmployeeID,
+           employees.FirstName,
+           employees.LastName,
+           ISNULL(cast(employees.ManagerID as nvarchar(50)),'he is his own boss')as manager_id, 
+           ISNULL(managers.FirstName, 'Boss') AS Manager,
+           employees.level
+      from rank_cte employees
  left join rank_cte managers ON managers.EmployeeID = employees.ManagerID
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             $3
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-																														-- HOW TO delete dublicate rows
+                                                            -- HOW TO delete dublicate rows
 go
 
 
@@ -225,7 +266,7 @@ ID INT,
 FirstName NVARCHAR(50),
 LastName NVARCHAR(50),
 Gender NVARCHAR(50),
-Salary INT	
+Salary INT  
 )
 INSERT INTO Employees_test_table 
 VALUES 
@@ -243,8 +284,8 @@ WITH emp_cte
 as
 (
 SELECT e.ID,
-			 e.FirstName,
-			 ROW_NUMBER() OVER(PARTITION BY ID ORDER BY ID) 'row number'
+       e.FirstName,
+       ROW_NUMBER() OVER(PARTITION BY ID ORDER BY ID) 'row number'
   FROM Employees_test_table e
 )
 DELETE  
@@ -254,25 +295,25 @@ DELETE
  -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             $4
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-																														-- HOW TO find employees hired in last N-th month
+                                                            -- HOW TO find employees hired in last N-th month
 -- in my case i will use years because my table data is little bit older
 
-select * from 																								
+select * from                                                 
 (select e.FirstName,e.LastName,DATEDIFF(YEAR,HireDate,GETDATE()) as 'date diffrence in months' 
   from Employees e) emp
-	where [date diffrence in months] < 15
+  where [date diffrence in months] < 15
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             $5
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-																														-- HOW TO find department with highes number of employees
+                                                            -- HOW TO find department with highes number of employees
 USE SoftUni
 
   SELECT TOP 1 D.[Name],
-		  	 COUNT(*) 'people per department' 
-	  FROM Employees e
-  	JOIN Departments d ON d.DepartmentID = e.DepartmentID
+         COUNT(*) 'people per department' 
+    FROM Employees e
+    JOIN Departments d ON d.DepartmentID = e.DepartmentID
 GROUP BY d.[Name]
 ORDER BY COUNT(*) DESC
 
@@ -285,17 +326,17 @@ ORDER BY COUNT(*) DESC
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             $6
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-																														-- HOW TO find count of people grouped by departent and town name using 
-																														-- 3 join statements  
+                                                            -- HOW TO find count of people grouped by departent and town name using 
+                                                            -- 3 join statements  
 
 
-	SELECT d.[Name],
-				 t.[Name],
-				 COUNT(*) AS 'count of people'
-		FROM Employees e
-		JOIN Departments d	ON d.DepartmentID = e.DepartmentID
-		JOIN Addresses a		ON a.AddressID = e.AddressID
-  	JOIN Towns t				ON t.TownID = a.TownID 
+  SELECT d.[Name],
+         t.[Name],
+         COUNT(*) AS 'count of people'
+    FROM Employees e
+    JOIN Departments d  ON d.DepartmentID = e.DepartmentID
+    JOIN Addresses a    ON a.AddressID = e.AddressID
+    JOIN Towns t        ON t.TownID = a.TownID 
 GROUP BY d.[Name],t.[Name]
 ORDER BY COUNT(*) DESC
 
@@ -308,7 +349,7 @@ ORDER BY COUNT(*) DESC
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             $7
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-																														-- HOW TO explain diffference between blocking and deadlocking
+                                                            -- HOW TO explain diffference between blocking and deadlocking
 
 --  BLOCKING 
 use UserInfo
@@ -347,7 +388,7 @@ select @@trancount  -- check the number of active transactions
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             $8
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-																														-- HOW TO find all names that start with certain letter without like operator
+                                                            -- HOW TO find all names that start with certain letter without like operator
 
 USE SoftUni
 -- this is the first option but because of the point of this task i will show other 2 different ways how to be done
@@ -361,7 +402,7 @@ SELECT * FROM Employees WHERE SUBSTRING(FirstName,1,1) = 'm'
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             $9
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-																														-- HOW TO insert into many to many table
+                                                            -- HOW TO insert into many to many table
 
 -- purposely i did not created composite primary key to show what is going to happend when we insert same data into StudentCourses table which is 
 -- mapping table and has student id and course id.
@@ -386,18 +427,18 @@ SELECT @student_id = id
 
  SELECT @course_id = id 
    FROM Courses
-	WHERE @course_name = course_name 
+  WHERE @course_name = course_name 
 
 IF(@student_id is null)
 BEGIN
-	INSERT INTO students VALUES(@student_name)
-	SELECT @student_id = SCOPE_IDENTITY()
+  INSERT INTO students VALUES(@student_name)
+  SELECT @student_id = SCOPE_IDENTITY()
 END
 
 IF(@course_id is null)
 BEGIN
-	INSERT INTO Courses VALUES(@course_name)
-	SELECT @course_id = SCOPE_IDENTITY()
+  INSERT INTO Courses VALUES(@course_name)
+  SELECT @course_id = SCOPE_IDENTITY()
 END
 
 insert into StudentCourses values (@student_id,@course_id)
@@ -427,18 +468,18 @@ SELECT @student_id = id
 
  SELECT @course_id = id 
    FROM Courses
-	WHERE @course_name = course_name 
+  WHERE @course_name = course_name 
 
 IF(@student_id is null)
 BEGIN
-	INSERT INTO students VALUES(@student_name)
-	SELECT @student_id = SCOPE_IDENTITY()
+  INSERT INTO students VALUES(@student_name)
+  SELECT @student_id = SCOPE_IDENTITY()
 END
 
 IF(@course_id is null)
 BEGIN
-	INSERT INTO Courses VALUES(@course_name)
-	SELECT @course_id = SCOPE_IDENTITY()
+  INSERT INTO Courses VALUES(@course_name)
+  SELECT @course_id = SCOPE_IDENTITY()
 END
 
 INSERT INTO StudentCourses VALUES (@student_id,@course_id)
@@ -452,46 +493,46 @@ SELECT * FROM StudentCourses
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             $10
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-																														-- HOW TO get people after, before or between certain date
+                                                            -- HOW TO get people after, before or between certain date
 
 GO
 USE SoftUni
 
 SELECT e.FirstName,
-			 e.LastName,
-			 CAST(e.HireDate AS DATE)  hire_date
+       e.LastName,
+       CAST(e.HireDate AS DATE)  hire_date
   FROM Employees e
  WHERE CAST(e.HireDate AS DATE) >= '2000-04-29'
 
 SELECT e.FirstName,
-			 e.LastName,
-			 CAST(e.HireDate AS DATE)  hire_date
+       e.LastName,
+       CAST(e.HireDate AS DATE)  hire_date
   FROM Employees e
  WHERE e.HireDate >= '2000-04-29'
 
 
 SELECT e.FirstName,
-			 e.LastName,
-			 CAST(e.HireDate AS DATE)  hire_date
+       e.LastName,
+       CAST(e.HireDate AS DATE)  hire_date
   FROM Employees e
  WHERE CAST(e.HireDate AS DATE) BETWEEN '2000-04-29' AND '2002-04-29' 
 
 SELECT e.FirstName,
-			 e.LastName,
-			 CAST(e.HireDate AS DATE)  hire_date
+       e.LastName,
+       CAST(e.HireDate AS DATE)  hire_date
   FROM Employees e
  WHERE Day(e.HireDate) BETWEEN '1' AND '2' 
 
 SELECT e.FirstName,
-			 e.LastName,
-			 CAST(e.HireDate AS DATE)  hire_date
+       e.LastName,
+       CAST(e.HireDate AS DATE)  hire_date
   FROM Employees e
  WHERE Day(e.HireDate) = 2 AND MONTH(e.HireDate) = 1
 
 
 SELECT e.FirstName,
-			 e.LastName,
-			 CAST(e.HireDate AS DATE)  hire_date
+       e.LastName,
+       CAST(e.HireDate AS DATE)  hire_date
   FROM Employees e
  WHERE cast(e.HireDate as date) < DATEADD(year,-17,cast(GETDATE() as date))
 
@@ -499,26 +540,26 @@ SELECT e.FirstName,
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             $12
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-																														-- HOW TO insert full list of records from one table to another and adding
-																														-- additional empthy columns																														
+                                                            -- HOW TO insert full list of records from one table to another and adding
+                                                            -- additional empthy columns                                                            
 
   SELECT EmployeeID,
-				 FirstName,
-				 LastName,
-				 Salary,
-				 NULL AS NextSalary,
-				 ROW_NUMBER() OVER (ORDER BY employeeID) row_num
-		INTO #tempEmp
-		FROM Employees 
+         FirstName,
+         LastName,
+         Salary,
+         NULL AS NextSalary,
+         ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+    INTO #tempEmp
+    FROM Employees 
 
-		select * from #tempEmp
+    select * from #tempEmp
 
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             $13
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-																														
+                                                            
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             $14
@@ -558,7 +599,7 @@ SELECT e.FirstName,
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             001
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-																														-- HOW TO check for dependency in any sp
+                                                            -- HOW TO check for dependency in any sp
   sp_depends spe_with_output_param
 
 

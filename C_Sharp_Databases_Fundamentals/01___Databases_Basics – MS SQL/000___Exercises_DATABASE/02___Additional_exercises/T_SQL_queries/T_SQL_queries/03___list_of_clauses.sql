@@ -13,7 +13,7 @@
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---																				      																		GROUP BY 
+--                                                                                  GROUP BY 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 USE SoftUni
  GO
@@ -24,106 +24,106 @@ USE SoftUni
 
 -- first solution - the original one
   SELECT e.FirstName,
-				 e.LastName,
-				 e.DepartmentID,
-				 e.Salary
+         e.LastName,
+         e.DepartmentID,
+         e.Salary
     FROM Employees e
    WHERE Salary > (SELECT AVG(Salary) average_salary_per_department 
-										 FROM Employees e1
-										WHERE e.DepartmentID = e1.DepartmentID
-								 GROUP BY DepartmentID)
+                     FROM Employees e1
+                    WHERE e.DepartmentID = e1.DepartmentID
+                 GROUP BY DepartmentID)
 
 -- second solution - with advanced columns
   SELECT e.FirstName,
-	       e.LastName,
-	       e.DepartmentID,
-	       e.Salary AS salary_per_person,
-				(SELECT AVG(e.Salary)
-				   FROM Employees e 
-					WHERE e.DepartmentID = d.DepartmentID 
-			 GROUP BY e.DepartmentID) average_salary_per_department
+         e.LastName,
+         e.DepartmentID,
+         e.Salary AS salary_per_person,
+        (SELECT AVG(e.Salary)
+           FROM Employees e 
+          WHERE e.DepartmentID = d.DepartmentID 
+       GROUP BY e.DepartmentID) average_salary_per_department
     FROM Employees e
-		JOIN Departments d ON d.DepartmentID = e.DepartmentID
+    JOIN Departments d ON d.DepartmentID = e.DepartmentID
    WHERE e.Salary > (SELECT AVG(salary) average_salary_per_department 
-											 FROM Employees e1 
-					--WHERE e1.DepartmentID = e.DepartmentID   both options are legit(WHERE and HAVING)
-									 GROUP BY DepartmentID
-										 HAVING e1.DepartmentID = e.DepartmentID)
+                       FROM Employees e1 
+          --WHERE e1.DepartmentID = e.DepartmentID   both options are legit(WHERE and HAVING)
+                   GROUP BY DepartmentID
+                     HAVING e1.DepartmentID = e.DepartmentID)
 
 -- third solution but with select statement implemented in JOIN 
   SELECT e.FirstName,
-	       e.LastName,
-	       e.DepartmentID,
-	       e.Salary AS salary_per_person,
-				 emp.average_salary_per_dept
+         e.LastName,
+         e.DepartmentID,
+         e.Salary AS salary_per_person,
+         emp.average_salary_per_dept
     FROM Employees e
-		JOIN (SELECT AVG(e.Salary) average_salary_per_dept,DepartmentID 
-					  FROM Employees e 
-			  GROUP BY e.DepartmentID) emp ON emp.DepartmentID = e.DepartmentID
-					 WHERE e.Salary > emp.average_salary_per_dept
+    JOIN (SELECT AVG(e.Salary) average_salary_per_dept,DepartmentID 
+            FROM Employees e 
+        GROUP BY e.DepartmentID) emp ON emp.DepartmentID = e.DepartmentID
+           WHERE e.Salary > emp.average_salary_per_dept
 
 -- fourth solution - with additional aggregated functions 
  SELECT e.FirstName,
-				e.LastName,
-				e.DepartmentID,
-				e.Salary AS salary_per_person,
-				(SELECT avg(e.Salary)
-					 FROM Employees e 
-					WHERE e.DepartmentID = d.DepartmentID 
-			 GROUP BY e.DepartmentID) average_salary_per_department,
-				(SELECT min(e.Salary)
-					 FROM Employees e 
-				  WHERE e.DepartmentID = d.DepartmentID 
-			 GROUP BY e.DepartmentID) min_salary,
-				alias.max_salary
+        e.LastName,
+        e.DepartmentID,
+        e.Salary AS salary_per_person,
+        (SELECT avg(e.Salary)
+           FROM Employees e 
+          WHERE e.DepartmentID = d.DepartmentID 
+       GROUP BY e.DepartmentID) average_salary_per_department,
+        (SELECT min(e.Salary)
+           FROM Employees e 
+          WHERE e.DepartmentID = d.DepartmentID 
+       GROUP BY e.DepartmentID) min_salary,
+        alias.max_salary
    FROM Employees e
-	 JOIN Departments d ON d.DepartmentID = e.DepartmentID
-	 JOIN (SELECT e.DepartmentID deps,
-								MAX(e.Salary) max_salary,
-								AVG(e.Salary) average 
-					 FROM Employees e 
-			 GROUP BY DepartmentID) AS alias ON alias.deps = e.DepartmentID
+   JOIN Departments d ON d.DepartmentID = e.DepartmentID
+   JOIN (SELECT e.DepartmentID deps,
+                MAX(e.Salary) max_salary,
+                AVG(e.Salary) average 
+           FROM Employees e 
+       GROUP BY DepartmentID) AS alias ON alias.deps = e.DepartmentID
    WHERE e.Salary > alias.average   
 
 -- fifth solution - all select statements are in the join and is far more 'readable'
   SELECT e.FirstName,
-  	     e.LastName,
-  	     e.DepartmentID,
-  	     e.Salary AS salary_per_person,
-  			 alias.average_salary,
-  			 alias.min_salary,
-  			 alias.max_salary
+         e.LastName,
+         e.DepartmentID,
+         e.Salary AS salary_per_person,
+         alias.average_salary,
+         alias.min_salary,
+         alias.max_salary
     FROM Employees e
-  	JOIN (SELECT e.DepartmentID deps,
-							 MAX(e.Salary) max_salary,
-							 MIN(e.Salary) min_salary,
-							 AVG(e.Salary) average_salary
-			    FROM Employees e 
-		  GROUP BY DepartmentID) AS alias ON alias.deps = e.DepartmentID --AND e.Salary > alias.average_salary
-			   WHERE e.Salary > alias.average_salary		 
+    JOIN (SELECT e.DepartmentID deps,
+               MAX(e.Salary) max_salary,
+               MIN(e.Salary) min_salary,
+               AVG(e.Salary) average_salary
+          FROM Employees e 
+      GROUP BY DepartmentID) AS alias ON alias.deps = e.DepartmentID --AND e.Salary > alias.average_salary
+         WHERE e.Salary > alias.average_salary     
 
 SET STATISTICS TIME OFF
 
 -- six solution with additional over clause and additional columns 
-	SELECT e.FirstName,
-				 e.LastName,
-				 e.DepartmentID, 
-				 e.Salary,
-				 alias.average,
-				 COUNT(*)      OVER (PARTITION BY e.departmentId) total_each_department,
-				 AVG(e.Salary) OVER (PARTITION BY departmentId) 'AVERAGE FOR PEOPLE WITH HIGHER SALARY THAN AVERAGE SALARY IN DEPARTMENT',
-				 MIN(e.Salary) OVER (PARTITION BY e.departmentId) MINSALARY, 
-				 MAX(e.Salary) OVER (PARTITION BY e.departmentId) MAXSALARY
-		FROM Employees e
-	  JOIN (SELECT AVG(d.Salary) average, 
-						  	   d.DepartmentID dept 
-							FROM Employees d 
-					GROUP BY DepartmentID) alias ON alias.dept = e.DepartmentID
-	 WHERE e.Salary > alias.average
-	  
+  SELECT e.FirstName,
+         e.LastName,
+         e.DepartmentID, 
+         e.Salary,
+         alias.average,
+         COUNT(*)      OVER (PARTITION BY e.departmentId) total_each_department,
+         AVG(e.Salary) OVER (PARTITION BY departmentId) 'AVERAGE FOR PEOPLE WITH HIGHER SALARY THAN AVERAGE SALARY IN DEPARTMENT',
+         MIN(e.Salary) OVER (PARTITION BY e.departmentId) MINSALARY, 
+         MAX(e.Salary) OVER (PARTITION BY e.departmentId) MAXSALARY
+    FROM Employees e
+    JOIN (SELECT AVG(d.Salary) average, 
+                   d.DepartmentID dept 
+              FROM Employees d 
+          GROUP BY DepartmentID) alias ON alias.dept = e.DepartmentID
+   WHERE e.Salary > alias.average
+    
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---																				      																		JOINS 
+
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 GO
 USE Joins_Test_DB
@@ -135,29 +135,29 @@ USE Joins_Test_DB
 SELECT * FROM Users
 SELECT * FROM Department
 
-		SELECT u.[Name],
-					 u.Gender,
-					 u.Salary,
-					 d.DepartmentName 
-			FROM Users u
+    SELECT u.[Name],
+           u.Gender,
+           u.Salary,
+           d.DepartmentName 
+      FROM Users u
 INNER JOIN Department d on d.Id = u.DepartmentId
 
 -- ^^^^^^^^ example 2  ^^^^^^^^
 
 -- left join match all records from left table + common record from right table
     SELECT u.[Name],
-					 u.Gender,
-					 u.Salary,
-					 d.DepartmentName 
-			FROM Users u
+           u.Gender,
+           u.Salary,
+           d.DepartmentName 
+      FROM Users u
  LEFT JOIN Department d on d.Id = u.DepartmentId
 
 -- this is opposite 
     SELECT u.[Name],
-					 u.Gender,
-					 u.Salary,
-					 d.DepartmentName 
-			FROM Users u
+           u.Gender,
+           u.Salary,
+           d.DepartmentName 
+      FROM Users u
  LEFT JOIN Department d on d.Id = u.DepartmentId
      WHERE u.DepartmentId is null
 
@@ -166,50 +166,50 @@ INNER JOIN Department d on d.Id = u.DepartmentId
 
 -- right join match all records from the right + common records from the left
  SELECT u.[Name],
-					 u.Gender,
-					 u.Salary,
-					 d.DepartmentName 
-			FROM Users u
+           u.Gender,
+           u.Salary,
+           d.DepartmentName 
+      FROM Users u
  RIGHT JOIN Department d on d.Id = u.DepartmentId
 
 -- oppsite querie 
     SELECT u.[Name],
-					 u.Gender,
-					 u.Salary,
-					 d.DepartmentName 
-			FROM Users u
+           u.Gender,
+           u.Salary,
+           d.DepartmentName 
+      FROM Users u
  RIGHT JOIN Department d on d.Id = u.DepartmentId
-			WHERE u.[Name] is null
-			
+      WHERE u.[Name] is null
+      
  -- ^^^^^^^^ example 4  ^^^^^^^^
 
 -- full join - just join the full information from both tables
  SELECT u.[Name],
-					 u.Gender,
-					 u.Salary,
-					 d.DepartmentName 
-			FROM Users u
+           u.Gender,
+           u.Salary,
+           d.DepartmentName 
+      FROM Users u
  FULL JOIN Department d on d.Id = u.DepartmentId
 
 -- oppsite querie
  SELECT u.[Name],
-					 u.Gender,
-					 u.Salary,
-					 d.DepartmentName 
-			FROM Users u
+           u.Gender,
+           u.Salary,
+           d.DepartmentName 
+      FROM Users u
  FULL JOIN Department d on d.Id = u.DepartmentId
-		 WHERE d.DepartmentName IS NULL 
-				OR u.DepartmentId		IS NULL
+     WHERE d.DepartmentName IS NULL 
+        OR u.DepartmentId    IS NULL
 
 -- ^^^^^^^^ example 5  ^^^^^^^^
 
 -- cross join associate each record from first table with each reacord from second table example:
 -- first table users has 9 records and every row is assosiated with all 4 rows from the second table Department - total 36 rows in Cross Join statement
  SELECT u.[Name],
-					 u.Gender,
-					 u.Salary,
-					 d.DepartmentName 
-			FROM Users u
+           u.Gender,
+           u.Salary,
+           d.DepartmentName 
+      FROM Users u
 CROSS JOIN Department d 
 
 -- ^^^^^^^^ example 6  ^^^^^^^^
@@ -222,24 +222,24 @@ CROSS JOIN Department d
 USE db_for_test_purposes
 
 -- we will demonstrate couple different approaches how to replace null value if there is no manager accross the certain employee.
-SELECT * FROM Employee
+SELECT * FROM Employees
 
-		SELECT e.[Name] employee,
-							--REPLACE(m.Name,'null','No Manager')						
-							--ISNULL(m.Name,'No Manager')
-							--COALESCE(m.Name,'No manager')
-							CASE 
-									WHEN M.Name IS NULL THEN 'No manager' 
-									ELSE m.Name 
-									 END 
-			FROM Employee e
-LEFT JOIN Employee m ON m.EmployeeId = e.ManagerId
+    SELECT e.firstname,
+              --REPLACE(m.Name,'null','No Manager')            
+              --ISNULL(m.Name,'No Manager')
+              --COALESCE(m.Name,'No manager')
+              CASE 
+              WHEN m.Firstname IS NULL THEN 'No manager' 
+              ELSE m.Firstname 
+              END 
+      FROM Employees e
+LEFT JOIN Employees m ON m.EmployeeId = e.ManagerId
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---																				      																		OVER 
+--                                                                                  OVER 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	USE SoftUni
+  USE SoftUni
 
 -- ^^^^^^^^ example 1  ^^^^^^^^
 
@@ -247,115 +247,115 @@ LEFT JOIN Employee m ON m.EmployeeId = e.ManagerId
 -- and people_per_department_v2 which actually give us the sum of all people department by department  
 GO
   SELECT e.FirstName,
- 		     e.LastName,
-		     e.Salary,
-		     e.DepartmentID, 
-				 COUNT(*)     OVER (PARTITION BY departmentID ) people_per_department ,
-				 ROW_NUMBER() OVER (PARTITION BY departmentID ORDER BY departmentID) row_numbers_per_department,
-				 COUNT(*)     OVER (ORDER BY departmentID ) people_per_department_v2
+          e.LastName,
+         e.Salary,
+         e.DepartmentID, 
+         COUNT(*)     OVER (PARTITION BY departmentID ) people_per_department ,
+         ROW_NUMBER() OVER (PARTITION BY departmentID ORDER BY departmentID) row_numbers_per_department,
+         COUNT(*)     OVER (ORDER BY departmentID ) people_per_department_v2
     FROM Employees e
-		
+    
 -- ^^^^^^^^ example 2  ^^^^^^^^
 
 -- this querie returns firstname, lastname, salary as a group  and count of per this group  
   SELECT e.FirstName,
-	 			 e.LastName,
-		     e.Salary,  
-		     COUNT(*) count_of_people_per_group__first_name_last_name_salary
+          e.LastName,
+         e.Salary,  
+         COUNT(*) count_of_people_per_group__first_name_last_name_salary
     FROM Employees e
 GROUP BY e.FirstName,
-				 e.LastName,
-				 e.Salary
+         e.LastName,
+         e.Salary
  
 -- ^^^^^^^^ example 3  ^^^^^^^^
 
 -- this querie returns firstname, lastname, salary, depID and every next salary  in column 'next_salary_from_salary'
 -- using LEAD function, when there is no record returns '-1', and all this is grouped or partitioned by depID
 
-	SELECT e.FirstName,
-		     e.LastName,
-		     e.Salary,
-				 e.DepartmentID,
-				 LEAD(e.Salary, 1, -1) OVER (PARTITION BY e.departmentID ORDER BY e.Salary) AS next_salary_from_salary
+  SELECT e.FirstName,
+         e.LastName,
+         e.Salary,
+         e.DepartmentID,
+         LEAD(e.Salary, 1, -1) OVER (PARTITION BY e.departmentID ORDER BY e.Salary) AS next_salary_from_salary
     FROM Employees e
 
 -- same type of querie but with more simple LEAD and OVER clause
   SELECT e.EmployeeID,
-	       e.FirstName,
-				 e.LastName,
-				 e.Salary,
-				 LEAD(e.Salary) OVER (order by e.employeeID)  next_salary
-		FROM Employees e
+         e.FirstName,
+         e.LastName,
+         e.Salary,
+         LEAD(e.Salary) OVER (order by e.employeeID)  next_salary
+    FROM Employees e
 
 -- ^^^^^^^^ example 4  ^^^^^^^^ 
 -- this querie returns firstname, lastname, salary, depID and every next salary
 -- same type of querie as result set as above but accomplished WITHOUT LEAD clause, with created VIEW 
  GO
-  CREATE OR ALTER VIEW cte__custom_table_rows	
+  CREATE OR ALTER VIEW v__custom_table_rows  
   AS
   (
    SELECT emp.EmployeeID,
-  			  emp.FirstName,
-  			  emp.LastName,
-  			  emp.Salary,
-  			  ROW_NUMBER() OVER (ORDER BY employeeID) row_num
-  			  FROM Employees emp
+          emp.FirstName,
+          emp.LastName,
+          emp.Salary,
+          ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+          FROM Employees emp
   )
 GO
 
 
 
-	CREATE OR ALTER VIEW cte__table_rows_salary
-	AS
-	(
-	SELECT emp.Salary,
-		     ROW_NUMBER() OVER (ORDER BY employeeID) row_num
-		FROM Employees emp
-	)
+  CREATE OR ALTER VIEW v__table_rows_salary
+  AS
+  (
+  SELECT emp.Salary,
+         ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+    FROM Employees emp
+  )
 GO
 
 -- first option
   SELECT ctr.EmployeeID,
-				 ctr.row_num,
-	       ctr.FirstName,
-				 ctr.LastName,
-				 ctr.Salary,
-				 (SELECT e.Salary 
-	          FROM cte__table_rows_salary e 
-					 WHERE e.row_num = ctr.row_num + 1) AS next_salary
-    FROM cte__custom_table_rows AS ctr
+         ctr.row_num,
+         ctr.FirstName,
+         ctr.LastName,
+         ctr.Salary,
+         (SELECT e.Salary 
+            FROM v__table_rows_salary e 
+           WHERE e.row_num = ctr.row_num + 1) AS next_salary
+    FROM v__custom_table_rows AS ctr
 
 -- second option - the difference is only the JOIN
-	 SELECT ctr.EmployeeID,
-					ctr.row_num,
-					ctr.FirstName,
-					ctr.LastName,
-					ctr.Salary,
-					aNextSalary.Salary
-					FROM cte__custom_table_rows AS ctr 
+   SELECT ctr.EmployeeID,
+          ctr.row_num,
+          ctr.FirstName,
+          ctr.LastName,
+          ctr.Salary,
+          aNextSalary.Salary
+          FROM v__custom_table_rows AS ctr 
 LEFT JOIN (SELECT e.Salary, 
-									e.row_num
-	           FROM cte__table_rows_salary e ) aNextSalary ON aNextSalary.row_num =  ctr.row_num + 1
+                  e.row_num
+             FROM v__table_rows_salary e ) aNextSalary ON aNextSalary.row_num =  ctr.row_num + 1
 
 -- third option - the only difference here is : the result is accomplished WITHOUT using VIEW, just with DERIVED tables and INNER JOIN
 
  SELECT ctr.EmployeeID,
-			  ctr.row_num,
-			  ctr.FirstName,
-			  ctr.LastName,
-			  ctr.Salary,
-	      aNextSalary.Salary
+        ctr.row_num,
+        ctr.FirstName,
+        ctr.LastName,
+        ctr.Salary,
+        aNextSalary.Salary
   FROM (SELECT emp.EmployeeID,
-							 emp.FirstName,
-							 emp.LastName,
-							 emp.Salary,
-							 ROW_NUMBER() OVER (ORDER BY employeeID) row_num
-			    FROM Employees emp) AS ctr 
+               emp.FirstName,
+               emp.LastName,
+               emp.Salary,
+               ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+          FROM Employees emp) AS ctr 
   JOIN (SELECT e.Salary, 
-							 e.row_num
-	       FROM (SELECT emp.Salary,
-										  ROW_NUMBER() OVER (ORDER BY employeeID) row_num
-								 FROM Employees emp) e ) aNextSalary ON aNextSalary.row_num =  ctr.row_num + 1
+               e.row_num
+         FROM (SELECT emp.Salary,
+                      ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+                 FROM Employees emp) e ) aNextSalary ON aNextSalary.row_num =  ctr.row_num + 1
  GO
 
 -- ^^^^^^^^ example 5  ^^^^^^^^ 
@@ -364,40 +364,40 @@ LEFT JOIN (SELECT e.Salary,
 
 -- first option
   SELECT ctr.EmployeeID,
-				 ctr.row_num,
-			   ctr.FirstName,
-			   ctr.LastName,
-	       ctr.Salary,
-				(SELECT e.Salary 
-					 FROM cte__table_rows_salary e 
-					WHERE e.row_num = ctr.row_num + 1) AS next_salary,
-				(SELECT (ctr.Salary - (SELECT e.Salary 
-																 FROM cte__table_rows_salary e 
-																WHERE e.row_num = ctr.row_num + 1 ))) column_difference
-   FROM cte__custom_table_rows AS ctr
+         ctr.row_num,
+         ctr.FirstName,
+         ctr.LastName,
+         ctr.Salary,
+        (SELECT e.Salary 
+           FROM v__table_rows_salary e 
+          WHERE e.row_num = ctr.row_num + 1) AS next_salary,
+        (SELECT (ctr.Salary - (SELECT e.Salary 
+                                 FROM v__table_rows_salary e 
+                                WHERE e.row_num = ctr.row_num + 1 ))) column_difference
+   FROM v__custom_table_rows AS ctr
 
 -- second option
 -- calculate column differences WITHOUT using any VIEW, just with derived tables
-	SELECT ctr.EmployeeID,
-				 ctr.row_num,
-		     ctr.FirstName,
-		     ctr.LastName,
-		     ctr.Salary,
-		   (SELECT e.Salary 
-		      FROM (SELECT emp.Salary,
-											 ROW_NUMBER() OVER (ORDER BY employeeID) row_num
-									FROM Employees emp) e 
-			           WHERE e.row_num = ctr.row_num + 1) AS next_salary,
-			 (SELECT (ctr.Salary - (SELECT e.Salary 
-													      FROM cte__table_rows_salary e 
-															 WHERE e.row_num = ctr.row_num + 1 ))) column_difference
-	FROM (SELECT emp.EmployeeID,
-							 emp.FirstName,
-							 emp.LastName,
-				       emp.Salary,
-							 ROW_NUMBER() OVER (ORDER BY employeeID) row_num
-					FROM Employees emp) AS ctr
-	 
+  SELECT ctr.EmployeeID,
+         ctr.row_num,
+         ctr.FirstName,
+         ctr.LastName,
+         ctr.Salary,
+       (SELECT e.Salary 
+          FROM (SELECT emp.Salary,
+                       ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+                  FROM Employees emp) e 
+                 WHERE e.row_num = ctr.row_num + 1) AS next_salary,
+       (SELECT (ctr.Salary - (SELECT e.Salary 
+                                FROM v__table_rows_salary e 
+                               WHERE e.row_num = ctr.row_num + 1 ))) column_difference
+  FROM (SELECT emp.EmployeeID,
+               emp.FirstName,
+               emp.LastName,
+               emp.Salary,
+               ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+          FROM Employees emp) AS ctr
+   
 
  -- ^^^^^^^^ example 6  ^^^^^^^^
 
@@ -406,27 +406,27 @@ LEFT JOIN (SELECT e.Salary,
  -- RANK: 1,1,1,1,5,5,5,5,5,10,10.....; DENSE_RANK: 1,1,1,1,2,2,2,2,2,3,3.....
 
 
-	SELECT e.FirstName,
-		     e.LastName,
-		     e.Salary, 
-		     RANK()        OVER (ORDER BY e.salary) [rank], 
-		     DENSE_RANK () OVER (ORDER BY e.salary) denseRank,
-		     ROW_NUMBER () OVER (ORDER BY e.salary) rowNumber
-	  FROM Employees e  
+  SELECT e.FirstName,
+         e.LastName,
+         e.Salary, 
+         RANK()        OVER (ORDER BY e.salary) [rank], 
+         DENSE_RANK () OVER (ORDER BY e.salary) denseRank,
+         ROW_NUMBER () OVER (ORDER BY e.salary) rowNumber
+    FROM Employees e  
 
 -- ^^^^^^^^ example 7  ^^^^^^^^
 
 -- this querie order all salaries by their rank from the botton to the top and take the employee with the third salary from the bottom, ordered by firstname
-	SELECT TOP(1) 
-		     emp.FirstName,
-				 emp.LastName,
-		     emp.salary
-	  FROM (SELECT e.FirstName,
-								 e.LastName,
-								 e.Salary,
-								 DENSE_RANK () OVER (ORDER BY e.salary) salary_rank 
-	          FROM Employees e) emp
-	 WHERE emp.salary_rank = 3
+  SELECT TOP(1) 
+         emp.FirstName,
+         emp.LastName,
+         emp.salary
+    FROM (SELECT e.FirstName,
+                 e.LastName,
+                 e.Salary,
+                 DENSE_RANK () OVER (ORDER BY e.salary) salary_rank 
+            FROM Employees e) emp
+   WHERE emp.salary_rank = 3
 ORDER BY FirstName
 
 
@@ -434,15 +434,15 @@ ORDER BY FirstName
 
 -- this querie returns firstname, lastname, salary, deptID, count of people per dept, avg salary, min salary, max salary, sum of the salary till each row, and row number 
 SELECT e.FirstName,
-			 e.LastName,
-			 e.Salary,
-			 e.DepartmentID, 
-			 COUNT(*)     OVER (PARTITION BY DepartmentID) totalCountOfPeoplePerDepartment,
-			 AVG(Salary)  OVER (PARTITION BY DepartmentID) averageSalary,
-			 MIN(Salary)  OVER (PARTITION BY DepartmentID) minimumSalary,
-			 MAX(Salary)  OVER (PARTITION BY DepartmentID) maximumSalary,
-			 SUM(Salary)	OVER (ORDER BY EmployeeID) sumsalary,
-			 ROW_NUMBER() OVER (ORDER BY EmployeeID) rowNumber 
+       e.LastName,
+       e.Salary,
+       e.DepartmentID, 
+       COUNT(*)     OVER (PARTITION BY DepartmentID) totalCountOfPeoplePerDepartment,
+       AVG(Salary)  OVER (PARTITION BY DepartmentID) averageSalary,
+       MIN(Salary)  OVER (PARTITION BY DepartmentID) minimumSalary,
+       MAX(Salary)  OVER (PARTITION BY DepartmentID) maximumSalary,
+       SUM(Salary)  OVER (ORDER BY EmployeeID) sumsalary,
+       ROW_NUMBER() OVER (ORDER BY EmployeeID) rowNumber 
  FROM Employees e
 
  -- ^^^^^^^^ example 9  ^^^^^^^^
@@ -450,10 +450,10 @@ SELECT e.FirstName,
 -- this querie returns empID, firstname, lastname, salary, and sum of the salary till each row
 -- what this SUM OVER does is take first salary , sum with next salary and with next salary and present it on each row 
   SELECT e.EmployeeID,
-				 e.FirstName,
-		     e.LastName,
-				 e.Salary, 
-				 SUM(e.Salary) OVER (ORDER BY e.employeeID) sum_salary 
+         e.FirstName,
+         e.LastName,
+         e.Salary, 
+         SUM(e.Salary) OVER (ORDER BY e.employeeID) sum_salary 
     FROM Employees e 
 ORDER BY e.EmployeeID
 
@@ -462,66 +462,66 @@ ORDER BY e.EmployeeID
 
 -- this example shows what is happening when we join with the same table  and why the table rows are so much replicated 
 SELECT  e.EmployeeID,
-				e.DepartmentID,
-				e.FirstName,
-				e.LastName,
-				e.Salary,
-				e.row_num,
+        e.DepartmentID,
+        e.FirstName,
+        e.LastName,
+        e.Salary,
+        e.row_num,
 
-				e1.EmployeeID,
-				e1.DepartmentID,
-				e1.FirstName,
-				e1.LastName,
-				e1.Salary,
-				e1.row_num
+        e1.EmployeeID,
+        e1.DepartmentID,
+        e1.FirstName,
+        e1.LastName,
+        e1.Salary,
+        e1.row_num
 FROM (SELECT emp.EmployeeID,
-						 emp.DepartmentID,
-						 emp.FirstName,
-						 emp.LastName,
-						 emp.Salary,
-						 ROW_NUMBER() OVER (ORDER BY employeeID) row_num
-		    FROM Employees emp) e
+             emp.DepartmentID,
+             emp.FirstName,
+             emp.LastName,
+             emp.Salary,
+             ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+        FROM Employees emp) e
 JOIN (SELECT emp1.EmployeeID,
-						 emp1.DepartmentID,
-						 emp1.FirstName,
-						 emp1.LastName,
-				     emp1.Salary,
-				     ROW_NUMBER() OVER (ORDER BY employeeID) row_num 
-				FROM Employees emp1)e1 ON e1.DepartmentID = e.DepartmentID
+             emp1.DepartmentID,
+             emp1.FirstName,
+             emp1.LastName,
+             emp1.Salary,
+             ROW_NUMBER() OVER (ORDER BY employeeID) row_num 
+        FROM Employees emp1)e1 ON e1.DepartmentID = e.DepartmentID
 
 
 -- ^^^^^^^^ example 11  ^^^^^^^^
 
 -- this querie calculates the average salary for each row till the last one 
-	SELECT e.FirstName,
-				 e.LastName,
-				 e.Salary,
-				 e.DepartmentID,
-				 AVG(e.Salary) OVER (ORDER BY  e.Salary) average
-	  FROM Employees e
+  SELECT e.FirstName,
+         e.LastName,
+         e.Salary,
+         e.DepartmentID,
+         AVG(e.Salary) OVER (ORDER BY  e.Salary) average
+    FROM Employees e
 
 -- ^^^^^^^^ example 12  ^^^^^^^^
 
 -- this querie returns empID, firstname, lastname, salary, row num, row num ordered by salary, avg salary one before and after actual row, and total row numbers
-	SELECT e.EmployeeID,
-				 e.FirstName,
-				 e.LastName,
-		     e.Salary,
-		     ROW_NUMBER()  OVER (ORDER BY e.Salary) row_num,
-		     COUNT(*)		   OVER (ORDER BY e.Salary) row_num_by_salary,
-		     AVG(e.Salary) OVER (ORDER BY e.Salary ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) avg_salary_one_row_before_and_after,
-		     COUNT(*)      OVER (ORDER BY e.Salary ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) total_row_nums
-	  FROM Employees e
+  SELECT e.EmployeeID,
+         e.FirstName,
+         e.LastName,
+         e.Salary,
+         ROW_NUMBER()  OVER (ORDER BY e.Salary) row_num,
+         COUNT(*)       OVER (ORDER BY e.Salary) row_num_by_salary,
+         AVG(e.Salary) OVER (ORDER BY e.Salary ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) avg_salary_one_row_before_and_after,
+         COUNT(*)      OVER (ORDER BY e.Salary ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) total_row_nums
+    FROM Employees e
   
 -- ^^^^^^^^ example 13  ^^^^^^^^
 
 -- this querie returns firstname, lastname, depID, salary, row number of each employee and rank by deptID
   SELECT e.FirstName,
-				 e.LastName,
-	       e.DepartmentID,
-	       e.Salary,
-	       ROW_NUMBER() OVER ( ORDER BY e.FirstName ) row_num,
-	       RANK()       OVER (PARTITION BY e.DepartmentID ORDER BY e.FirstName ) rank_column
+         e.LastName,
+         e.DepartmentID,
+         e.Salary,
+         ROW_NUMBER() OVER ( ORDER BY e.FirstName ) row_num,
+         RANK()       OVER (PARTITION BY e.DepartmentID ORDER BY e.FirstName ) rank_column
     FROM Employees e
 ORDER BY e.DepartmentID
   
@@ -529,23 +529,23 @@ ORDER BY e.DepartmentID
 
 -- this querie return all people who have third highest salary from the bottom to the top  partitioned by departments 
   SELECT oe.FirstName,
-				 oe.LastName,
-			 	 oe.DepartmentID,
-				 oe.Salary,
-				 oe.rank_column FROM 
-				(SELECT e.FirstName,
-								e.LastName,
-							  e.DepartmentID,
-							  e.Salary,
-							  DENSE_RANK() OVER (PARTITION BY e.DepartmentID ORDER BY e.Salary ) rank_column
+         oe.LastName,
+          oe.DepartmentID,
+         oe.Salary,
+         oe.rank_column FROM 
+        (SELECT e.FirstName,
+                e.LastName,
+                e.DepartmentID,
+                e.Salary,
+                DENSE_RANK() OVER (PARTITION BY e.DepartmentID ORDER BY e.Salary ) rank_column
     FROM Employees e) oe
-	 WHERE oe.rank_column = 3
+   WHERE oe.rank_column = 3
 
  -- ^^^^^^^^ example 15  ^^^^^^^^
  
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---																				      																		WITH 
+--                                                                                  WITH 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 use SoftUni
 GO
@@ -553,34 +553,34 @@ GO
 -- ^^^^^^^^ example 1  ^^^^^^^^
 
 -- the querie returns all departments who has more than 10 people into it
-	WITH cte_filter_by_count 
-	AS 
-	(
-	   SELECT DepartmentID, 
-			  COUNT(*) people_per_group
-	     FROM Employees e
-	 GROUP BY DepartmentID
-	   HAVING COUNT(*) > 10
-	)
-	SELECT * 
-		FROM cte_filter_by_count
+  WITH cte_filter_by_count 
+  AS 
+  (
+     SELECT DepartmentID, 
+        COUNT(*) people_per_group
+       FROM Employees e
+   GROUP BY DepartmentID
+     HAVING COUNT(*) > 10
+  )
+  SELECT * 
+    FROM cte_filter_by_count
 
 GO
 
 -- ^^^^^^^^ example 2  ^^^^^^^^
 
 -- the querie returns only the firstnames of people who are from 'Engineering department'
-	WITH cte_filter_first_names 
-	AS
-	(
-	      SELECT e.FirstName, 
-							 e.LastName,
-							 e.DepartmentID,
-							 d.[Name] 
-	        FROM Employees e
-	  INNER JOIN Departments d ON D.DepartmentID = E.DepartmentID
-	       WHERE d.Name = 'Engineering'
-	)
+  WITH cte_filter_first_names 
+  AS
+  (
+        SELECT e.FirstName, 
+               e.LastName,
+               e.DepartmentID,
+               d.[Name] 
+          FROM Employees e
+    INNER JOIN Departments d ON D.DepartmentID = E.DepartmentID
+         WHERE d.Name = 'Engineering'
+  )
   SELECT f.FirstName 
     FROM CTE_filter_first_names f 
  GO
@@ -589,38 +589,38 @@ GO
 
 -- WITH example with PARAMS
 -- in this case the name of params does not have to be the same as the names of the colums , just the count must be the same
-	WITH cte_filter_by_name(firstname, lastname)
-	AS
-	(
-		SELECT e.FirstName,
-				   e.LastName 
-		  FROM Employees e
-	)
-	SELECT c.firstname 
+  WITH cte_filter_by_name(firstname, lastname)
+  AS
+  (
+    SELECT e.FirstName,
+           e.LastName 
+      FROM Employees e
+  )
+  SELECT c.firstname 
     FROM cte_filter_by_name c 
-GO	
+GO  
 
 
 -- ^^^^^^^^ example 4  ^^^^^^^^
 
 -- the querie returns firstname, lastname, department name and count of people per department
-	WITH CTE_Employee_Count(departmentID,employee_count_per_department)
-	AS
-	(
-		SELECT e.DepartmentID, 
-					 COUNT(*) total_count_per_department 
-		  FROM Employees e
-	GROUP BY DepartmentID
-	)
-	
-		SELECT e.FirstName,
-					 e.LastName,
-					 d.[Name],
-					 ec.employee_count_per_department 
-	    FROM Employees e
+  WITH CTE_Employee_Count(departmentID,employee_count_per_department)
+  AS
+  (
+    SELECT e.DepartmentID, 
+           COUNT(*) total_count_per_department 
+      FROM Employees e
+  GROUP BY DepartmentID
+  )
+  
+    SELECT e.FirstName,
+           e.LastName,
+           d.[Name],
+           ec.employee_count_per_department 
+      FROM Employees e
 INNER JOIN CTE_Employee_Count ec ON EC.departmentID = e.DepartmentID
-INNER JOIN Departments d		 ON D.DepartmentID = e.DepartmentID
-	ORDER BY employee_count_per_department
+INNER JOIN Departments d     ON D.DepartmentID = e.DepartmentID
+  ORDER BY employee_count_per_department
 
 
 -- ^^^^^^^^ example 5  ^^^^^^^^
@@ -628,48 +628,48 @@ INNER JOIN Departments d		 ON D.DepartmentID = e.DepartmentID
 -- the querie returns just update of lastname who follow the condition of the salary.
 -- this example shows one other important point that if we want to use WITH in transaction we should use ';'
 
-	USE UserInfo
+  USE UserInfo
 
-	BEGIN TRANSACTION;
+  BEGIN TRANSACTION;
 
-	WITH cte_simple_querie_test
-	AS
-	(
-		SELECT uit.FirstName,
-					 uit.LastName,
-			     uit.Salary 
-		  FROM UserInfoTable uit
-		 WHERE uit.Salary > 200
-	)
-	
-	UPDATE cte_simple_querie_test 
-	   SET LastName = 'test_family'
-	 WHERE Salary = 500
+  WITH cte_simple_querie_test
+  AS
+  (
+    SELECT uit.FirstName,
+           uit.LastName,
+           uit.Salary 
+      FROM UserInfoTable uit
+     WHERE uit.Salary > 200
+  )
+  
+  UPDATE cte_simple_querie_test 
+     SET LastName = 'test_family'
+   WHERE Salary = 500
 
-	COMMIT TRANSACTION
+  COMMIT TRANSACTION
 
  -- ^^^^^^^^ example 6  ^^^^^^^^
-	USE SoftUni
+  USE SoftUni
 -- the querie returns the third department with most people 
-	GO
-	WITH cte_get_count_of_people_per_dep
-	AS
-	(
-		SELECT e.DepartmentID, 
-					 COUNT(*) total_count_per_department,
-					 DENSE_RANK() OVER (ORDER BY count(*) desc) department_rank
-			FROM Employees e
+  GO
+  WITH cte_get_count_of_people_per_dep
+  AS
+  (
+    SELECT e.DepartmentID, 
+           COUNT(*) total_count_per_department,
+           DENSE_RANK() OVER (ORDER BY count(*) desc) department_rank
+      FROM Employees e
   GROUP BY e.departmentID
-	)
-	SELECT cte.* 
-		FROM cte_get_count_of_people_per_dep cte
-	 WHERE cte.department_rank = 3
+  )
+  SELECT cte.* 
+    FROM cte_get_count_of_people_per_dep cte
+   WHERE cte.department_rank = 3
 
 -- this is same querie but without dense_rank and with, just simple derived table
   SELECT TOP (1) x.*
-		FROM ( SELECT TOP (3) e.DepartmentID, 
-						  COUNT(*) total_count_per_department
-					 FROM Employees e
+    FROM ( SELECT TOP (3) e.DepartmentID, 
+              COUNT(*) total_count_per_department
+           FROM Employees e
 GROUP BY e.departmentID
 ORDER BY total_count_per_department DESC) x
 ORDER BY total_count_per_department ASC
@@ -677,33 +677,33 @@ ORDER BY total_count_per_department ASC
 -- ^^^^^^^^ example 7  ^^^^^^^^
 
 -- the querie returns the department with more people than 20 
-	WITH cte_count_per_dept([name] ,dept,total)
-	AS
-	(
-		SELECT d.[Name],
-		       d.DepartmentID, 
-	  	     COUNT(*) totalEmployees 
-	    FROM Employees e
-	    JOIN Departments d ON d.DepartmentID = e.DepartmentID
-	GROUP BY d.[Name],
-					 d.DepartmentID
-	)
-	SELECT [name],
-		     total 
-	  FROM cte_count_per_dept 
-	 WHERE total > 20
+  WITH cte_count_per_dept([name] ,dept,total)
+  AS
+  (
+    SELECT d.[Name],
+           d.DepartmentID, 
+           COUNT(*) totalEmployees 
+      FROM Employees e
+      JOIN Departments d ON d.DepartmentID = e.DepartmentID
+  GROUP BY d.[Name],
+           d.DepartmentID
+  )
+  SELECT [name],
+         total 
+    FROM cte_count_per_dept 
+   WHERE total > 20
 
 GO
 
 -- ^^^^^^^^ example 9  ^^^^^^^^
 
 -- the querie returns just added column for row numbers but partitioned by each department
-	USE SoftUni   
-	WITH cte_custom_view AS
+  USE SoftUni   
+  WITH cte_custom_view AS
  (
-		SELECT e.* , 
-					 ROW_NUMBER() OVER (PARTITION BY departmentID ORDER BY e.employeeID ) AS rownumber 
-			FROM Employees e
+    SELECT e.* , 
+           ROW_NUMBER() OVER (PARTITION BY departmentID ORDER BY e.employeeID ) AS rownumber 
+      FROM Employees e
  )
 
  SELECT * FROM cte_custom_view
@@ -711,76 +711,206 @@ GO
 
 
  -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
--- 																				      								VIEW (virtual table based on a SELECT query)
+--                                                               VIEW (virtual table based on a SELECT query)
 -- /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	USE SoftUni 
-	GO
+  USE SoftUni 
+  GO
+ -- view cannot be created from temporary tables
+ -- view cannot have parameters
 
  -- ^^^^^^^^ example 1  ^^^^^^^^
 
 -- this querie filter employee by department name and in this example this is 'Engineering'
-	CREATE OR ALTER VIEW cte_filter_by_department
-	AS
-	(
-		SELECT e.FirstName, 
-			     e.LastName 
-	    FROM Employees e
+  CREATE OR ALTER VIEW v_filter_by_department
+  AS
+  (
+    SELECT e.FirstName, 
+           e.LastName 
+      FROM Employees e
 INNER JOIN Departments d ON D.DepartmentID = E.DepartmentID
-		 WHERE d.[Name] = 'Engineering'
-	)
-	GO
-  SELECT * FROM cte_filter_by_department
-	GO
+     WHERE d.[Name] = 'Engineering'
+  )
+  GO
+  SELECT * FROM v_filter_by_department
+  GO
 
 -- ^^^^^^^^ example 2  ^^^^^^^^
 
 -- this querie returns department with more employee than 20 
-	CREATE OR ALTER VIEW cte_another_version
-	AS
-	(
-		SELECT d.[Name],
-					 d.DepartmentID, 
-					 COUNT(*) totalEmployees 
-	    FROM Employees e
-	    JOIN Departments d ON d.DepartmentID = e.DepartmentID
-	GROUP BY d.[Name],d.DepartmentID
-	)
+  CREATE OR ALTER VIEW v_another_version
+  AS
+  (
+    SELECT d.[Name],
+           d.DepartmentID, 
+           COUNT(*) totalEmployees 
+      FROM Employees e
+      JOIN Departments d ON d.DepartmentID = e.DepartmentID
+  GROUP BY d.[Name],d.DepartmentID
+  )
 GO
-	SELECT * 
-    FROM cte_another_version
+  SELECT * 
+    FROM v_another_version
    WHERE totalEmployees > 20
 
-   sp_helptext cte_filter_by_department
+-- option 2
+go
+CREATE OR ALTER VIEW v_another_versionV2(name_column, department_id, total)
+  AS
+  (
+    SELECT d.[Name],
+           d.DepartmentID, 
+           COUNT(*) totalEmployees 
+      FROM Employees e
+      JOIN Departments d ON d.DepartmentID = e.DepartmentID
+  GROUP BY d.[Name],d.DepartmentID
+  )
+go
+  SELECT name_column, department_id, total
+    FROM v_another_versionV2
+   WHERE total > 20
+
+
+
+-- indexed view -------------------------------
+
+create table Product
+(
+id int primary key identity,
+[name] varchar(50) ,
+price decimal(16,2),
+)
+insert into Product
+values
+('product_1',50),
+('product_2',100),
+('product_3',150),
+('product_4',200),
+('product_5',250),
+('product_6',300),
+('product_7',350)
+
+create table orders
+(
+product_id int FOREIGN KEY (product_id) REFERENCES Product(id),
+quantity int
+)
+insert into orders
+values
+(7,100),
+(2,20),
+(3,30),
+(4,40),
+(5,50),
+(6,60),
+(7,70),
+(1,10),
+(1,20),
+(2,30),
+(6,40),
+(4,50),
+(4,60),
+(7,70)
+
+
+select * 
+  from orders o
+  join Product p on p.id = o.product_id 
+go
+-- the things which are nessesary for indexed view are:
+-- count_big, with schemabinding, isnull(if there is possibility for null), and we must use schema_name.table_name
+-- they are suitable for data warehouse where the data is not frequiently changed
+create or alter view v_totalorders
+with schemabinding
+as
+select p.name, sum(isnull((p.price * o.quantity), 0)) as total, count_big(*) as total_as_sum
+  from dbo.orders o
+  join dbo.Product p on p.id = o.product_id 
+  group by p.name
+go
+create unique clustered index uix_total_orders on v_totalorders(name)
+
+select * from v_totalorders
+
+
+-- ----------------------------------------------------------------------------------------------------------------
+
+-- view example : it shows how after update one field from the table is changed on both tables - this is because view is just virtual table
+-- updating views has limitations - in this example i have pointed particular case where i can update it
+
+GO
+CREATE OR ALTER VIEW v__temp_result  
+  AS
+  (
+   SELECT EmployeeID,
+      FirstName,
+      LastName,
+      Salary,
+      NULL AS NextSalary,
+      ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+   FROM Employees 
+  )
+ GO
+  UPDATE v__temp_result
+     SET Salary = 13000
+   WHERE FirstName = 'Guy' and LastName = 'Gilbert'
+
+
+-- ---------------------------------------------
+ go
+ create or alter view v__temp_result_indexed
+with schemabinding
+as
+(
+  select e.employeeid, 
+         e.FirstName,
+         e.Salary 
+    from dbo.Employees e
+)
+go
+create unique clustered index idx_test on v__temp_result_indexed(employeeid)
+
+select * from v__temp_result_indexed
+
+update v__temp_result_indexed
+set salary = 13000
+WHERE FirstName = 'Guy'
+
+
+
+ SELECT * FROM employees
+ SELECT * FROM v__temp_result
+ SELECT * FROM v__temp_result_indexed
+
 
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
--- 																				      								TEMPORARY TABLES(Local and Global Examples)
+--                                                               TEMPORARY TABLES(Local and Global Examples)
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        1 - Local Temporary Table       |||||||||||||||||||||||||||||||||||||||||||||||||
-
+-- temp tables and table variables are created in tempDb
 
 -- they are existing only for current querie window
-	GO
-	CREATE TABLE #PersonDetails
-	( 
-		Id INT PRIMARY KEY IDENTITY,
-		[Name] NVARCHAR(50)
-	)
-	INSERT INTO #PersonDetails
-	VALUES
-	('Petko'),
-	('Ivan'),
-	('Georgi')
+  GO
+  CREATE TABLE #PersonDetails
+  ( 
+    Id INT PRIMARY KEY IDENTITY,
+    [Name] NVARCHAR(50)
+  )
+  INSERT INTO #PersonDetails
+  VALUES
+  ('Petko'),
+  ('Ivan'),
+  ('Georgi')
 
 -- with this querie we can check all tables in tempdb and particulary #PersonDetails 
-	SELECT * FROM tempdb..sysobjects
-	SELECT [NAME] FROM tempdb..sysobjects
-	WHERE NAME LIKE '%#PersonDetails%'
+  SELECT * FROM tempdb..sysobjects
+  SELECT [NAME] FROM tempdb..sysobjects
+  WHERE NAME LIKE '%#PersonDetails%'
 
 -- insert in already created temp table
-	USE SoftUni
+  USE SoftUni
 -- first option
   INSERT 
     INTO #PersonDetails
@@ -791,76 +921,77 @@ GO
     INTO #PersonDetails
     FROM Employees
 
-	SELECT * FROM #PersonDetails
-	DROP TABLE IF EXISTS #PersonDetails
+  SELECT * FROM #PersonDetails
+  DROP TABLE IF EXISTS #PersonDetails
 
 
  -- insert in #temp_t table with no need of creating
  
  -- first option
-	SELECT firstname
+  SELECT EmployeeID,firstname
     INTO #temp_t
     FROM Employees
-	GO
+
+  GO
 -- second option
   INSERT 
     INTO #temp_t
   SELECT FirstName 
     FROM Employees
 
-	SELECT * FROM #temp_t
-	DROP TABLE IF EXISTS #temp_t
+  SELECT * FROM #temp_t
+  DROP TABLE IF EXISTS #temp_t
 
 -- when temporary table  is inside stored procedure get dropped once this sp complete it's execution 
-	GO
-	CREATE OR ALTER PROCEDURE sp_local_temporary_table
-	AS
-	BEGIN
+  GO
+  CREATE OR ALTER PROCEDURE sp_local_temporary_table
+  AS
+  BEGIN
   CREATE TABLE #person_details
   ( 
-		Id INT PRIMARY KEY IDENTITY,
-		[Name] NVARCHAR(50)
+    Id INT PRIMARY KEY IDENTITY,
+    [Name] NVARCHAR(50)
   )
   INSERT INTO #person_details
-	VALUES
+  VALUES
   ('Petko'),
   ('Ivan'),
   ('Georgi')
 
   SELECT * FROM #person_details
-	END
+  END
 
-	EXECUTE sp_local_temporary_table
+  EXECUTE sp_local_temporary_table
 -- in this case the select statement will rturn error  
-	SELECT * FROM #person_details
+  SELECT * FROM #person_details
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        2 - Global Temporary Table       |||||||||||||||||||||||||||||||||||||||||||||||||
 
--- they are existing for all windows 
-	CREATE TABLE ##employee_details
-	( 
-		Id INT PRIMARY KEY IDENTITY,
-		[Name] NVARCHAR(50)
-	)
-	INSERT INTO ##employee_details
-	VALUES
-	('employee First'),
-	('employee Second'),
-	('employee Third')
+-- they are existing till the last connection is closed
+  CREATE TABLE ##employee_details
+  ( 
+    Id INT PRIMARY KEY IDENTITY,
+    [Name] NVARCHAR(50)
+  )
+  INSERT INTO ##employee_details
+  VALUES
+  ('employee First'),
+  ('employee Second'),
+  ('employee Third')
 
 SELECT * FROM ##employee_details
 
-	GO
-	CREATE OR ALTER PROCEDURE sp__global_temporary_table
-	AS
-	BEGIN
+  GO
+  CREATE OR ALTER PROCEDURE sp__global_temporary_table
+  AS
+  BEGIN
   CREATE TABLE ##employee_det
-	( 
-		Id INT PRIMARY KEY IDENTITY,
-		[Name] NVARCHAR(50)
+  ( 
+    Id INT PRIMARY KEY IDENTITY,
+    [Name] NVARCHAR(50)
   )
-	INSERT INTO ##employee_det
-	VALUES
+  INSERT INTO ##employee_det
+  VALUES
   ('Petko'),
   ('Ivan'),
   ('Georgi'),
@@ -873,7 +1004,7 @@ END
 
 EXECUTE sp__global_temporary_table
 -- in this case the table will be still existing
-	SELECT * FROM ##employee_det
+  SELECT * FROM ##employee_det
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        3 - -- Table variable       |||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -882,22 +1013,22 @@ EXECUTE sp__global_temporary_table
 -- ^^^^^^^^ example 1  ^^^^^^^^
 
 -- this querie returns department name and count of employees more than 20 for this particular department
-	DECLARE @TableEmployeeCount TABLE(DepartmentName NVARCHAR(50), DepartmentId INT, TotalEmployees INT)
+  DECLARE @TableEmployeeCount TABLE(DepartmentName NVARCHAR(50), DepartmentId INT, TotalEmployees INT)
 
-	INSERT 
+  INSERT 
     INTO @TableEmployeeCount
   SELECT d.[Name],
-  	     d.DepartmentID, 
-    		 COUNT(*) totalEmployees 
+         d.DepartmentID, 
+         COUNT(*) totalEmployees 
     FROM Employees e
     JOIN Departments d ON d.DepartmentID = e.DepartmentID
 GROUP BY d.[Name],
-				 d.DepartmentID	
+         d.DepartmentID  
 
   SELECT DepartmentName,
-				 TotalEmployees		
-		FROM @TableEmployeeCount 
-	 WHERE TotalEmployees > 20	 
+         TotalEmployees    
+    FROM @TableEmployeeCount 
+   WHERE TotalEmployees > 20   
 
   
 -- ^^^^^^^^ example 2  ^^^^^^^^
@@ -906,175 +1037,179 @@ GROUP BY d.[Name],
 
 --first step we create variable of type 'table_variable' which is nothing diffent than other variables as INT NVARCHAR and so on , just
 -- this one takes table which we want with the exact columns we want
-	CREATE TYPE table_variable AS TABLE
-	(
-		FirstName NVARCHAR(50),
-		LastName NVARCHAR(50),
-		Salary INT
-	)
-	GO
+  CREATE TYPE table_variable AS TABLE
+  (
+    FirstName NVARCHAR(50),
+    LastName NVARCHAR(50),
+    Salary INT
+  )
+  GO
+  -- or  we can just declare it like :
+  declare @table_variable  table (FirstName NVARCHAR(50), LastName NVARCHAR(50), Salary INT)
+
+
 --second step is to create a procedure and to put this variable 'table_variable' as parameter and with name '@table_variable'
 -- it MUST be READONLY 
-	USE UserInfo
-	GO 
-	CREATE or ALTER PROCEDURE sp__insert_employee
-	(
-		@table_variable  table_variable READONLY
-	)
-	AS
-	BEGIN
-	INSERT 
-	  INTO UserInfoTable
+  USE UserInfo
+  GO 
+  CREATE or ALTER PROCEDURE sp__insert_employee
+  (
+    @table_variable  table_variable READONLY
+  )
+  AS
+  BEGIN
+  INSERT 
+    INTO UserInfoTable
   SELECT * 
-	  FROM @table_variable
-	END
+    FROM @table_variable
+  END
 GO
 -- third step we declare our variable from type 'table_variable' and we give her name '@table_variable_to_be_passed_to_sp'
 -- and we insert records into it
-	DECLARE @table_variable_to_be_passed_to_sp table_variable 
+  DECLARE @table_variable_to_be_passed_to_sp table_variable 
 
-	INSERT 
+  INSERT 
     INTO @table_variable_to_be_passed_to_sp
   SELECT e.FirstName,
-    	   e.LastName, 
+         e.LastName, 
          e.Salary 
     FROM UserInfoTable e
-			
+      
 -- the final part of this is to execute our SP with the parameter this SP takes : is it from type 'table_variable' and the name is @table_variable_to_be_passed_to_sp 
-	EXECUTE sp__insert_employee @table_variable_to_be_passed_to_sp
+  EXECUTE sp__insert_employee @table_variable_to_be_passed_to_sp
 
 
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        4 - ExampleS  |||||||||||||||||||||||||||||||||||||||||||||||||
-	USE SoftUni
+  USE SoftUni
 -- ^^^^^^^^ example 1  ^^^^^^^^
 
 -- simple querie example which return the department with more than 20 people inside
 -- without temp table - first approach
-	SELECT d.[Name],
-			   d.DepartmentID, 
-				 COUNT(*) totalEmployees 
-		FROM Employees e
-		JOIN Departments d ON d.DepartmentID = e.DepartmentID
+  SELECT d.[Name],
+         d.DepartmentID, 
+         COUNT(*) totalEmployees 
+    FROM Employees e
+    JOIN Departments d ON d.DepartmentID = e.DepartmentID
 GROUP BY d.[Name],d.DepartmentID
   HAVING COUNT(*) > 20
 
 -- without temp table - second approach with derived table
   SELECT emp.[Name],
-				 emp.DepartmentID,
-				 emp.total_employees 
+         emp.DepartmentID,
+         emp.total_employees 
     FROM (SELECT d.[Name],
-								 d.DepartmentID, 
-								 COUNT(*) total_employees 
-						FROM Employees e
-						JOIN Departments d ON d.DepartmentID = e.DepartmentID
-				GROUP BY d.[Name],d.DepartmentID) AS emp
-					 WHERE emp.total_employees > 20
+                 d.DepartmentID, 
+                 COUNT(*) total_employees 
+            FROM Employees e
+            JOIN Departments d ON d.DepartmentID = e.DepartmentID
+        GROUP BY d.[Name],d.DepartmentID) AS emp
+           WHERE emp.total_employees > 20
 
 -- instead of having query like this with HAVING clause or DERIVED table we can create temp table
 -- done with #temp_table
   SELECT d.[Name], 
-				 e.DepartmentID, 
-				 count(*) sum_people_per_department 
+         e.DepartmentID, 
+         count(*) sum_people_per_department 
     INTO  #temp_petko_test
     FROM Employees e
     JOIN Departments d ON d.DepartmentID = e.DepartmentID
 GROUP BY d.[Name], e.DepartmentID
 
-	SELECT * FROM #temp_petko_test
+  SELECT * FROM #temp_petko_test
 
-	SELECT temp.* 
+  SELECT temp.* 
     FROM #temp_petko_test temp
-	 WHERE sum_people_per_department > 20
+   WHERE sum_people_per_department > 20
   
-	DROP TABLE #temp_petko_test
+  DROP TABLE #temp_petko_test
 
-	GO
+  GO
 
  
 -- ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---																				      																		TRY - CATCH
+--                                                                                  TRY - CATCH
 -- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	GO  
+  GO  
 --  in this particullar case will go exactly in catch because i try to declare variable of type int  with string input  
-	BEGIN TRY 
-	DECLARE @TEST INT SET @TEST = 'PETKO'
-	PRINT 'TRY '	
-	END TRY
-	BEGIN CATCH		
-	PRINT 'CATCH '
-	END CATCH
+  BEGIN TRY 
+  DECLARE @TEST INT SET @TEST = 'PETKO'
+  PRINT 'TRY '  
+  END TRY
+  BEGIN CATCH    
+  PRINT 'CATCH '
+  END CATCH
 
  -- /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---																				      																		UNION and UNION ALL
+--                                                                                  UNION and UNION ALL
 -- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 -- ^^^^^^^^ example 1  ^^^^^^^^
-	
-	GO
-	WITH cte_first_test(first_name, job_title)
-	AS
-	(
-		SELECT e.FirstName,
-					 e.JobTitle 
-			FROM Employees e
-	), cte_second_test(first_name2,job_title2)
-	AS
-	(
-		SELECT e2.FirstName,
-					 e2.JobTitle 
-		  FROM Employees e2
-	)
+  
+  GO
+  WITH cte_first_test(first_name, job_title)
+  AS
+  (
+    SELECT e.FirstName,
+           e.JobTitle 
+      FROM Employees e
+  ), cte_second_test(first_name2,job_title2)
+  AS
+  (
+    SELECT e2.FirstName,
+           e2.JobTitle 
+      FROM Employees e2
+  )
 
 -- with UNION ALL we get all the records  and in this case they will be DUPLICATED
-	SELECT * FROM cte_first_test
-	UNION --ALL
-	SELECT * FROM cte_second_test
+  SELECT * FROM cte_first_test
+  UNION --ALL
+  SELECT * FROM cte_second_test
 
-	-- ^^^^^^^^ example 2  ^^^^^^^^
+  -- ^^^^^^^^ example 2  ^^^^^^^^
 
  -- in this case we will get only the UNIQUE records who are not duplicated and perform DISTINCT SORT
-	GO
-	GO
-	 
+  GO
+  GO
+   
 
  -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---																				      																		CASE 
+--                                                                                  CASE 
 -- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	USE UserInfo
-	GO
+  USE UserInfo
+  GO
 -- ^^^^^^^^ example 1  ^^^^^^^^
 
 -- add a column with string description for a salary if it's between certain values or type 'error'
-	SELECT e.FirstName,
-				 e.LastName,
-				 e.Salary,
-	  CASE	
-				 WHEN e.salary BETWEEN 100 AND 200 THEN 'low'
-				 WHEN e.Salary BETWEEN 200 AND 400 THEN 'medium'
-				 WHEN e.Salary  > 400						   THEN 'high'
-				 ELSE 'ERROR'
-	   END AS [SALARY DESCRIPTION]
-	  FROM UserInfoTable e
+  SELECT e.FirstName,
+         e.LastName,
+         e.Salary,
+    CASE  
+         WHEN e.salary BETWEEN 100 AND 200 THEN 'low'
+         WHEN e.Salary BETWEEN 200 AND 400 THEN 'medium'
+         WHEN e.Salary  > 400               THEN 'high'
+         ELSE 'ERROR'
+     END AS [SALARY DESCRIPTION]
+    FROM UserInfoTable e
 ORDER BY FirstName
 
 -- ^^^^^^^^ example 2  ^^^^^^^^
 
 -- add a column with string description for a salary if has certain values or if not just type 'default'
      SELECT e.FirstName,
-			e.LastName,
-			e.Salary,
-	     CASE e.Salary
+      e.LastName,
+      e.Salary,
+       CASE e.Salary
             WHEN 100 THEN 'HUNDRED'
-						WHEN 400 THEN 'FOUR_HUNDRED'
-						WHEN 500 THEN 'FIVE_HUNDRED'
-						ELSE 'DEFAULT'
-						END AS [SALARY DESCRIPTION]
-			 FROM UserInfoTable e
-	 ORDER BY FirstName
+            WHEN 400 THEN 'FOUR_HUNDRED'
+            WHEN 500 THEN 'FIVE_HUNDRED'
+            ELSE 'DEFAULT'
+            END AS [SALARY DESCRIPTION]
+       FROM UserInfoTable e
+   ORDER BY FirstName
 
-	 SELECT * FROM UserInfoTable
+   SELECT * FROM UserInfoTable
 
 
 

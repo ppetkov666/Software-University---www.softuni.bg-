@@ -8,7 +8,7 @@
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---																				 GETDATE(), CURRENT_TIMESTAMP, SYSDATETIME(), SYSDATETIMEOFFSET(), GETUTCDATE()																			       																		
+--                                         GETDATE(), CURRENT_TIMESTAMP, SYSDATETIME(), SYSDATETIMEOFFSET(), GETUTCDATE()                                                                                 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 SELECT GETDATE()
@@ -19,32 +19,32 @@ SELECT GETUTCDATE()
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---																				       							DATENAME(), ISDATE() 											
+--                                                             DATENAME(), ISDATE()                       
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
  SELECT e.FirstName,
-				e.HireDate,
-				DAY(e.HireDate) day,
-				DATENAME(DAYOFYEAR,e.HireDate) day_of_the_year,
-				DATENAME(WEEKDAY,e.HireDate) day_of_the_week,
-				MONTH(e.HireDate) month,
-				DATENAME(MONTH,e.HireDate) month_as_name,
-				YEAR(e.HireDate) year,
-				ISDATE(e.HireDate) hire_date_yes_or_no,
-				ISDATE(e.FirstName) first_name 
+        e.HireDate,
+        DAY(e.HireDate) day,
+        DATENAME(DAYOFYEAR,e.HireDate) day_of_the_year,
+        DATENAME(WEEKDAY,e.HireDate) day_of_the_week,
+        MONTH(e.HireDate) month,
+        DATENAME(MONTH,e.HireDate) month_as_name,
+        YEAR(e.HireDate) year,
+        ISDATE(e.HireDate) hire_date_yes_or_no,
+        ISDATE(e.FirstName) first_name 
    FROM Employees e
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---																				       								DATEPART, DATEDIFF, CALCULATE PERSON AGE										
+--                                                               DATEPART, DATEDIFF, CALCULATE PERSON AGE                    
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 SELECT e.FirstName,
-				e.HireDate,
-				DATENAME(WEEKDAY,e.HireDate) day_of_the_week,
-				DATEPART(WEEKDAY,E.HireDate) day_as_number,
-				DATEADD(day,20,e.HireDate) added_days,
-				DATEDIFF(year,e.HireDate,GETDATE()) years_at_the_company
+        e.HireDate,
+        DATENAME(WEEKDAY,e.HireDate) day_of_the_week,
+        DATEPART(WEEKDAY,E.HireDate) day_as_number,
+        DATEADD(day,20,e.HireDate) added_days,
+        DATEDIFF(year,e.HireDate,GETDATE()) years_at_the_company
    FROM Employees e
 
 -- how to calculate age of a person
@@ -68,18 +68,18 @@ DECLARE @days INT
 SELECT @temp_date = @dob
 
 SELECT @years = DATEDIFF(YEAR, @temp_date,GETDATE()) - 
-								CASE 
-									WHEN (MONTH(@dob) > MONTH(GETDATE())) OR
-											 (MONTH(@dob) = MONTH(GETDATE())) AND (DAY(@dob) > DAY(GETDATE()))
-									THEN 1 ELSE 0
-								END
+                CASE 
+                  WHEN (MONTH(@dob) > MONTH(GETDATE())) OR
+                       (MONTH(@dob) = MONTH(GETDATE())) AND (DAY(@dob) > DAY(GETDATE()))
+                  THEN 1 ELSE 0
+                END
 SELECT @temp_date = DATEADD(YEAR,@years,@temp_date)
 --19 november 2018
 SELECT @months = DATEDIFF(MONTH, @temp_date,GETDATE()) - 
-								CASE 
-									WHEN (DAY(@dob) > DAY(GETDATE()))
-									THEN 1 ELSE 0
-								END
+                CASE 
+                  WHEN (DAY(@dob) > DAY(GETDATE()))
+                  THEN 1 ELSE 0
+                END
 
 
 SELECT @temp_date = DATEADD(MONTH,@months,@temp_date)
@@ -97,29 +97,29 @@ print @person_age
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---																				       												CAST, CONVERT					
+--                                                                       CAST, CONVERT          
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 -- the slight different between both is that cast is based on ansi standart and is better to be used unless we need extra style functionality wich convert give us!
 -- just a hint - whatever is in this type of brackets [] is optional parameter according to msdn documentation
 SELECT e.FirstName,
-			 e.LastName,
-			 SUBSTRING(CAST(e.HireDate as nvarchar),1,12) cast_and_substring, 
-			 cast(e.HireDate as date)using_just_date_function,
-			 cast(e.HireDate as nvarchar(12)) cast_with_lenght_param,  
-			 convert(NVARCHAR(3),e.HireDate) convert_with_lenght_param,
-			 convert(NVARCHAR(12),e.HireDate,101) convert_with_style_param_101,
-			 convert(NVARCHAR(12),e.HireDate,102) convert_with_style_param_102,
-			 convert(NVARCHAR(12),e.HireDate,103) convert_with_style_param_103,
-			 convert(NVARCHAR(12),e.HireDate,104) convert_with_style_param_104,
-			 convert(NVARCHAR(12),e.HireDate,105) convert_with_style_param_105
+       e.LastName,
+       SUBSTRING(CAST(e.HireDate as nvarchar),1,12) cast_and_substring, 
+       cast(e.HireDate as date)using_just_date_function,
+       cast(e.HireDate as nvarchar(12)) cast_with_lenght_param,  
+       convert(NVARCHAR(3),e.HireDate) convert_with_lenght_param,
+       convert(NVARCHAR(12),e.HireDate,101) convert_with_style_param_101,
+       convert(NVARCHAR(12),e.HireDate,102) convert_with_style_param_102,
+       convert(NVARCHAR(12),e.HireDate,103) convert_with_style_param_103,
+       convert(NVARCHAR(12),e.HireDate,104) convert_with_style_param_104,
+       convert(NVARCHAR(12),e.HireDate,105) convert_with_style_param_105
   FROM Employees e
 
 SELECT e.FirstName,
-			 e.LastName,
-			 e.FirstName + ' ' + e.LastName + ' with id: ' + cast(e.EmployeeID AS NVARCHAR)
+       e.LastName,
+       e.FirstName + ' ' + e.LastName + ' with id: ' + cast(e.EmployeeID AS NVARCHAR)
   FROM Employees e
 
-	-- if i dont cast it to DATE we will have different result because the time will be included 
+  -- if i dont cast it to DATE we will have different result because the time will be included 
   SELECT CAST(e.HireDate AS DATE), COUNT(e.EmployeeID) count_of_people_per_hire_date
     FROM Employees e
 GROUP BY CAST(e.HireDate AS DATE)
@@ -129,7 +129,7 @@ GROUP BY CAST(e.HireDate AS DATE)
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---																				       																		
+--                                                                                   
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -144,7 +144,7 @@ GROUP BY CAST(e.HireDate AS DATE)
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---																				       																		
+--                                                                                   
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -158,7 +158,7 @@ GROUP BY CAST(e.HireDate AS DATE)
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---																				       																		
+--                                                                                   
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -173,7 +173,7 @@ GROUP BY CAST(e.HireDate AS DATE)
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---																				       																		
+--                                                                                   
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

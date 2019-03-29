@@ -14,11 +14,11 @@ CREATE OR ALTER PROCEDURE sp__search_users
 )
 AS
 BEGIN
-	SELECT * 
-	  FROM UserInfo ui
-	 WHERE (ui.UserName = @user_name or @user_name IS NULL) AND
-				 (ui.Email		= @email	OR @email IS NULL)		    AND
-				 (ui.Town		  = @town OR @town IS NULL)
+  SELECT * 
+    FROM UserInfo ui
+   WHERE (ui.UserName = @user_name or @user_name IS NULL) AND
+         (ui.Email    = @email  OR @email IS NULL)        AND
+         (ui.Town      = @town OR @town IS NULL)
 END
 
 EXECUTE sp__search_users @user_name = 'FirstUser' 

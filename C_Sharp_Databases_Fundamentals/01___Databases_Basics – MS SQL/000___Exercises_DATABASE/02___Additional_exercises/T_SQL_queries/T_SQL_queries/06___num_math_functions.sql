@@ -5,28 +5,28 @@
 -- FLOOR, ROUND, SQUARE, POWER, ABS,
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---																				       																		@@ROWCOUNT
+--                                                                                   @@ROWCOUNT
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	GO
+  GO
 -- what it does : 
 -- it shows the count of the rows 
-	SELECT e.* 
-		FROM Employees e 
-	 WHERE e.FirstName like 'p%'
-	SELECT @@ROWCOUNT
+  SELECT e.* 
+    FROM Employees e 
+   WHERE e.FirstName like 'p%'
+  SELECT @@ROWCOUNT
 
-	SELECT TOP 2 * 
-		FROM Employees e 
-	 WHERE e.FirstName like 'p%'
-	SELECT @@ROWCOUNT
+  SELECT TOP 2 * 
+    FROM Employees e 
+   WHERE e.FirstName like 'p%'
+  SELECT @@ROWCOUNT
 
-	SELECT TOP 1 * 
-		FROM Employees e 
-	 WHERE e.FirstName like 'p%'
-	SELECT @@ROWCOUNT
+  SELECT TOP 1 * 
+    FROM Employees e 
+   WHERE e.FirstName like 'p%'
+  SELECT @@ROWCOUNT
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---																				       										FLOOR, ROUND, SQUARE, POWER, ABS, 								
+--                                                                   FLOOR, ROUND, SQUARE, POWER, ABS,                 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 -- all math functions can be found at : Programmability/System Functions/Mathematical Functions
@@ -45,8 +45,8 @@ DECLARE @counter int
 SET @counter = 1
 WHILE(@counter <= 10)
 BEGIN
-	PRINT floor(rand() * 100)
-	 SELECT @counter +=1
+  PRINT floor(rand() * 100)
+   SELECT @counter +=1
 END
 
 SELECT LOG(8,2)

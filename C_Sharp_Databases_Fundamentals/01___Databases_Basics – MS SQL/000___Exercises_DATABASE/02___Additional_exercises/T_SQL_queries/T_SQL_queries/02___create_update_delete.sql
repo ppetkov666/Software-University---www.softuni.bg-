@@ -65,48 +65,48 @@ GO
 CREATE DATABASE PeopleDataBase
 
 CREATE TABLE People(
-	Id INT PRIMARY KEY IDENTITY,
-	[Name] NVARCHAR(50) NOT NULL,
-	Age INT NOT NULL,
-	Country NVARCHAR(50) NOT NULL
+  Id INT PRIMARY KEY IDENTITY,
+  [Name] NVARCHAR(50) NOT NULL,
+  Age INT NOT NULL,
+  Country NVARCHAR(50) NOT NULL
 )
 ALTER TABLE People
   ADD Lastname NVARCHAR(50) NOT NULL
 GO
 
-	EXEC sp_rename 'People.Name', 'Firstname', 'COLUMN'
+  EXEC sp_rename 'People.Name', 'Firstname', 'COLUMN'
 GO
 
-	SELECT * FROM People
+  SELECT * FROM People
 GO
 
-	INSERT INTO People
-	  VALUES
-	    ('ivan',20,'BG','ivanov'),
+  INSERT INTO People
+    VALUES
+      ('ivan',20,'BG','ivanov'),
         ('georgi',23,'USA','georgiev'),
         ('slav',22,'EU','slavov'),
         ('kaloyan',21,'ARG','tonev')
 GO
 
-	SELECT * FROM People
+  SELECT * FROM People
 GO
 
-	INSERT INTO People
-	VALUES
-	  ('ivan',30,'BG','georgiev'),
-	  ('ivan',40,'USA','ivanov'),
-	  ('ivan',50,'AUS','stoqnov')
+  INSERT INTO People
+  VALUES
+    ('ivan',30,'BG','georgiev'),
+    ('ivan',40,'USA','ivanov'),
+    ('ivan',50,'AUS','stoqnov')
 GO
 
 ALTER PROCEDURE spe_PeopleGetByLastName 
 (@LastName NVARCHAR(50))
 AS
 BEGIN
-	SELECT * from People WHERE Lastname = @LastName
+  SELECT * from People WHERE Lastname = @LastName
 END
 GO
 
-	EXEC dbo.spe_PeopleGetByLastName IVANOV
+  EXEC dbo.spe_PeopleGetByLastName IVANOV
 GO
 
 CREATE or alter PROCEDURE spe_InsertData 
@@ -157,22 +157,22 @@ FOREIGN KEY([DepartmentId])
 REFERENCES [Department] ([Id])
 
 INSERT INTO Users
-	VALUES
-	  ('emilia',		'female', NULL,null),
-	  ('josefine',	'female', NULL,null),
-	  ('ivan',			'male',		 100,1),
-	  ('jeko',			'male',		 200,2),
-	  ('georgi',		'male',		 300,3),
-	  ('borislava',	'female',  300,3),
-	  ('mihaela',		'female',  300,2)
+  VALUES
+    ('emilia',    'female', NULL,null),
+    ('josefine',  'female', NULL,null),
+    ('ivan',      'male',     100,1),
+    ('jeko',      'male',     200,2),
+    ('georgi',    'male',     300,3),
+    ('borislava',  'female',  300,3),
+    ('mihaela',    'female',  300,2)
 GO
-		INSERT INTO Department
-		VALUES
-		('Other','Sidney','Antony'),
-	  ('IT',			'new york',	 'Bob'),
-	  ('HR',			'london',		 'John'),
-	  ('TECH',		'tokio',		 'Kriss'),
-	  
+    INSERT INTO Department
+    VALUES
+    ('Other','Sidney','Antony'),
+    ('IT',      'new york',   'Bob'),
+    ('HR',      'london',     'John'),
+    ('TECH',    'tokio',     'Kriss'),
+    
 select * from Users u
 join Department d ON d.Id = u.DepartmentId
 select * from Department
@@ -187,11 +187,11 @@ alter column DepartmentId int null
 CREATE DATABASE db_for_test_purposes
 USE db_for_test_purposes
 CREATE TABLE Employee(
-	EmployeeId INT NOT NULL,	
-	[Name] NVARCHAR(32),	
-	ManagerId INT
+  EmployeeId INT NOT NULL,  
+  [Name] NVARCHAR(32),  
+  ManagerId INT
 
-	CONSTRAINT pk__Employee PRIMARY KEY (EmployeeId)
+  CONSTRAINT pk__Employee PRIMARY KEY (EmployeeId)
 )
 
 select * from Employee
@@ -262,27 +262,27 @@ INSERT INTO Employee VALUES
 
  
 
-	-- ------------------------
+  -- ------------------------
 
 
   SELECT u.first_name,
-				 u.last_name,
-			   d.drink_name,
-				 q.quantity,
-				 d.price,
-				 d.price * q.quantity total
-	  FROM Quantities q
+         u.last_name,
+         d.drink_name,
+         q.quantity,
+         d.price,
+         d.price * q.quantity total
+    FROM Quantities q
     JOIN Drinks d ON d.drink_id = q.drink_id
     JOIN Users u  ON u.[user_id] = q.[user_id]
 ORDER BY u.first_name,d.drink_name DESC
 
   SELECT u.[user_name],
-			   d.drink_name,
-				 sum(d.price * q.quantity) total
-	  FROM Quantities q
+         d.drink_name,
+         sum(d.price * q.quantity) total
+    FROM Quantities q
     JOIN Drinks d ON d.drink_id = q.drink_id
     JOIN Users u  ON u.[user_id] = q.[user_id]
-		group by u.user_name,d.drink_name
+    group by u.user_name,d.drink_name
 ORDER BY u.[user_name],d.drink_name DESC
 
 

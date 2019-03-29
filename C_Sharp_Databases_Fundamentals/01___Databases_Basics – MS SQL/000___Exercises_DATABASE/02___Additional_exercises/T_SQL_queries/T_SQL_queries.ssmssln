@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # SQL Server Management Studio Solution File, Format Version 14.00
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "T_SQL_queries", "T_SQL_queries\T_SQL_queries.ssmssqlproj", "{1AE45ED3-BBB1-4975-A481-4F0AA2EE45B8}"
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "T_SQL_queries", "T_SQL_queries\Full_list_of_T-sql_queries.ssmssqlproj", "{1AE45ED3-BBB1-4975-A481-4F0AA2EE45B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

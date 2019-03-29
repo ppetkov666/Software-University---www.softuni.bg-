@@ -9,17 +9,17 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE  OR ALTER PROCEDURE [dbo].[spe_InsertData] 
-@first_name			NVARCHAR(50), 
-@last_name			NVARCHAR(50),
-@type_of_drink	NVARCHAR(50), 
-@quantity				INT 
+@first_name      NVARCHAR(50), 
+@last_name      NVARCHAR(50),
+@type_of_drink  NVARCHAR(50), 
+@quantity        INT 
 AS
 BEGIN
 
 DECLARE @drink_id INT SET @drink_id = 0 
 
 SELECT @drink_id  = drink_id 
-	FROM Drinks 
+  FROM Drinks 
 WHERE [drink_name] = @type_of_drink
 
 DECLARE @user_id  INT SET @user_id = 0
@@ -55,7 +55,7 @@ IF @exist = 1 BEGIN
   INSERT INTO Quantities
  VALUES
  (@drink_id,@user_id,@quantity)
-	END
+  END
 END
 GO
 
@@ -73,8 +73,8 @@ select * from Quantities
 GO
 
 CREATE  OR ALTER PROCEDURE [dbo].[spe_insert_user_name] 
-@first_name			NVARCHAR(50), 
-@last_name			NVARCHAR(50)
+@first_name      NVARCHAR(50), 
+@last_name      NVARCHAR(50)
 AS
 BEGIN
 
@@ -89,15 +89,15 @@ DECLARE @exist BIT  SET @exist = 0
  SELECT @exist = 1 
    FROM Users
   WHERE first_name = @first_name
-	  AND last_name  = @last_name
+    AND last_name  = @last_name
  -- AND [user_id]  = @user_id
 
 IF @exist = 0 
-	BEGIN
+  BEGIN
  INSERT INTO Users
  VALUES
  (@first_name,@last_name)
-	END
+  END
 END
 GO
 
@@ -113,8 +113,8 @@ SELECT * FROM Drinks
 
 GO
 CREATE  OR ALTER PROCEDURE [dbo].[spe_insert_drink] 
-@drink_name			NVARCHAR(50), 
-@price			    decimal(6,2)
+@drink_name      NVARCHAR(50), 
+@price          decimal(6,2)
 AS
 BEGIN
  
@@ -122,12 +122,12 @@ DECLARE @exist INT  SET @exist = 0
  SELECT @exist = 1 
    FROM Drinks
   WHERE drink_name = @drink_name
-	  
+    
 
  SELECT @exist = 2 
    FROM Drinks
   WHERE drink_name = @drink_name
-	  AND price      = @price
+    AND price      = @price
 
 IF @exist = 0  BEGIN
  INSERT INTO Drinks
@@ -179,13 +179,13 @@ GO
 CREATE  or alter PROCEDURE [dbo].[spe_get_report] 
 AS
 BEGIN
- SELECT u.first_name as 'First name',
-				 u.last_name as 'Last name',
-			     d.drink_name as 'type of drink',
-				 q.quantity,
-				 d.price as 'Price in leva',
-				 d.price * q.quantity 'total in leva'
-	  FROM Quantities q
+  SELECT u.first_name as 'First name',
+         u.last_name as 'Last name',
+         d.drink_name as 'type of drink',
+         q.quantity,
+         d.price as 'Price in leva',
+         d.price * q.quantity 'total in leva'
+    FROM Quantities q
     JOIN Drinks d ON d.drink_id = q.drink_id
     JOIN Users u  ON u.[user_id] = q.[user_id]
 ORDER BY u.first_name,d.drink_name DESC
@@ -197,19 +197,19 @@ GO
 
 GO 
 CREATE  or alter PROCEDURE [dbo].[spe_get_custom_report] 
-@first_name			NVARCHAR(50), 
-@last_name			NVARCHAR(50)
+@first_name      NVARCHAR(50), 
+@last_name      NVARCHAR(50)
 AS
 BEGIN
   SELECT d.drink_name as 'type of drink',
-				 q.quantity,
-				 d.price as 'Price in leva',
-				 d.price * q.quantity 'total'
-	  FROM Quantities q
+         q.quantity,
+         d.price as 'Price in leva',
+         d.price * q.quantity 'total'
+    FROM Quantities q
     JOIN Drinks d ON d.drink_id = q.drink_id
     JOIN Users u  ON u.[user_id] = q.[user_id]
-	 WHERE u.first_name = @first_name 
-	   AND u.last_name = @last_name
+   WHERE u.first_name = @first_name 
+     AND u.last_name = @last_name
 ORDER BY u.first_name,d.drink_name DESC
 END
 GO

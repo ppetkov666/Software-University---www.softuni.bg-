@@ -10,8 +10,8 @@ GO
 ALTER PROCEDURE spUserInfoTable_GetAll
 AS
 BEGIN
-	SET NOCOUNT ON;
-	SELECT * FROM UserInfoTable
+  SET NOCOUNT ON;
+  SELECT * FROM UserInfoTable
 END
 GO
 
@@ -25,8 +25,8 @@ CREATE PROCEDURE spUserInfoTable_GetUserByLastName
 )
 AS
 BEGIN
-	SELECT * FROM UserInfoTable
-	  WHERE LastName = @LastName
+  SELECT * FROM UserInfoTable
+    WHERE LastName = @LastName
 END
 
 EXEC spUserInfoTable_GetUserByLastName @LastName = 'PETKOV'
