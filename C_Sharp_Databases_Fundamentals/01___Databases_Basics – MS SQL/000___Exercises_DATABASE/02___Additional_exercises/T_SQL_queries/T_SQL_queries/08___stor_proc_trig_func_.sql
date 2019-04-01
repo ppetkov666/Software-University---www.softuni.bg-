@@ -329,6 +329,107 @@ declare @return_value INT
 exec @return_value  = spe_with_output_param  @department_name = 'Production' ,@count_of_people = @count OUTPUT
 select @return_value as return_value_from_sp  
 
+-- |||||||||||||||||||||||||||||||||||||||||||||||||        7        ||||||||||||||||||||||||||||||||||||||||||||||||| 
+ -- CREATE A PROCEDURE WITH @@error catch
+
+
+
+
+Create Table Product_v1
+(
+ productid int NOT NULL primary key,
+ [Name] nvarchar(50),
+ price int,
+ quantity int
+)
+
+
+Insert into Product_v1 
+values
+(1, 'productX', 500, 100),
+(2, 'productY', 500, 150),
+(3, 'productZ', 500, 200)
+
+select * from Product_v1
+
+
+Create Table Product_sales
+(
+ product_sales_id int primary key,
+ product_id int,
+ quantity_sold int
+) 
+
+go
+
+Create or Alter Proc spe_sell_product
+@product_id int,
+@quantity_for_sell int
+as
+Begin
+ 
+ Declare @stock_available int Select @stock_available = quantity 
+                               from Product_v1 p where p.productid = @product_id
+ 
+ 
+ if(@stock_available < @quantity_for_sell)
+   Begin
+  Raiserror('Not enough in Stock!!!',16,1)
+   End
+ 
+ Else
+   Begin
+    Begin Tran
+         
+  Update Product_v1 
+     set quantity -= @quantity_for_sell
+   where ProductId = @product_id
+  
+  Declare @maxproduct_id int
+   
+  Select @maxproduct_id = Case When isnull(MAX(product_sales_id), 0) = 0
+                               Then 0 
+                               else MAX(product_sales_id) end 
+                          from Product_sales
+  
+  Set @maxproduct_id += 1
+  Insert into Product_sales 
+       values(@maxproduct_id, @product_id, @quantity_for_sell)
+  if(@@ERROR <> 0)
+  Begin
+   Rollback Tran
+   Print 'Error occured... Transaction was rollbacked'
+   return
+  End
+  Else
+  Begin
+   Commit Tran 
+   Print 'Committed Transaction'
+  End
+   End
+End
+
+-- test procedure :
+Insert into Product_v1 
+     values(2, 'ProductXXX', 1500, 10)
+if(@@ERROR <> 0)
+ Print 'Error !!!'
+Else
+ Print 'No Errors !!!'
+
+ exec spe_sell_product 1, 10
+ select * from Product_v1
+ select * from Product_sales
+
+
+
+
+
+
+
+
+
+
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

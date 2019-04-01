@@ -113,13 +113,12 @@ SELECT  tbl.FirstName,
           e.FirstName,
           e.LastName,
           e.ManagerID,
-          m.EmployeeID,
-          m.EmployeeID AS 'manager ID',
           m.FirstName,
           m.LastName,
-          isnull(CAST(m.ManagerID AS NVARCHAR(20)), 'No')
+          ISNULL(CAST('ManagerId: '+ cast(m.ManagerID as nvarchar(max)) +': '+ m.FirstName +' '+ m.LastName AS NVARCHAR(max)), 
+          'This employee does not have manager') as 'Manager Info'
      FROM Employees    AS e
-     JOIN Employees    AS m ON m.EmployeeID= e.ManagerID
+     JOIN Employees    AS m ON m.EmployeeID = e.ManagerID
  ORDER BY e.EmployeeID
     
 
@@ -145,16 +144,19 @@ AS
           e.FirstName,
           e.LastName,
           e.ManagerID 
-     FROM Employees e
-     JOIN emp_cte cte ON cte.ManagerID = e.EmployeeID
+     FROM Employees e  
+     JOIN emp_cte cte ON e.EmployeeID = cte.ManagerID -- usually i use the oposite syntax but for the recursive CTE is easier to understand
+     -- in this way because Anchor part is used as input param for recurive member: e.EmployeeID = cte.ManagerID = 16
+     -- it is 16 because employeeID = 1 has managerId equal to 16
 )
 
    SELECT emp_table.EmployeeID,
           emp_table.FirstName,
           emp_table.LastName,
-          ISNULl(mngr_table.FirstName +' '+ mngr_table.LastName,'no Boss') AS 'manager' 
+          ISNULL(mngr_table.FirstName +' '+ mngr_table.LastName,'no Boss') AS 'manager' 
      FROM emp_cte emp_table
-     JOIN emp_cte mngr_table ON mngr_table.EmployeeID = emp_table.ManagerID
+    left JOIN emp_cte mngr_table ON mngr_table.EmployeeID = emp_table.ManagerID
+
 -- further down i will break line by line how this recursive cte works
 -- step 1 -- execute first select statement ANCHOR and we take manager id == 16 to step 2
 -- because we use it as input param to the recursive member
@@ -165,7 +167,7 @@ SELECT emp.EmployeeID,
   FROM Employees emp
  WHERE emp.EmployeeID = 1
 -- this is the result set:
--- 1  Guy  Gilbert  16
+-- 1  Guy  Gilbert  16 -- and this is used as input for the resursive member
 
 -- step 2 - execute second select statement RECURSIVE MEMBER without join just with where clause and managerID == 16
    SELECT e.EmployeeID,
@@ -174,10 +176,10 @@ SELECT emp.EmployeeID,
           e.ManagerID 
      FROM Employees e
      --JOIN emp_cte cte ON cte.ManagerID = e.EmployeeID
-     where e.EmployeeID = 16
+     where e.EmployeeID = 16 -- = cte.ManagerID
 
 -- this is the result set:
--- 16  Jo  Brown  21
+-- 16  Jo  Brown  21 and each result set is attach to the final result set when managerId get null.This is when UNION ALL is applied
 
 -- step 3 - execute RECURSIVE MEMBER again
 
@@ -218,14 +220,14 @@ SELECT e.EmployeeID,
 -- third option will rank the hierarchy starting from top to the bottom
 
 GO
-WITH rank_cte(EmployeeID, FirstName, LastName, ManagerID, [level])
+WITH rank_cte(EmployeeID, FirstName, LastName, ManagerID, [Level])
     AS
     (
   
    SELECT emp.EmployeeID,
           emp.FirstName,
           emp.LastName,
-            emp.ManagerID,
+          emp.ManagerID,
           1   
      FROM Employees emp
     WHERE emp.ManagerID is NULL
@@ -246,7 +248,7 @@ UNION ALL
     select employees.EmployeeID,
            employees.FirstName,
            employees.LastName,
-           ISNULL(cast(employees.ManagerID as nvarchar(50)),'he is his own boss')as manager_id, 
+           ISNULL(cast(employees.ManagerID as nvarchar(50)),'he is his own boss')AS manager_id, 
            ISNULL(managers.FirstName, 'Boss') AS Manager,
            employees.level
       from rank_cte employees

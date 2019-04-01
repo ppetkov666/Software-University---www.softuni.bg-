@@ -1,7 +1,7 @@
 
 -- this querie consist the following : 
 -- GROUP BY clause,  
--- JOINS clause , 
+-- JOINS clause 
 -- OVER clause, 
 -- WITH clause, 
 -- VIEW table, 
@@ -543,6 +543,20 @@ ORDER BY e.DepartmentID
 
  -- ^^^^^^^^ example 15  ^^^^^^^^
  
+ 
+with cte_temp
+as
+(
+SELECT e.FirstName,
+       e.JobTitle,
+       dense_RANK() over( order by e.firstname, e.jobtitle) as Ranked_people_by_equal_criteria
+      FROM Employees e
+ )     
+
+   select FirstName, JobTitle
+     from cte_temp 
+ group by FirstName,JobTitle
+   having COUNT(Ranked_people_by_equal_criteria) > 1
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                                  WITH 
@@ -881,6 +895,50 @@ WHERE FirstName = 'Guy'
  SELECT * FROM v__temp_result
  SELECT * FROM v__temp_result_indexed
 
+ -- next 2 examples show limitations of updating view
+ go
+ create or alter view v_test
+ as
+ (
+  select e.DepartmentID,
+         sum(e.Salary ) sum_salary
+    from dbo.Employees e 
+    group by e.DepartmentID
+ )
+go
+ select * from v_test
+ update v_test
+ set sum_salary += 999999 
+ where DepartmentID = 1 
+
+
+
+ -- -----------------------------------------------
+ go
+ create or alter view v_test_v2
+ as
+ (
+  select e.FirstName,
+         e.LastName, 
+         e.Salary, 
+         d.[Name]
+    from dbo.Employees e 
+    join Departments d on d.DepartmentID = e.DepartmentID
+ )
+go
+select * from Employees
+ select * from v_test_v2
+ update v_test_v2
+ set  Salary = 12500, Name = 'prod techn'
+ where FirstName = 'guy' and LastName = 'gilbert'
+
+
+
+
+
+
+
+
 
 
 
@@ -1144,6 +1202,8 @@ GROUP BY d.[Name], e.DepartmentID
 --                                                                                  UNION and UNION ALL
 -- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+
 -- ^^^^^^^^ example 1  ^^^^^^^^
   
   GO
@@ -1153,7 +1213,8 @@ GROUP BY d.[Name], e.DepartmentID
     SELECT e.FirstName,
            e.JobTitle 
       FROM Employees e
-  ), cte_second_test(first_name2,job_title2)
+  ), 
+  cte_second_test(first_name2,job_title2)
   AS
   (
     SELECT e2.FirstName,
