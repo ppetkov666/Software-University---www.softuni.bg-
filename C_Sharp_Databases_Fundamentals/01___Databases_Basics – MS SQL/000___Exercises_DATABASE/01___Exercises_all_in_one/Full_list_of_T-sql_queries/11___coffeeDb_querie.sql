@@ -16,32 +16,29 @@ CREATE  OR ALTER PROCEDURE [dbo].[spe_InsertData]
 AS
 BEGIN
 
-DECLARE @drink_id INT SET @drink_id = 0 
+DECLARE @drink_id       INT       SET @drink_id = 0 
+DECLARE @user_id        INT       SET @user_id = 0
+DECLARE @current_value  INT       SET @current_value = 0
+DECLARE @exist          BIT       SET @exist = 0
 
-SELECT @drink_id  = drink_id 
-  FROM Drinks 
-WHERE [drink_name] = @type_of_drink
-
-DECLARE @user_id  INT SET @user_id = 0
+ SELECT @drink_id  = drink_id 
+   FROM Drinks 
+  WHERE [drink_name] = @type_of_drink
  
  SELECT @user_id = [user_id] 
    FROM users
   WHERE first_name = @first_name 
     AND last_name  = @last_name
 
-DECLARE @exist BIT  SET @exist = 0
  SELECT @exist = 1 
    FROM Quantities
   WHERE [drink_id] = @drink_id
     AND [user_id]  = @user_id
 
-
-DECLARE @current_value  INT  SET @current_value = 0
-
 SELECT @current_value = q.quantity 
   FROM Quantities q
- WHERE q.drink_id = @drink_id
-   AND q.[user_id]  = @user_id
+ WHERE q.drink_id  = @drink_id
+   AND q.[user_id] = @user_id
 
 
 
@@ -53,14 +50,13 @@ IF @exist = 1 BEGIN
 
  END ELSE BEGIN
   INSERT INTO Quantities
- VALUES
+  VALUES
  (@drink_id,@user_id,@quantity)
   END
 END
 GO
 
 exec [dbo].[spe_InsertData] 'Jeko','Minkov','coffee',1
-
 
 select * from users
 select * from Quantities

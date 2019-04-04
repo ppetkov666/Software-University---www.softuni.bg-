@@ -348,47 +348,9 @@ ORDER BY COUNT(*) DESC
 
 
 
+
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             $7
--- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                                                            -- HOW TO explain diffference between blocking and deadlocking
-
---  BLOCKING 
-use UserInfo
-select * from UserInfoTable
-select * from People
-
-begin transaction
-
-update UserInfoTable 
-SET FirstName = 'testname' 
-where id = 27 
-
-commit transaction
-
--- if i execute the same transaction from new querie  it will wait until this transaction is committed and then the second transaction will be executed
-
--- DEADLOCKING
--- in the following example if i execute from this session the UserInfoTable table and from another session the People table , these 2 tables will be locked, 
--- then when i try to execute table people from this session and accordingly UserInfoTable from the other session the deadlock will occur and sql server will 
--- choose one of both transactions as deadlock victim and it will be rollbacked and the other will be completed 
-begin transaction
-
-update UserInfoTable 
-SET FirstName = 'testname' 
-where id = 27 
-
-update People
-set Firstname = 'testname'
-where id = 2
-rollback
-commit transaction
-
-select @@trancount  -- check the number of active transactions
-
-
--- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $8
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                                             -- HOW TO find all names that start with certain letter without like operator
 
@@ -402,7 +364,7 @@ SELECT * FROM Employees WHERE SUBSTRING(FirstName,1,1) = 'm'
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $9
+--                                                                             $8
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                                             -- HOW TO insert into many to many table
 
@@ -417,8 +379,8 @@ SELECT * FROM Students
 SELECT * FROM Courses
 SELECT * FROM StudentCourses
 
-DECLARE @student_name NVARCHAR(50) SET @student_name = 'PETKO'
-DECLARE @course_name NVARCHAR(50)  SET @course_name = 'c#'
+DECLARE @student_name NVARCHAR(50) SET @student_name = 'test_student_5'
+DECLARE @course_name NVARCHAR(50)  SET @course_name = 'test_course_5'
 
 DECLARE @student_id INT
 DECLARE @course_id INT
@@ -427,20 +389,25 @@ SELECT @student_id = id
   FROM Students 
  WHERE @student_name = student_name
 
+
  SELECT @course_id = id 
    FROM Courses
   WHERE @course_name = course_name 
+
+
 
 IF(@student_id is null)
 BEGIN
   INSERT INTO students VALUES(@student_name)
   SELECT @student_id = SCOPE_IDENTITY()
+  print @student_id
 END
 
 IF(@course_id is null)
 BEGIN
   INSERT INTO Courses VALUES(@course_name)
   SELECT @course_id = SCOPE_IDENTITY()
+  print @student_id
 END
 
 insert into StudentCourses values (@student_id,@course_id)
@@ -493,7 +460,7 @@ SELECT * FROM StudentCourses
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $10
+--                                                                             $9
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                                             -- HOW TO get people after, before or between certain date
 
@@ -540,7 +507,7 @@ SELECT e.FirstName,
 
  
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $12
+--                                                                             $10
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                                             -- HOW TO insert full list of records from one table to another and adding
                                                             -- additional empthy columns                                                            
@@ -559,22 +526,101 @@ SELECT e.FirstName,
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                             $11
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -- How to:
+  -- get the products without any sales
+  -- get products and their sold quantities
+
+ create table products_test
+(
+ [Id] int identity primary key,
+ [Name] nvarchar(50),
+ [Description] nvarchar(250)
+)
+
+create Table product_sales_test
+(
+ Id int primary key identity,
+ ProductId int foreign key references products_test(Id),
+ UnitPrice int,
+ QuantitySold int
+)
+
+Insert into products_test values ('TV', '52 inch black color LCD TV')
+Insert into products_test values ('Laptop', 'Very thin black color acer laptop')
+Insert into products_test values ('Desktop', 'HP high performance desktop')
+
+Insert into product_sales_test values(3, 450, 5)
+Insert into product_sales_test values(2, 250, 7)
+Insert into product_sales_test values(3, 450, 4)
+Insert into product_sales_test values(3, 450, 9)
+
+select * from products_test
+select * from product_sales_test
+
+-- get the products without any sales
+  select pt.id, pt.Name, pt.Description
+    from products_test pt
+    left join product_sales_test pst
+      on pt.Id = pst.ProductId
+group by pt.id, pt.Name, pt.Description
+  having count(pst.productid) < 1
+
+  select pt.id, pt.Name, pt.Description
+    from products_test pt
+    left join product_sales_test pst
+      on pt.Id = pst.ProductId
+      where isnull(pst.ProductId, 0 ) = 0
+
+select pt.Id, 
+       pt.Name, 
+       pt.Description 
+  from products_test pt
+ where pt.Id not in (select distinct pst.ProductId 
+                        from product_sales_test pst)
+
+-- get products and their sold quantities
+  select pt.Name,sold_quantity
+    from products_test pt
+   left join (select ProductId,
+                     sum(pst.QuantitySold) as sold_quantity 
+                from product_sales_test pst
+            group by ProductId) as quoral
+            on pt.Id = quoral.ProductId
+
+
+    select pt.Name,
+           (select sum(pst.QuantitySold) 
+              from product_sales_test pst 
+             where pst.ProductId = pt.Id) 
+      from products_test pt
+
+  select pt.Name, sum(pst.QuantitySold) as sold_quantities
+    from products_test pt
+    left join product_sales_test pst
+      on pt.Id = pst.ProductId
+     group by pt.Name
+     order by sold_quantities
+
+
+  -- performance testing
+
+  if (exists (select count(*) from INFORMATION_SCHEMA.TABLES)
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                             $12
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             $13
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                                                            
+
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             $14
--- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
--- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $15
--- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
--- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $16
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

@@ -4,6 +4,7 @@
 -- TRIGGERS
 -- FUNCTIONS
 -- CURSORS
+-- TRANSACTIONS
 
 
 USE SoftUni
@@ -422,7 +423,41 @@ Else
  select * from Product_v1
  select * from Product_sales
 
-
+--  same SP but modified with try catch block --------------------------------------
+go
+Create or Alter Proc spe_sell_product_with_try_catch
+@product_id int,
+@quantity_for_sell int
+as
+Begin
+  Declare @stock_available int Select @stock_available = quantity 
+                                 from Product_v1 p 
+                                where p.productid = @product_id
+ 
+  if(@stock_available < @quantity_for_sell)
+  Begin
+    Raiserror('Not enough in Stock!!!',16,1)
+  End
+ 
+ Else
+  Begin try
+    Begin Tran     
+    Update Product_v1 
+       set quantity -= @quantity_for_sell
+     where ProductId = @product_id
+   Declare @maxproduct_id int 
+    Select @maxproduct_id = Case When isnull(MAX(product_sales_id), 0) = 0
+                                 Then 0 
+                                 else MAX(product_sales_id) end 
+                            from Product_sales 
+    Set @maxproduct_id += 1
+    Insert into Product_sales 
+         values(@maxproduct_id, @product_id, @quantity_for_sell)
+  end try
+  begin catch
+    
+  
+End
 
 
 
@@ -978,4 +1013,58 @@ END
 
 SELECT * FROM temp_result_table
 SELECT * FROM employees
+
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                             TRANSACTIONS
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                                            
+                                                            
+-- |||||||||||||||||||||||||||||||||||||||||||||||||        1        ||||||||||||||||||||||||||||||||||||||||||||||||| 
+                                                            -- HOW TO explain diffference between blocking and deadlocking
+
+--  BLOCKING 
+use UserInfo
+select * from UserInfoTable
+select * from People
+
+begin transaction
+
+update UserInfoTable 
+SET FirstName = 'testname' 
+where id = 27 
+
+commit transaction
+
+-- if i execute the same transaction from new querie  it will wait until this transaction is committed and then the second transaction will be executed
+
+-- DEADLOCKING
+-- in the following example if i execute from this session the UserInfoTable table and from another session the People table , these 2 tables will be locked, 
+-- then when i try to execute table People from this session and accordingly UserInfoTable from the other session the deadlock will occur and sql server will 
+-- choose one of both transactions as deadlock victim and it will be rollbacked and the other will be completed 
+begin transaction
+
+update UserInfoTable 
+SET FirstName = 'testname' 
+where id = 27 
+
+update People
+set Firstname = 'testname'
+where id = 2
+rollback
+commit transaction
+
+select @@trancount  -- check the number of active transactions
+
+-- |||||||||||||||||||||||||||||||||||||||||||||||||        2        ||||||||||||||||||||||||||||||||||||||||||||||||| 
+-- when i update one row from this table with transaction from other connection still can access another row from this table, 
+-- because when i update by primary key only the current row is LOCKED. From another connection i can access another rows , but not the whole table
+SELECT * FROM UserInfoTable
+BEGIN TRANSACTION
+UPDATE UserInfoTable
+SET Salary = 6666666 WHERE ID = 27
+ROLLBACK
+SELECT * FROM People
+
 
