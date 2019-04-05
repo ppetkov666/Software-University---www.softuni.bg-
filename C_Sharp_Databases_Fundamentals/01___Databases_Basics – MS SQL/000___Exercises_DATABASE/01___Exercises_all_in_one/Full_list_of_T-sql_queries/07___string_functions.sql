@@ -25,7 +25,7 @@
   DECLARE @i_warehouse_code NVARCHAR(10)    SET @i_warehouse_code = '34RREWR'
 
   SELECT @v_log_info = SUBSTRING(
-  'Procedure bmever.spe__GetContainerCount <'   
+  'Procedure example.spe__GetContainerCount <'   
   + '@i_location_code = '    +  '''' + COALESCE(@i_location_code,'NULL')  + ''''
   + ', @i_warehouse_code = ' +  '''' + COALESCE(@i_warehouse_code,'NULL') + ''''
   + '>', 1, 4096);

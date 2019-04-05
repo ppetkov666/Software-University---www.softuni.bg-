@@ -678,9 +678,11 @@ select * from udf_get_people_by_department_id(15)
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        1        ||||||||||||||||||||||||||||||||||||||||||||||||| 
 GO
 
--- SP_call_cursor is a procedure which create a trigger, the trigger calls another prosedure which select records for firstname, lastname and address from Employees table
+-- SP_call_cursor is a procedure which create a cursor, the cursor calls another procedure which select records 
+-- for firstname, lastname and address from Employees table
 EXEC SP_call_cursor
--- i purposelly type a wrong name which is not in the table Employee to show one interesting fact .This name does not have an address  so it won't return address info from this PROC
+-- i purposelly type a wrong name which is not in the table Employee to show one interesting fact.
+-- This name does not have an address  so it won't return address info from this PROC
 EXEC sp_GetRecords 'GoY', 'GILBERT',12500
 -- and here i type it in the right way
 EXEC sp_GetRecords 'Guy', 'GILBERT',12500
@@ -696,23 +698,20 @@ DECLARE @FirstName VARCHAR(MAX)
 DECLARE @LastName  VARCHAR(MAX)
 DECLARE @Salary    MONEY
 
-DECLARE TestCursor CURSOR 
-  FOR SELECT e.FirstName, 
-             e.LastName, 
-             e.Salary 
-        FROM Employees e 
+DECLARE TestCursor CURSOR FOR 
+ SELECT e.FirstName, 
+        e.LastName, 
+        e.Salary 
+   FROM Employees e 
 
 OPEN TestCursor
+  FETCH NEXT FROM TestCursor INTO @FirstName, @LastName, @Salary
 
-  FETCH NEXT FROM TestCursor 
-    INTO @FirstName, @LastName, @Salary
-  WHILE @@FETCH_STATUS = 0
-    BEGIN
-      EXEC sp_GetRecords @FirstName, @LastName, @Salary
-      FETCH NEXT FROM TestCursor
-      INTO @FirstName, @LastName, @Salary
-    END
-
+  WHILE @@FETCH_STATUS <> -1
+  BEGIN
+    EXEC sp_GetRecords @FirstName, @LastName, @Salary
+    FETCH NEXT FROM TestCursor INTO @FirstName, @LastName, @Salary
+  END
 CLOSE TestCursor
 DEALLOCATE TestCursor
 
@@ -750,25 +749,22 @@ CREATE OR ALTER PROCEDURE SP_CURSOR_TEST
  DECLARE @FirstName VARCHAR(MAX)
  DECLARE @LastName VARCHAR(MAX)
 
-     DECLARE CustomCursor CURSOR FOR SELECT e.FirstName,e.LastName 
-                     FROM Employees e 
-                   ORDER BY e.FirstName
+  DECLARE CustomCursor CURSOR FOR  
+   SELECT e.FirstName,
+          e.LastName 
+     FROM Employees e 
+ ORDER BY e.FirstName
 
 OPEN CustomCursor
-  FETCH NEXT FROM CustomCursor
-  INTO  @FirstName, @LastName
-  WHILE @@FETCH_STATUS = 0
+  FETCH NEXT FROM CustomCursor INTO  @FirstName, @LastName
+  WHILE @@FETCH_STATUS <> -1
   BEGIN
-    
     EXEC SP_PRINT_EMPLOYEE_DETAILS @FirstName,@LastName
-    FETCH NEXT FROM CustomCursor 
-    INTO  @FirstName, @LastName
+    FETCH NEXT FROM CustomCursor INTO  @FirstName, @LastName
   END
-
 CLOSE CustomCursor
 DEALLOCATE CustomCursor
- END
-
+END
 GO
 
 
@@ -788,20 +784,20 @@ AS
 BEGIN
  
  DECLARE @salary            INT                    SET @salary = 0;
- DECLARE @full_name          NVARCHAR(50)          SET @full_name = '';
- DECLARE @exist              INT                    SET @exist = 0;
+ DECLARE @full_name         NVARCHAR(50)           SET @full_name = '';
+ DECLARE @exist             INT                    SET @exist = 0;
 
- DECLARE @department_name VARCHAR(MAX) SET  @department_name = (SELECT d.[name] 
-                                      FROM Employees e 
-                                      JOIN Departments d ON d.DepartmentID = e.DepartmentID 
-                                     WHERE e.FirstName = @Firstname 
-                                       AND e.LastName = @LastName)
+ DECLARE @department_name VARCHAR(MAX) SET @department_name = (SELECT TOP(1)d.[name] 
+                                                                 FROM Employees e 
+                                                                 JOIN Departments d ON d.DepartmentID = e.DepartmentID 
+                                                                WHERE e.FirstName = @Firstname 
+                                                                  AND e.LastName = @LastName)
     PRINT 'Hello i am ' + @Firstname + ' ' + @LastName + ' from ' + @department_name + ' department' + ' !'
     PRINT '==============================================';
 
     SELECT @full_name = @FirstName + ' ' + @LastName;
 
-    SELECT @salary = e.Salary
+    SELECT TOP(1)@salary = e.Salary
       FROM Employees e
      WHERE e.FirstName = @FirstName
        AND e.LastName = @LastName
@@ -828,22 +824,22 @@ SELECT * FROM Employees
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        3        ||||||||||||||||||||||||||||||||||||||||||||||||| 
 
 -- ANOTHER OPTIONS - MOVE THROUGH EACH 10 ROW(IF WE USE -10 IT IS IN REVERSE ORDER)
-DECLARE CustomCursor CURSOR SCROLL
-  FOR SELECT e.FirstName,e.LastName 
-        FROM Employees e 
-     WHERE e.Salary > 30000
+DECLARE CustomCursor CURSOR SCROLL FOR 
+ SELECT e.FirstName,
+        e.LastName 
+   FROM Employees e 
+  WHERE e.Salary > 30000
 
 OPEN CustomCursor
   FETCH ABSOLUTE 10 FROM CustomCursor   
-  WHILE @@FETCH_STATUS = 0
+  WHILE @@FETCH_STATUS <> -1
   BEGIN
-    
     FETCH RELATIVE 10 FROM CustomCursor 
-
   END
-
 CLOSE CustomCursor
 DEALLOCATE CustomCursor
+
+select * from employees e where e.salary > 30000 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        4        ||||||||||||||||||||||||||||||||||||||||||||||||| 
 
 DECLARE @FullName NVARCHAR(MAX) SET @FullName = ''
@@ -852,22 +848,19 @@ DECLARE @LastName NVARCHAR(MAX)
 
 
 
-DECLARE CustomCursor CURSOR 
-  FOR SELECT e.FirstName,e.LastName FROM Employees e WHERE e.Salary > 30000
-
+DECLARE CustomCursor CURSOR FOR 
+ SELECT e.FirstName,
+        e.LastName 
+   FROM Employees e 
+  WHERE e.Salary > 30000
 OPEN CustomCursor
-  FETCH NEXT FROM CustomCursor
-  INTO  @FirstName, @LastName
-   
+  FETCH NEXT FROM CustomCursor INTO  @FirstName, @LastName
   WHILE @@FETCH_STATUS = 0
   BEGIN
-       SET @FullName = @FirstName +' ' + @LastName
-     PRINT 'hello my full name is : ' + @FullName 
-    FETCH NEXT FROM CustomCursor 
-    INTO  @FirstName, @LastName
-
+      SET @FullName = @FirstName +' ' + @LastName
+    PRINT 'hello my full name is : ' + @FullName 
+    FETCH NEXT FROM CustomCursor INTO  @FirstName, @LastName
   END
-
 CLOSE CustomCursor
 DEALLOCATE CustomCursor
 
@@ -886,30 +879,27 @@ go
     INTO #tempEmp
     FROM Employees 
 
-    select * from #tempEmp
+SELECT * FROM #tempEmp
+
   DECLARE TestCursor CURSOR FOR 
    SELECT Salary, 
           ROW_NUMBER() OVER (ORDER BY employeeID) row_num
      FROM Employees 
  ORDER BY employeeID
-
-     OPEN TestCursor
-          FETCH NEXT FROM TestCursor INTO  @Salary, @row_num;
-
-          WHILE @@FETCH_STATUS = 0
-            BEGIN
-              UPDATE #tempEmp
-                 SET NextSalary = @Salary
-               WHERE row_num = @row_num - 1
-  
-          FETCH NEXT FROM TestCursor INTO  @Salary, @row_num
-              END
-
-     CLOSE TestCursor
+OPEN TestCursor
+  FETCH NEXT FROM TestCursor INTO  @Salary, @row_num;
+  WHILE @@FETCH_STATUS = 0
+  BEGIN
+    UPDATE #tempEmp
+       SET NextSalary = @Salary
+     WHERE row_num = @row_num - 1
+    FETCH NEXT FROM TestCursor INTO  @Salary, @row_num
+  END
+CLOSE TestCursor
 DEALLOCATE TestCursor
 
-  SELECT * FROM #tempEmp
-  DROP TABLE #tempEmp
+SELECT * FROM #tempEmp
+DROP TABLE #tempEmp
 
 
 -- the same querie but wrapped in SP
@@ -971,11 +961,11 @@ exec sp_get_next_salary_with_cursor
  -- temp table - it shows how after update - the changed field is only in the temp table but not in the original one 
 
 SELECT EmployeeID,
-     FirstName,
-     LastName,
-     Salary,
-     NULL AS NextSalary,
-     ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+       FirstName,
+       LastName,
+       Salary,
+       NULL AS NextSalary,
+       ROW_NUMBER() OVER (ORDER BY employeeID) row_num
   INTO temp_result_table
   FROM Employees 
 
@@ -993,27 +983,110 @@ GO
 DECLARE @Salary   INT;    SET @Salary = 0
 DECLARE @row_num  INT     SET @row_num = 1;
 DECLARE @num      INT     SET @num = 0
-DECLARE @id_count INT     SET @id_count = (SELECT count(employeeId) 
-                         FROM Employees)
+DECLARE @id_count INT     SET @id_count = (SELECT COUNT(employeeId) FROM Employees)
 
 WHILE(@num <= @id_count)
 BEGIN 
- SET @num +=1
-
- SET @Salary  = (SELECT Salary 
-           FROM temp_result_table 
-          WHERE row_num = @row_num)
-  PRINT @salary
- UPDATE temp_result_table
-  SET NextSalary = @Salary
-  WHERE row_num = @row_num -1
-SET @row_num += 1
+  SET @num +=1
+  SET @Salary  = (SELECT Salary 
+                    FROM temp_result_table 
+                   WHERE row_num = @row_num)
+   PRINT @salary
+  UPDATE temp_result_table
+     SET NextSalary = @Salary
+   WHERE row_num = @row_num -1
+     SET @row_num += 1
 END
 
 
 SELECT * FROM temp_result_table
 SELECT * FROM employees
 
+-- |||||||||||||||||||||||||||||||||||||||||||||||||        7        ||||||||||||||||||||||||||||||||||||||||||||||||| 
+
+select max(unit_price) from product_sales_test pst
+select * from products_test
+
+create or alter proc spe_test_proc
+
+AS
+BEGIN
+DECLARE @product_id INT
+DECLARE @unit_price INT
+DECLARE @id INT
+DECLARE @price INT
+
+
+
+DECLARE test_cursor CURSOR FOR 
+ SELECT product_id, 
+        unit_price 
+   FROM dbo.product_sales_test
+OPEN test_cursor 
+  FETCH NEXT FROM test_cursor INTO @product_id, @unit_price
+  WHILE @@FETCH_STATUS <> -1
+  BEGIN
+    
+    IF(@unit_price < 10)
+    BEGIN
+      UPDATE products_test
+      SET name += ', ' + cast (@unit_price AS NVARCHAR(max)) where id = @product_id
+    END 
+    IF(@unit_price > 10 and @unit_price < 40)
+    BEGIN
+      UPDATE products_test
+      SET name += ', ' + cast (@unit_price AS NVARCHAR(max)) where id = @product_id
+    END 
+    FETCH NEXT FROM test_cursor INTO @product_id, @unit_price
+
+  END 
+CLOSE test_cursor 
+DEALLOCATE test_cursor 
+END
+exec spe_test_proc
+
+select * from products_test
+
+-- THE SAME RESULT SET BUT WITH JOIN AND STUFF + XML PATH 
+-- it could be with stuff finction or replace or... even without any function
+--stuff: start from position 1 , and replace next 1 symbol with '' - this is what it does in my particular case
+GO
+ 
+ with cte_test
+ as
+ (
+  SELECT pt.ID, 
+         STUFF((SELECT ', ' + CAST(pst.unit_price AS varchar(10))
+                  FROM product_sales_test AS pst  
+                 WHERE pst.product_id = pt.ID 
+                   AND (pst.unit_price < 10  OR (pst.unit_price > 10 AND pst.unit_price < 40))
+                   FOR XML PATH('')),1,1,'') AS Ids
+    FROM products_test AS pt
+GROUP BY pt.ID
+)
+
+update products_test
+   set Name = CONCAT(pt.[Name],  cast (ct.Ids AS NVARCHAR(2048)))
+   from products_test pt
+  join cte_test ct on ct.Id = pt.Id 
+  where Ids is not null
+
+select * from products_test
+select * from product_sales_test pst order by product_id
+
+
+  -- IT DOES NOT WORK THE SAME WAY AS THE CURSOR
+UPDATE products_test
+SET Name = Name + '..., ' + cast (PST.unit_price AS NVARCHAR(max))
+  FROM products_test pt
+  join product_sales_test pSt on pt.Id = PST.product_id
+  WHERE (PST.unit_price < 10  OR PST.unit_price > 10 AND PST.unit_price < 40) 
+
+
+
+
+
+select   STUFF((SELECT ', ' + CAST(' 111' AS varchar(10)) FOR XML PATH('')),1,1,'') AS Ids
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1022,7 +1095,7 @@ SELECT * FROM employees
                                                             
                                                             
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        1        ||||||||||||||||||||||||||||||||||||||||||||||||| 
-                                                            -- HOW TO explain diffference between blocking and deadlocking
+                                       -- HOW TO explain diffference between blocking and deadlocking
 
 --  BLOCKING 
 use UserInfo

@@ -531,6 +531,7 @@ SELECT e.FirstName,
   -- How to:
   -- get the products without any sales
   -- get products and their sold quantities
+  -- generate random numbers
 
  create table products_test
 (
@@ -542,9 +543,9 @@ SELECT e.FirstName,
 create Table product_sales_test
 (
  Id int primary key identity,
- ProductId int foreign key references products_test(Id),
- UnitPrice int,
- QuantitySold int
+ product_id int foreign key references products_test(Id),
+ unit_price int,
+ quantity_sold int
 )
 
 Insert into products_test values ('TV', '52 inch black color LCD TV')
@@ -563,56 +564,218 @@ select * from product_sales_test
   select pt.id, pt.Name, pt.Description
     from products_test pt
     left join product_sales_test pst
-      on pt.Id = pst.ProductId
+      on pt.Id = pst.product_id
 group by pt.id, pt.Name, pt.Description
-  having count(pst.productid) < 1
+  having count(pst.product_id) < 1
 
   select pt.id, pt.Name, pt.Description
     from products_test pt
     left join product_sales_test pst
-      on pt.Id = pst.ProductId
-      where isnull(pst.ProductId, 0 ) = 0
+      on pt.Id = pst.product_id
+      where isnull(pst.product_id, 0 ) = 0
+
+      select  max(pst.product_id) from product_sales_test pst 
 
 select pt.Id, 
        pt.Name, 
        pt.Description 
   from products_test pt
- where pt.Id not in (select distinct pst.ProductId 
+ where pt.Id not in (select distinct pst.product_id 
                         from product_sales_test pst)
 
 -- get products and their sold quantities
-  select pt.Name,sold_quantity
-    from products_test pt
-   left join (select ProductId,
-                     sum(pst.QuantitySold) as sold_quantity 
-                from product_sales_test pst
-            group by ProductId) as quoral
-            on pt.Id = quoral.ProductId
+    select pt.Name,sold_quantity
+      from products_test pt
+ left join (select product_id,
+                     sum(pst.quantity_sold)  as sold_quantity 
+              from product_sales_test pst
+           group by product_id)              as quoral
+        on pt.Id = quoral.product_id
 
 
     select pt.Name,
-           (select sum(pst.QuantitySold) 
+           (select sum(pst.quantity_sold) 
               from product_sales_test pst 
-             where pst.ProductId = pt.Id) 
+             where pst.product_id = pt.Id) as sold_quantity 
       from products_test pt
 
-  select pt.Name, sum(pst.QuantitySold) as sold_quantities
-    from products_test pt
-    left join product_sales_test pst
-      on pt.Id = pst.ProductId
-     group by pt.Name
-     order by sold_quantities
+    SELECT pt.Name, sum(pst.quantity_sold) as sold_quantities
+      FROM products_test pt
+ LEFT JOIN product_sales_test pst
+        ON pt.Id = pst.product_id
+  GROUP BY pt.Name
+  ORDER BY sold_quantities
 
 
   -- performance testing
 
-  if (exists (select count(*) from INFORMATION_SCHEMA.TABLES)
+  if (exists (select * 
+                from INFORMATION_SCHEMA.TABLES
+               where TABLE_NAME = 'products_test'))
+    begin
+        drop table products_test
+    end
+
+
+    if (exists (select * 
+                from INFORMATION_SCHEMA.TABLES
+               where TABLE_NAME = 'product_sales_test'))
+    begin
+        drop table product_sales_test
+    end
+
+create table products_test
+(
+  [Id] int identity primary key,
+  [Name] nvarchar(MAX),
+  [Description] nvarchar(MAX)
+)
+
+create Table product_sales_test
+(
+ Id int primary key identity,
+ product_id int foreign key references products_test(Id),
+ unit_price int,
+ quantity_sold int
+)
+      
+declare @id int  set @id = 1
+
+while (@id < 300000)
+begin
+  insert into products_test
+  values
+  ('Product - ' + CAST(@Id as nvarchar(20)), 
+   'Product - ' + CAST(@Id as nvarchar(20)) + ' Description')
+  Print @Id
+    Set @Id = @Id + 1
+end
+
+select * from products_test
+
+
+-- Declare variables to hold a random ProductId, 
+-- UnitPrice and QuantitySold
+declare @random_product_Id int
+declare @random_unit_price int
+declare @random_quantity_sold int
+
+-- Declare and set variables to generate a 
+-- random ProductId between 1 and 100000
+declare @lower_limit_for_product_id int         set @lower_limit_for_product_id = 1  
+declare @upper_limit_for_product_Id int         set @upper_limit_for_product_Id = 100000
+
+
+-- Declare and set variables to generate a 
+-- random UnitPrice between 1 and 100
+declare @lower_limit_for_unit_price int         set @lower_limit_for_unit_price = 1
+declare @upper_limit_for_unit_price int         set @upper_limit_for_unit_price = 100
+
+
+-- Declare and set variables to generate a 
+-- random QuantitySold between 1 and 10
+declare @lower_limit_for_quantity_sold int      set @lower_limit_for_quantity_sold = 1                                                       
+declare @upper_limit_for_quantity_sold int      set @upper_limit_for_quantity_sold = 10
+
+
+
+--Insert Sample data into tblProductSales table
+Declare @Counter int
+Set @Counter = 1
+
+While(@Counter <= 300000)
+Begin
+                                       
+ select @random_product_Id    = Round(((@upper_limit_for_product_Id - @lower_limit_for_product_id) * Rand() + @lower_limit_for_product_id), 0)
+ select @random_unit_price    = Round(((@upper_limit_for_unit_price - @lower_limit_for_unit_price) * Rand() + @lower_limit_for_unit_price), 0)
+ select @random_quantity_sold = Round(((@upper_limit_for_quantity_sold - @lower_limit_for_quantity_sold) * Rand() + @lower_limit_for_quantity_sold), 0)
+ 
+ Insert into product_sales_test 
+ values(@random_product_Id, @random_unit_price, @random_quantity_sold)
+
+ Print @Counter
+ Set @Counter = @Counter + 1
+End
+
+
+
+-- demonstration how random gerator number works
+declare @test int set @test = 1
+declare @testUp int set @testUp = 10
+
+--select ROUND((@testUp - @test) * rand() + @test, 0)
+
+declare @random int
+while (5=5)
+begin
+    select @random = ROUND((@testUp - @test) * rand() + @test, 0)
+    print @random
+    if(@random < 1 or @random > 10)
+    begin
+      print 'error' + cast(@random as nvarchar(max))
+      break
+    end
+end
+
+select * from products_test
+select * from product_sales_test pst order by Id
+
+select pt.Id, pt.Name, pt.Description 
+  from products_test pt
+ where pt.Id in (select pst.product_id from product_sales_test pst)
+
+ select distinct pt.id, pt.Name, pt.Description 
+   from products_test pt
+   join product_sales_test pst on pst.product_id = pt.Id
+
+
+   checkpoint ;
+   go
+   dbcc dropcleanbuffers -- clear query cache
+   go
+   dbcc freeproccache -- clear execution plan cache
+   go
+
+   select pt.id, pt.Name, pt.Description from products_test pt
+   where not exists(select * from product_sales_test pst where pst.product_id = pt.Id)
+
+   select pt.Id, pt.Name, pt.Description
+     from products_test pt
+left join product_sales_test pst on pst.product_id = pt.Id
+     where pst.product_id is null
+
+
+select * from product_sales_test pst where pst.product_id = 99000 
+select * from products_test
+DECLARE @id INT
+select @id = pt.id from products_test pt where pt.id = 33
+print @id
+
+
+select * from products_test
+select * from product_sales_test pst order by product_id
+
+
+
+
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             $12
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+SELECT * FROM SYSOBJECTS WHERE xtype = 'u'
+SELECT * FROM SYS.tables
+select * from INFORMATION_SCHEMA.TABLES
+
+if not exists(select * from INFORMATION_SCHEMA.TABLES where TABLE_NAME = 'example' and TABLE_SCHEMA = 'dbo')
+begin
+
+end
+else
+begin
+
+end
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             $13

@@ -9,7 +9,7 @@
 -- TRY - CATCH block, 
 -- UNION and UNION ALL clause, 
 -- CASE statement, 
-
+-- MERGE statement
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1276,8 +1276,41 @@ ORDER BY FirstName
 
 
 
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                               MERGE
+-- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
 
+   Create table student_source
+(
+     ID int primary key,
+     Name nvarchar(20)
+)
+GO
 
+Insert into student_source values (1, 'Mike')
+Insert into student_source values (2, 'Sara')
+GO
+
+Create table student_target
+(
+     ID int primary key,
+     Name nvarchar(20)
+)
+GO
+
+Insert into student_target values (1, 'Mike M')
+Insert into student_target values (3, 'John')
+GO
+
+MERGE student_target AS T
+USING student_source AS S
+ON T.ID = S.ID
+WHEN MATCHED THEN
+     UPDATE SET T.NAME = S.NAME
+WHEN NOT MATCHED BY TARGET THEN
+     INSERT (ID, NAME) VALUES(S.ID, S.NAME)
+WHEN NOT MATCHED BY SOURCE THEN
+     DELETE;
