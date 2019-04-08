@@ -974,7 +974,7 @@ select * from Employees
     INTO #PersonDetails
   SELECT e.FirstName 
     FROM Employees e
--- second option
+-- second option - with this approach the tempt table is created on the fly
   SELECT FirstName
     INTO #PersonDetails
     FROM Employees
@@ -982,7 +982,26 @@ select * from Employees
   SELECT * FROM #PersonDetails
   DROP TABLE IF EXISTS #PersonDetails
 
+  -- it is easy way for backup table into another DB
+  SELECT *
+    INTO userinfo.dbo.backup_table_v_3
+    FROM Employees e
+   where e.EmployeeID > 33
+    select * from dbo.backup_table_v_3
 
+   
+    select e.*,d.Name  into userinfo.dbo.backup_table_v_4
+    from Employees e
+    inner join Departments d on d.DepartmentID = e.AddressID
+    WHERE E.EmployeeID > 33
+
+    select * from dbo.backup_table_v_4
+
+
+    -- this is interesting approach !!!! :
+    select * into userinfo.dbo.empthy_table from Employees where 1<>1
+    select * from empthy_table
+     
  -- insert in #temp_t table with no need of creating
  
  -- first option

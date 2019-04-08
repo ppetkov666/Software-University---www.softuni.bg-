@@ -1115,17 +1115,20 @@ commit transaction
 -- DEADLOCKING
 -- in the following example if i execute from this session the UserInfoTable table and from another session the People table , these 2 tables will be locked, 
 -- then when i try to execute table People from this session and accordingly UserInfoTable from the other session the deadlock will occur and sql server will 
--- choose one of both transactions as deadlock victim and it will be rollbacked and the other will be completed 
+-- choose one of both transactions as deadlock victim and it will be rollbacked and the other will be completed
+-- one important addition - we are talking about locking by primary key!!!
 begin transaction
 
 update UserInfoTable 
 SET FirstName = 'testname' 
 where id = 27 
 
+begin transaction
 update People
 set Firstname = 'testname'
 where id = 2
 rollback
+
 commit transaction
 
 select @@trancount  -- check the number of active transactions
@@ -1134,10 +1137,128 @@ select @@trancount  -- check the number of active transactions
 -- when i update one row from this table with transaction from other connection still can access another row from this table, 
 -- because when i update by primary key only the current row is LOCKED. From another connection i can access another rows , but not the whole table
 SELECT * FROM UserInfoTable
+SELECT * FROM People
+
 BEGIN TRANSACTION
 UPDATE UserInfoTable
 SET Salary = 6666666 WHERE ID = 27
 ROLLBACK
 SELECT * FROM People
 
+-- |||||||||||||||||||||||||||||||||||||||||||||||||        3        |||||||||||||||||||||||||||||||||||||||||||||||||
 
+-- simulating rollback in catch block
+select * from UserInfoTable
+
+begin try
+begin tran 
+  update UserInfoTable
+  set Salary -=100 where Id = 27
+  
+  update UserInfoTable
+  set Salary -= 'a' where Id = 28
+commit tran
+	print 'tran commited'
+end try 
+begin catch 
+	rollback
+	print 'error found - rollbacked tran'
+end catch 
+
+
+
+-- |||||||||||||||||||||||||||||||||||||||||||||||||        4        |||||||||||||||||||||||||||||||||||||||||||||||||
+-- for another transaction connection tests we are using: 0___test_connection_for_temp_tables querie file
+-- and this is not just for transaction test but in general 
+
+-- ISOLATION LEVEL EXAMPLES
+-- READ COMMITTED; 
+-- READ UNCOMMITTED; 
+-- REPEATABLE READ; 
+-- SNAPSHOT; 
+-- SERIALIZABLE
+-- READ COMMITTED SNAPSHOT
+
+-- dirty read example - read wrong data from another connection if it is 'set transaction isolation level read uncommitted'
+-- because by default it is : set to committed'
+
+set transaction isolation level read committed
+
+select * from UserInfoTable(nolock) where id = 27
+
+begin tran 
+  update UserInfoTable
+     set Salary =100 
+   where Id = 27
+   rollback
+  waitfor delay '00:00:15'
+  print 'not enough money'
+  rollback
+-- lost update ---------------------------------- it is valid for read commited and uncommitted isolation levels
+-- it we change it to repeatable read the result will be different and will throw an error 
+set transaction isolation level repeatable read
+
+
+begin transaction
+declare @salary_decrease int 
+
+select @salary_decrease = ut.Salary 
+  from UserInfoTable ut 
+ where ut.Id = 27
+
+waitfor delay '00:00:10'
+select @salary_decrease -= 30
+
+update UserInfoTable
+set Salary = @salary_decrease 
+where id = 27
+print  @salary_decrease
+commit tran
+
+rollback
+
+-- non repeatable read --------------------------------------- 
+-- when change  it again  we must use: set transaction isolation level repeatable read 
+select * from UserInfoTable
+
+Begin Transaction
+Select Salary 
+  from UserInfoTable 
+ where Id = 27
+
+waitfor delay '00:00:10'
+
+Select salary 
+  from UserInfoTable 
+ where Id = 27
+
+Commit Transaction
+
+rollback
+
+-- SERIALIZABLE  isolation level -------------------------------
+-- 
+set transaction isolation level serializable 
+
+begin tran
+update UserInfoTable
+  set Salary += 1
+  where Id = 27
+  
+  commit tran 
+
+select * from UserInfoTable
+
+rollback
+
+-- SNAPSHOT isolation level --------------------------------------- 
+alter  database Userinfo
+set allow_snapshot_isolation on 
+set transaction isolation level snapshot
+
+ begin tran
+update UserInfoTable
+  set Salary +=66 
+ where id = 27
+
+ COMMIT TRAN
