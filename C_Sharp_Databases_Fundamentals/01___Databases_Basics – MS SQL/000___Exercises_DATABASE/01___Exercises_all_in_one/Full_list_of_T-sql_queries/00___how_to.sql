@@ -300,10 +300,12 @@ DELETE
                                                             -- HOW TO find employees hired in last N-th month
 -- in my case i will use years because my table data is little bit older
 
-select * from                                                 
-(select e.FirstName,e.LastName,DATEDIFF(YEAR,HireDate,GETDATE()) as 'date diffrence in months' 
-  from Employees e) emp
-  where [date diffrence in months] < 15
+SELECT * 
+  FROM (SELECT e.FirstName,
+               e.LastName,
+               DATEDIFF(YEAR,HireDate,GETDATE()) AS 'date diffrence in months' 
+          FROM Employees e) emp
+ WHERE [date diffrence in months] < 15
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -359,7 +361,7 @@ USE SoftUni
 SELECT * FROM Employees WHERE FirstName like 'm%'
 
 SELECT * FROM Employees WHERE CHARINDEX('m',FirstName) = 1;
-SELECT * FROM Employees WHERE left(FirstName,1) = 'm';
+SELECT * FROM Employees WHERE LEFT(FirstName,1) = 'm';
 SELECT * FROM Employees WHERE SUBSTRING(FirstName,1,1) = 'm'
 
 
@@ -410,7 +412,9 @@ BEGIN
   print @student_id
 END
 
-insert into StudentCourses values (@student_id,@course_id)
+insert into StudentCourses 
+values 
+(@student_id,@course_id)
 
 -- now after the result it is quite obvious i will alter the table and will create composite primary key but before that 
 -- because we will have dublicated rows we have to delete them from the records of the table
@@ -572,7 +576,7 @@ group by pt.id, pt.Name, pt.Description
     from products_test pt
     left join product_sales_test pst
       on pt.Id = pst.product_id
-      where isnull(pst.product_id, 0 ) = 0
+   where isnull(pst.product_id, 0 ) = 0
 
       select  max(pst.product_id) from product_sales_test pst 
 
@@ -589,7 +593,7 @@ select pt.Id,
  left join (select product_id,
                      sum(pst.quantity_sold)  as sold_quantity 
               from product_sales_test pst
-           group by product_id)              as quoral
+          group by product_id)               as quoral
         on pt.Id = quoral.product_id
 
 
@@ -781,28 +785,164 @@ end
 --                                                                             $13
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+-- how to group by different criteria in one table 
+
+
+select t.Name, d.Name, sum(e.Salary) as total_salary 
+  from Employees e
+  join Departments d on d.DepartmentID = e.DepartmentID
+  join Addresses a   on a.AddressID = e.AddressID
+  join Towns t       on t.TownID = a.TownID
+group by grouping sets
+(
+  (t.Name, d.Name),
+  (t.name),
+  ()
+)
+order by grouping(d.Name), GROUPING(t.Name)
+
+
+-- done with union all ---------------------------------------------------------
+
+select t.name, d.Name, sum(e.Salary) as total_salary 
+  from Employees e
+  join Departments d on d.DepartmentID = e.DepartmentID
+  join Addresses a   on a.AddressID = e.AddressID
+  join Towns t       on t.TownID = a.TownID
+group by t.name ,d.Name
+         
+union all
+
+select t.Name,null, sum(e.Salary) as salary 
+  from Employees e
+  join Departments d on d.DepartmentID = e.DepartmentID
+  join Addresses a   on a.AddressID = e.AddressID
+  join Towns t       on t.TownID = a.TownID
+group by t.Name
+
+union all
+
+select null,null,sum(e.Salary) from Employees e 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             $14
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-- 
+-- same result set but different performance
+select distinct d.Name, 
+       sum(e.Salary) over (partition by name) total_salary
+  from Employees e
+  join Departments d on d.DepartmentID = e.DepartmentID
+
+
+    select d.Name, 
+           sum(e.Salary) total_salary
+      from Employees e
+      join Departments d on d.DepartmentID = e.DepartmentID
+  group by d.Name
+
+
+  -- ----------------------------------------------------------
+  select e.FirstName, 
+         e.LastName, 
+         e.Salary,
+         average,
+         minimum,
+         maximum
+    from Employees e
+    join (select e.DepartmentID,
+                 AVG(e.Salary) average, 
+                 min(e.Salary) minimum, 
+                 max(e.Salary) maximum 
+            from Employees e
+        group by e.DepartmentID) emp on emp.DepartmentID = e.DepartmentID 
 
 
 
 
+      select e.FirstName,
+             e.LastName,
+             e.Salary,
+             d.[Name],
+             AVG(e.Salary) over(partition by e.DepartmentId) average,
+             min(e.Salary) over(partition by e.DepartmentId) minimum,
+             max(e.Salary) over(partition by e.DepartmentId) maximum,
+             ROW_NUMBER()  over(partition by e.DepartmentId order by salary) [row_number],
+             RANK()        OVER(partition by e.departmentId order by salary) rank_column_with_partition,
+             DENSE_RANK()  OVER(partition by e.departmentId order by salary) dense_rank_column_with_partition,
+             RANK()        OVER( order by salary) rank_column_without_partition,
+             DENSE_RANK()  OVER( order by salary) dense_rank_column_without_partition
+        from Employees e
+        join Departments d on d.DepartmentID = e.DepartmentID
 
 
 
+select e.FirstName,
+       e.LastName,
+       e.salary,
+       ROW_NUMBER()  OVER (order by salary) [row_number],
+       RANK()        OVER (order by salary) rank_column_with_partition,
+       DENSE_RANK()  OVER (order by salary) dense_rank_column_with_partition
+  from Employees e
+
+
+ -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                             $15
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-- how to get running total value as additional column
+
+select e.FirstName, 
+       e.LastName,
+       e.Salary
+  from Employees e
+
+go
 
 
 
+-- the same result with cursor
+
+drop table #tempEmp
+  SELECT EmployeeID,
+         FirstName,
+         LastName,
+         Salary,
+         0 AS running_total_salary,
+         ROW_NUMBER() OVER (ORDER BY employeeID) row_num
+    INTO #tempEmp
+    FROM Employees 
+
+    
+SELECT * FROM #tempEmp
 
 
+DECLARE @Salary INT;
+DECLARE @row_num BIGINT;
+declare @temp_salary int SET @temp_salary = 0
 
+  DECLARE total_result_c CURSOR FOR 
+   SELECT Salary, 
+          row_num
+     FROM #tempEmp 
+ ORDER BY employeeID
+OPEN total_result_c
+  FETCH NEXT FROM total_result_c INTO  @Salary, @row_num;
+  PRINT @Salary;
+  PRINT @row_num;
+  WHILE @@FETCH_STATUS <> -1
+  BEGIN
+    set @temp_salary +=@Salary 
+    update #tempEmp
+    set running_total_salary += @temp_salary
+    where row_num = @row_num
+     set @temp_salary = (select running_total_salary from #tempEmp where row_num = @row_num)
+    PRINT @temp_salary
+    FETCH NEXT FROM total_result_c INTO  @Salary, @row_num
+  END
+CLOSE total_result_c
+DEALLOCATE total_result_c
 
-
-
-
-
+select * from #tempEmp
 
 
 
@@ -819,6 +959,6 @@ end
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
--- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             003
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

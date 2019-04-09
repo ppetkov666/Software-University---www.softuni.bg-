@@ -4,9 +4,9 @@
 
 -- COALEASCE
 -- ISNULL
--- LEAD
+-- LEAD and LAG
 -- NTILE
-
+-- FIRST_VALUE & LAST_VALUE
 
   -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                                  COALEASCE
@@ -72,12 +72,13 @@
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                                LEAD 
+--                                                                                LEAD AND LAG
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 GO
 USE SoftUni
 GO
 
+-- if the values of lead and lag functions return null we can either use their default value as parameter or isnull function as it is shown below
 -- ^^^^^^^^ example 1  ^^^^^^^^
 
 -- this querie returns empID, row number, firstname, lastname, salary, next row salary, and difference bettween last two column 
@@ -86,15 +87,19 @@ GO
          e.FirstName, 
          e.LastName,
          e.Salary,
+         e.previous_row_salary,
          e.next_row_salary,
-         e.column_difference
+         e.column_difference,
+         lead_minus_lag
    FROM (SELECT emp.EmployeeID,
                 ROW_NUMBER() OVER (ORDER BY emp.EmployeeID) [row_number],
                 emp.FirstName,
                 emp.LastName,
                 emp.Salary,
-                LEAD(emp.Salary) OVER (ORDER BY emp.EmployeeID) AS next_row_salary,
-                (emp.Salary - LEAD(emp.Salary) OVER (ORDER BY emp.EmployeeID)) column_difference
+                ISNULL(LAG(emp.Salary) OVER (ORDER BY emp.EmployeeID),0) AS previous_row_salary,
+                ISNULL(LEAD(emp.Salary) OVER (ORDER BY emp.EmployeeID),0) AS next_row_salary,
+                (emp.Salary - LEAD(emp.Salary) OVER (ORDER BY emp.EmployeeID)) column_difference,
+                ((LEAD(emp.Salary,1,0) OVER (ORDER BY emp.EmployeeID)) - (LAG(emp.Salary,1,0) OVER (ORDER BY emp.EmployeeID))) lead_minus_lag
     FROM Employees emp) e
 GO
 
@@ -201,3 +206,22 @@ FROM (SELECT e.FirstName,
              FROM Employees e
             WHERE e.Salary = 10000) groups
             WHERE groups.ntile_groups = 1
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                                FIRST_VALUE() 
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+SELECT e.FirstName,
+       e.LastName,
+       e.Salary,
+       FIRST_VALUE(e.FirstName) over (partition by e.Salary order by e.salary) as first_value
+  FROM Employees e
+  order by e.Salary desc
+
+
+  SELECT e.FirstName,
+       e.LastName,
+       e.Salary,
+       LAST_VALUE(e.FirstName) over (partition by e.Salary order by e.salary) as first_value
+  FROM Employees e
+  order by e.Salary desc

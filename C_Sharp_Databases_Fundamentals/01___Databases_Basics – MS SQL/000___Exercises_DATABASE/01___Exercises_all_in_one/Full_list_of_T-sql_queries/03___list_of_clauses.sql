@@ -259,7 +259,7 @@ GO
 
 -- this querie returns firstname, lastname, salary as a group  and count of per this group  
   SELECT e.FirstName,
-          e.LastName,
+         e.LastName,
          e.Salary,  
          COUNT(*) count_of_people_per_group__first_name_last_name_salary
     FROM Employees e
@@ -1019,7 +1019,7 @@ select * from Employees
   SELECT * FROM #temp_t
   DROP TABLE IF EXISTS #temp_t
 
--- when temporary table  is inside stored procedure get dropped once this sp complete it's execution 
+-- when local temporary table  is inside stored procedure get dropped once this sp complete it's execution
   GO
   CREATE OR ALTER PROCEDURE sp_local_temporary_table
   AS
@@ -1039,7 +1039,7 @@ select * from Employees
   END
 
   EXECUTE sp_local_temporary_table
--- in this case the select statement will rturn error  
+-- in this case the select statement will return error  
   SELECT * FROM #person_details
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        2 - Global Temporary Table       |||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1090,7 +1090,9 @@ EXECUTE sp__global_temporary_table
 -- ^^^^^^^^ example 1  ^^^^^^^^
 
 -- this querie returns department name and count of employees more than 20 for this particular department
-  DECLARE @TableEmployeeCount TABLE(DepartmentName NVARCHAR(50), DepartmentId INT, TotalEmployees INT)
+  DECLARE @TableEmployeeCount TABLE(DepartmentName   NVARCHAR(50),
+                                    DepartmentId     INT, 
+                                    TotalEmployees   INT)
 
   INSERT 
     INTO @TableEmployeeCount
@@ -1122,10 +1124,12 @@ GROUP BY d.[Name],
   )
   GO
   -- or  we can just declare it like :
-  declare @table_variable  table (FirstName NVARCHAR(50), LastName NVARCHAR(50), Salary INT)
+  DECLARE @table_variable  TABLE (FirstName NVARCHAR(50), 
+                                  LastName  NVARCHAR(50), 
+                                  Salary    INT)
 
 
---second step is to create a procedure and to put this variable 'table_variable' as parameter and with name '@table_variable'
+--second step is to create a procedure and to put this variable  from type 'table_variable' as parameter and with name '@table_variable'
 -- it MUST be READONLY 
   USE UserInfo
   GO 
@@ -1155,6 +1159,7 @@ GO
 -- the final part of this is to execute our SP with the parameter this SP takes : is it from type 'table_variable' and the name is @table_variable_to_be_passed_to_sp 
   EXECUTE sp__insert_employee @table_variable_to_be_passed_to_sp
 
+  select * from UserInfoTable
 
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        4 - ExampleS  |||||||||||||||||||||||||||||||||||||||||||||||||
