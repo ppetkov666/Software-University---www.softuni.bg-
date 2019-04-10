@@ -7,6 +7,10 @@
 -- LEAD and LAG
 -- NTILE
 -- FIRST_VALUE & LAST_VALUE
+-- CHOOSE
+-- IIF
+-- TRY_PARSE, TRY_CONVERT    
+-- offset plus fetch next
 
   -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                                  COALEASCE
@@ -208,7 +212,7 @@ FROM (SELECT e.FirstName,
             WHERE groups.ntile_groups = 1
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                                FIRST_VALUE() 
+--                                                                                FIRST_VALUE() and LAST_VALUE()
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 SELECT e.FirstName,
@@ -225,3 +229,148 @@ SELECT e.FirstName,
        LAST_VALUE(e.FirstName) over (partition by e.Salary order by e.salary) as first_value
   FROM Employees e
   order by e.Salary desc
+
+  
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                         CHOOSE
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+select e.FirstName, 
+       e.LastName,
+       e.hiredate,
+       CHOOSE(DATEPART(MM,e.Hiredate), 'jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec') [month]
+ from Employees e
+
+ select e.FirstName, 
+       e.LastName,
+       e.hiredate,
+       convert(NVARCHAR(3),e.HireDate) [month]
+ from Employees e
+
+
+select e.FirstName,
+       e.LastName,
+       e.hiredate,
+       case DATEPART(MM,e.Hiredate)
+       when 1 then 'january'
+       when 2 then 'february'
+       when 3 then 'march'
+       when 4 then 'april'
+       when 5 then 'may'
+       when 6 then 'june'
+       when 7 then 'july'
+       when 8 then 'august'
+       when 9 then 'september'
+       when 10 then 'october'
+       when 11 then 'november'
+       when 12 then 'december'
+       end as [month]
+  from Employees e
+
+  select * from Employees
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                         IIF
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+-- if is true: 'worker' if not: 'manager'
+
+select e.FirstName,
+       e.LastName,
+       IIF(e.ManagerID is not null, 'worker', 'manager') as title
+  from Employees e
+
+
+select e.FirstName,
+       e.LastName,
+       case 
+       when e.ManagerID is not null then 'worker'
+       else 'manager'
+       end as title
+  from Employees e
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                            TRY_PARSE, TRY_CONVERT        
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+select TRY_PARSE('petko' as int )
+
+select  case 
+        when TRY_PARSE('123' as int ) is null then 'conversion failed'
+        else 'success'
+        end 
+
+select IIF(TRY_PARSE('123' as int ) is null, 'not parsed', 'parsed')
+declare @v_test_1 int set @v_test_1 = 123123
+declare @v_test int 
+select @v_test = IIF(TRY_CONVERT(int, @v_test_1) is null, 0,@v_test_1)
+print @v_test
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                offset + fetch next
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+go
+create or alter proc spe_offset_fetch_example_proc
+(
+@v_page_number int,
+@v_page_size int
+)
+as
+begin
+
+  select * 
+    from Employees e
+    order by e.EmployeeID
+  offset (@v_page_number - 1) * @v_page_size rows
+  fetch next @v_page_size rows only
+
+end
+
+exec spe_offset_fetch_example_proc 2, 50
+
+-- same proc but without  offset and fetch
+
+go
+create or alter proc spe_get_page_info
+(
+@page_number int,
+@page_size int
+)
+as
+begin
+select e.FirstName,
+       e.LastName,
+       e.Salary,
+       [row_number]
+  from Employees e
+  join (select e.EmployeeID, 
+               ROW_NUMBER() over (order by e.EmployeeID) [row_number]
+          from Employees e
+          group by e.EmployeeID) as emp on emp.EmployeeID = e.EmployeeID 
+  where row_number between ((@page_number - 1) * @page_size) and (@page_number * @page_size)
+end
+
+
+exec spe_get_page_info 2,50
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                         
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+-- this is how we can get all dependencies  or just right click from object explorer on particular object
+exec sp_depends employees
+
+select * from sys.dm_sql_referencing_entities('dbo.Employees','Object')
+select * from sys.dm_sql_referenced_entities('dbo.cte__custom_table_rows','Object')
+
+select * from cte__custom_table_rows
+
+
+
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                         
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
