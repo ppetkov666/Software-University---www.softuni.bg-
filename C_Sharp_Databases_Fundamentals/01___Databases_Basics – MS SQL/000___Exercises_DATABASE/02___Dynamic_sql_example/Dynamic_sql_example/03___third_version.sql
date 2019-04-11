@@ -36,7 +36,7 @@ BEGIN
     FROM UserInfoTable e
 ORDER BY 
     CASE WHEN @i_first_name = 1 and @i_last_name = 1 and @i_salary =  1 THEN CONVERT(char(10), e.FirstName) + CONVERT(char(10), ISNULL(e.Salary,'')) END,
-	CASE WHEN @i_first_name = 1 and @i_last_name = 1                    THEN CONVERT(char(10), e.FirstName) + CONVERT(char(10), e.LastName) END,
+	  CASE WHEN @i_first_name = 1 and @i_last_name = 1                    THEN CONVERT(char(10), e.FirstName) + CONVERT(char(10), e.LastName) END,
     CASE WHEN @i_salary = 1                                             THEN  e.Salary
      END 
   END
@@ -59,12 +59,13 @@ AS
 BEGIN
 
   SELECT e.*,
-	CONVERT(char(10), e.FirstName) + CONVERT(char(10), e.LastName),CONVERT(char(10), ISNULL(e.Salary,'')) as A1,
-	CONVERT(char(10), e.FirstName) + CONVERT(char(10), e.LastName) as A2
+	       CONVERT(char(10), e.FirstName) + CONVERT(char(10), e.LastName) as [fullname],
+         CONVERT(char(10), ISNULL(e.Salary,''))                         as A1,
+	       CONVERT(char(10), e.FirstName) + CONVERT(char(10), e.LastName) as A2
     FROM UserInfoTable e
 ORDER BY 
     CASE WHEN @i_first_name = 1 and @i_last_name = 1 and @i_salary = 1 THEN CONVERT(char(10), e.FirstName) + CONVERT(char(10), e.LastName) + CONVERT(char(10), ISNULL(e.Salary,''))
-		 WHEN @i_first_name = 1 and @i_last_name = 1                   THEN CONVERT(char(10), e.FirstName) + CONVERT(char(10), e.LastName)
+		     WHEN @i_first_name = 1 and @i_last_name = 1                   THEN CONVERT(char(10), e.FirstName) + CONVERT(char(10), e.LastName)
          WHEN @i_salary = 1                                            THEN  e.Salary
      END 
   END
@@ -84,9 +85,9 @@ CONVERT(char(10), e.FirstName) + CONVERT(char(10), e.LastName) + CONVERT(char(10
 CONVERT(char(10), e.FirstName) + CONVERT(char(10), e.LastName) AS A2
 FROM UserInfoTable e
 ORDER BY
-    CASE when @ColumnName = 'fls' THEN CONVERT(char(10), e.FirstName) + CONVERT(char(10), e.LastName) + CONVERT(char(10), ISNULL(e.Salary,''))
-	     when @ColumnName = 'fl'  THEN CONVERT(char(10), e.FirstName) + CONVERT(char(10), e.LastName)
-	     when @ColumnName = 's'   THEN CONVERT(char(10), ISNULL(e.Salary,''))
+    CASE WHEN @ColumnName = 'fls' THEN CONVERT(char(10), e.FirstName) + CONVERT(char(10), e.LastName) + CONVERT(char(10), ISNULL(e.Salary,''))
+	       WHEN @ColumnName = 'fl'  THEN CONVERT(char(10), e.FirstName) + CONVERT(char(10), e.LastName)
+	       WHEN @ColumnName = 's'   THEN CONVERT(char(10), ISNULL(e.Salary,''))
      END 
 END
 GO
@@ -107,14 +108,13 @@ ORDER BY
 	CASE WHEN @ColumnName = 'fls' THEN e.FirstName END,
 	CASE WHEN @ColumnName = 'fls' THEN e.LastName END, 
 	CASE WHEN @ColumnName = 'fls' THEN e.Salary END, 
-	CASE WHEN @ColumnName = 'fl' THEN e.FirstName END,
-	CASE WHEN @ColumnName = 'fl' THEN e.LastName END, 
-	CASE WHEN @ColumnName = 'lf' THEN e.Salary     
+	CASE WHEN @ColumnName = 'fl'  THEN e.FirstName END,
+	CASE WHEN @ColumnName = 'fl'  THEN e.LastName END, 
+	CASE WHEN @ColumnName = 'lf'  THEN e.Salary     
    END 
 END
 GO
 	EXEC get_ordered_data_v_4 @ColumnName = 'fls'
-
 
 GO
 CREATE or alter PROCEDURE get_ordered_data_v_4_1 
@@ -174,9 +174,9 @@ BEGIN
     FROM UserInfoTable e
 ORDER BY 
     CASE WHEN @i_first_name = 1 and @i_last_name = 1 and @i_salary =  1 THEN CONCAT(e.FirstName, E.LastName,ISNULL(e.Salary,'')) END,
-	CASE WHEN @i_first_name = 1 and @i_last_name = 1                    THEN CONCAT(e.FirstName, E.LastName) END,
+	  CASE WHEN @i_first_name = 1 and @i_last_name = 1                    THEN CONCAT(e.FirstName, E.LastName) END,
     CASE WHEN @i_salary = 1                                             THEN  e.Salary
-     END 
+    END 
   END
 GO
 
@@ -200,11 +200,11 @@ BEGIN
     FROM UserInfoTable e
 ORDER BY 
     CASE WHEN @i_first_name = 1 and @i_last_name = 1 and @i_salary =  1 
-		 THEN SUBSTRING(' ' + CAST(e.FirstName AS VARCHAR(50)) + CAST(E.LastName AS VARCHAR(50)) + ISNULL(CAST(e.Salary AS VARCHAR(50)),''),1,100 ) END,
+		     THEN SUBSTRING(' ' + CAST(e.FirstName AS VARCHAR(50)) + CAST(E.LastName AS VARCHAR(50)) + ISNULL(CAST(e.Salary AS VARCHAR(50)),''),1,100 ) END,
 	CASE WHEN @i_first_name = 1 and @i_last_name = 1                    
 	     THEN SUBSTRING(' ' + e.FirstName + E.LastName,1,100) END,
     CASE WHEN @i_salary = 1          
-	     THEN  e.Salary
+	       THEN  e.Salary
      END 
   END
 GO
@@ -229,11 +229,11 @@ BEGIN
     FROM UserInfoTable e
 ORDER BY 
     CASE WHEN @i_first_name = 1 and @i_last_name = 1 and @i_salary =  1 
-		 THEN REPLACE(' ' + CAST(e.FirstName AS VARCHAR(50)) + CAST(E.LastName AS VARCHAR(50)) + ISNULL(CAST(e.Salary AS VARCHAR(50)),''),'''<null>''','NULL' ) END,
+		     THEN REPLACE(' ' + CAST(e.FirstName AS VARCHAR(50)) + CAST(E.LastName AS VARCHAR(50)) + ISNULL(CAST(e.Salary AS VARCHAR(50)),''),'''<null>''','NULL' ) END,
 	CASE WHEN @i_first_name = 1 and @i_last_name = 1                    
 	     THEN REPLACE(' ' + e.FirstName + E.LastName,'''<null>''','NULL') END,
     CASE WHEN @i_salary = 1          
-	     THEN  e.Salary
+	       THEN  e.Salary
      END 
   END
 GO

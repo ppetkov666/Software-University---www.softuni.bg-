@@ -1,8 +1,8 @@
 
  
 
- DECLARE @last_name              NVARCHAR (MAX); SET @last_name = '';
- declare @salary			     INT			 SET @salary = '';
+ DECLARE @last_name              NVARCHAR (MAX); SET @last_name = 'petkov';
+ declare @salary			     INT			 SET @salary = '600';
  DECLARE @customselect nvarchar(max)
      SET @customselect = '
   SELECT * 
