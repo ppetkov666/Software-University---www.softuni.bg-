@@ -496,7 +496,7 @@ CREATE OR ALTER TRIGGER tr_townUpdate ON Towns FOR UPDATE
  END
 
    UPDATE Towns
-      SET [NAME] = 'Seatle' 
+      SET [NAME] = '' 
      FROM Towns
     WHERE TownID = 1
 

@@ -1,12 +1,33 @@
 
 
--- legend : 
---numbers $1 to $999 shows HOW TO do extract info from tables with queries
---numbers 001 to 1 shows other small hints and trics in SQL 
+-- 001 : HOW TO take a employee with 3-rd highest salary 
+-- 002 : HOW TO take all managers of particular employee
+-- 003 : HOW TO delete dublicate rows
+-- 004 : HOW TO find employees hired in last N-th month
+-- 005 : HOW TO find department with highes number of employees
+-- 006 : HOW TO find count of people grouped by departent and town name using 3 join statements 
+-- 007 : HOW TO find all names that start with certain letter without like operator
+-- 008 : HOW TO insert into many to many table
+-- 009 : HOW TO get people after, before or between certain date
+-- 010 : HOW TO insert full list of records from one table to another and adding additional empthy columns
+-- 011 : HOW TO get the products without any sales
+             -- get products and their sold quantities
+             -- generate random numbers
+-- 012 : HOW TO use INFORMATION_SCHEMA and SYS object 
+-- 013 : HOW TO group by different criteria in one table
+-- 014 : HOW TO user OVER with partition by and order by 
+-- 015 : HOW TO get running total value as additional column
+-- 016 : HOW TO check for dependency in any sp
+-- 017 : HOW TO create sequence and set increment value
+-- 018 : HOW TO insert the data from 2 tables into third table using guid
+-- 019 :
+-- 020 :
+
+
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $1
+--                                                                             001
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                                           -- HOW TO take a employee with 3-rd highest salary
 -- off course here row number will not work quite correctly in some cases but this is not the case for this example
@@ -101,7 +122,7 @@ SELECT  tbl.FirstName,
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $2
+--                                                                             002
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                                 -- HOW TO take all managers of particular employee
@@ -255,7 +276,7 @@ UNION ALL
  left join rank_cte managers ON managers.EmployeeID = employees.ManagerID
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $3
+--                                                                             003
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                                             -- HOW TO delete dublicate rows
 go
@@ -295,7 +316,7 @@ DELETE
  WHERE [row number] > 1
 
  -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $4
+--                                                                             004
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                                             -- HOW TO find employees hired in last N-th month
 -- in my case i will use years because my table data is little bit older
@@ -309,7 +330,7 @@ SELECT *
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $5
+--                                                                             005
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                                             -- HOW TO find department with highes number of employees
 USE SoftUni
@@ -328,7 +349,7 @@ ORDER BY COUNT(*) DESC
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $6
+--                                                                             006
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                                             -- HOW TO find count of people grouped by departent and town name using 
                                                             -- 3 join statements  
@@ -352,7 +373,7 @@ ORDER BY COUNT(*) DESC
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $7
+--                                                                             007
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                                             -- HOW TO find all names that start with certain letter without like operator
 
@@ -366,7 +387,7 @@ SELECT * FROM Employees WHERE SUBSTRING(FirstName,1,1) = 'm'
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $8
+--                                                                             008
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                                             -- HOW TO insert into many to many table
 
@@ -464,7 +485,7 @@ SELECT * FROM StudentCourses
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $9
+--                                                                             009
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                                             -- HOW TO get people after, before or between certain date
 
@@ -511,7 +532,7 @@ SELECT e.FirstName,
 
  
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $10
+--                                                                             010
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                                             -- HOW TO insert full list of records from one table to another and adding
                                                             -- additional empthy columns                                                            
@@ -530,7 +551,7 @@ SELECT e.FirstName,
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $11
+--                                                                             011
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   -- How to:
   -- get the products without any sales
@@ -765,7 +786,7 @@ select * from product_sales_test pst order by product_id
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $12
+--                                                                             012
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 SELECT * FROM SYSOBJECTS WHERE xtype = 'u'
@@ -782,7 +803,7 @@ begin
 end
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $13
+--                                                                             013
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 -- how to group by different criteria in one table 
@@ -825,7 +846,7 @@ union all
 select null,null,sum(e.Salary) from Employees e 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $14
+--                                                                             014
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 -- 
 -- same result set but different performance
@@ -864,14 +885,14 @@ select distinct d.Name,
              e.LastName,
              e.Salary,
              d.[Name],
-             AVG(e.Salary) over(partition by e.DepartmentId) average,
-             min(e.Salary) over(partition by e.DepartmentId) minimum,
-             max(e.Salary) over(partition by e.DepartmentId) maximum,
-             ROW_NUMBER()  over(partition by e.DepartmentId order by salary) [row_number],
-             RANK()        OVER(partition by e.departmentId order by salary) rank_column_with_partition,
-             DENSE_RANK()  OVER(partition by e.departmentId order by salary) dense_rank_column_with_partition,
-             RANK()        OVER( order by salary) rank_column_without_partition,
-             DENSE_RANK()  OVER( order by salary) dense_rank_column_without_partition
+             AVG(e.Salary) OVER(PARTITION BY e.DepartmentId) average,
+             min(e.Salary) OVER(PARTITION BY e.DepartmentId) minimum,
+             max(e.Salary) OVER(PARTITION BY e.DepartmentId) maximum,
+             ROW_NUMBER()  OVER(PARTITION BY e.DepartmentId order by salary) [row_number],
+             RANK()        OVER(PARTITION BY e.departmentId order by salary) rank_column_with_partition,
+             DENSE_RANK()  OVER(PARTITION BY e.departmentId order by salary) dense_rank_column_with_partition,
+             RANK()        OVER( ORDER BY salary) rank_column_without_partition,
+             DENSE_RANK()  OVER( ORDER BY salary) dense_rank_column_without_partition
         from Employees e
         join Departments d on d.DepartmentID = e.DepartmentID
 
@@ -887,7 +908,7 @@ select e.FirstName,
 
 
  -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             $15
+--                                                                             015
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 -- how to get running total value as additional column
 
@@ -948,17 +969,175 @@ select * from #tempEmp
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             001
+--                                                                             016
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                                                            -- HOW TO check for dependency in any sp
-  sp_depends spe_with_output_param
+--  HOW TO check for dependency in any sp
+  
+-- this is how we can get all dependencies  or just right click from object explorer on particular object
+
+select * from sys.dm_sql_referencing_entities('dbo.Employees','Object')
+select * from sys.dm_sql_referenced_entities('dbo.cte__custom_table_rows','Object')
+
+select * from cte__custom_table_rows
+
+
+exec sp_depends 'employees'
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                            017
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-- how to set increment value
+
+create sequence dbo.sequence_object
+as INT
+START WITH 1
+INCREMENT BY 1
+
+alter sequence sequence_object
+restart with 1
+
+
+
+SELECT * FROM SYS.sequences WHERE NAME = 'sequence_object'
+
+SELECT NEXT VALUE FOR dbo.sequence_object
+
+
+
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             002
+--                                                                             018
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+-- how to insert the data from 2 tables into third table using guid
+
+
+
+create table Customer_V
+(
+  ID uniqueidentifier primary key default newid(),
+  Name nvarchar(50)
+)
+
+create table Customer_V_2
+(
+  ID uniqueidentifier primary key default newid(),
+  Name nvarchar(50)
+)
+
+create table Customer_all_in_one
+(
+  ID uniqueidentifier primary key default newid(),
+  Name nvarchar(50)
+)
+
+
+insert into Customer_all_in_one
+select * from Customer_V
+union all 
+select * from Customer_V_2
+
+insert into Customer_V
+values
+(default, 'gosho'),
+(default, 'kaloyan')
+
+insert into Customer_V_2
+values
+(default, 'minko'),
+(default, 'evgeni')
+
+select * from Customer_V
+select * from Customer_V_2
+select * from Customer_all_in_one
+-- how to cast 
+select cast(cast(0 as binary) as uniqueidentifier)
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                            019
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+-- HOW TO  use cross apply 
+
+-- cross apply = inner join 
+-- outer apply = left join 
+
+-- querie plan cache - hashed value 
+
+select d.Name,e.FirstName, e.LastName, e.Salary
+  from Departments d
+  left join Employees e on e.DepartmentID = d.DepartmentID
+
+go
+     select d.Name,
+            e.employeeId,
+            e.FirstName, 
+            e.LastName, 
+            e.Salary
+       from Departments d
+cross apply fn_getemployeesbydepartmentid(d.DepartmentID) e 
+
+go
+create or alter function fn_getemployeesbydepartmentid(@DepartmentId int)
+returns table
+as
+return
+(
+ select *
+ from Employees e
+ where e.DepartmentID = @DepartmentId
+)
+
+SELECT * FROM Employees
+
+     SELECT cp.usecounts, 
+            cp.cacheobjtype, 
+            cp.objtype, 
+            st.text, 
+            qp.query_plan
+       FROM sys.dm_exec_cached_plans AS cp
+CROSS APPLY sys.dm_exec_sql_text(plan_handle) AS st
+CROSS APPLY sys.dm_exec_query_plan(plan_handle) AS qp
+   ORDER BY cp.usecounts DESC
+
+dbcc freeproccache
+
+-- in querie cache plan the change of the parameter name  does no affect it 
+declare @firstname nvarchar(50)
+set @firstname = 'guy'
+execute sp_executesql N'select * from employees where firstname=@fn', N'@fn nvarchar(50)', @firstname
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                             
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-  -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             003
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                             
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                             
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                             
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                             
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

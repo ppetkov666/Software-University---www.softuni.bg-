@@ -10,7 +10,7 @@
 -- CHOOSE
 -- IIF
 -- TRY_PARSE, TRY_CONVERT    
--- offset plus fetch next
+-- OFFSET + FETCH NEXT
 
   -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                                  COALEASCE
@@ -346,8 +346,8 @@ select e.FirstName,
   join (select e.EmployeeID, 
                ROW_NUMBER() over (order by e.EmployeeID) [row_number]
           from Employees e
-          group by e.EmployeeID) as emp on emp.EmployeeID = e.EmployeeID 
-  where row_number between ((@page_number - 1) * @page_size) and (@page_number * @page_size)
+      group by e.EmployeeID) as emp on emp.EmployeeID = e.EmployeeID 
+         where row_number between ((@page_number - 1) * @page_size) and (@page_number * @page_size)
 end
 
 
@@ -357,16 +357,6 @@ exec spe_get_page_info 2,50
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                         
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
--- this is how we can get all dependencies  or just right click from object explorer on particular object
-exec sp_depends employees
-
-select * from sys.dm_sql_referencing_entities('dbo.Employees','Object')
-select * from sys.dm_sql_referenced_entities('dbo.cte__custom_table_rows','Object')
-
-select * from cte__custom_table_rows
-
 
 
 
