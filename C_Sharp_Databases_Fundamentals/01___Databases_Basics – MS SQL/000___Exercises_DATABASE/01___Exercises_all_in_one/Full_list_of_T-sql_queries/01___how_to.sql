@@ -20,8 +20,8 @@
 -- 016 : HOW TO check for dependency in any sp
 -- 017 : HOW TO create sequence and set increment value
 -- 018 : HOW TO insert the data from 2 tables into third table using guid
--- 019 :
--- 020 :
+-- 019 : HOW TO use cross apply 
+-- 020 : HOW TO get count of emp by certain criteria on each row with other columns
 
 
 
@@ -1065,7 +1065,10 @@ select cast(cast(0 as binary) as uniqueidentifier)
 
 -- querie plan cache - hashed value 
 
-select d.Name,e.FirstName, e.LastName, e.Salary
+select d.Name,
+       e.FirstName, 
+       e.LastName, 
+       e.Salary
   from Departments d
   left join Employees e on e.DepartmentID = d.DepartmentID
 
@@ -1088,6 +1091,7 @@ return
  from Employees e
  where e.DepartmentID = @DepartmentId
 )
+go
 
 SELECT * FROM Employees
 
@@ -1109,19 +1113,63 @@ set @firstname = 'guy'
 execute sp_executesql N'select * from employees where firstname=@fn', N'@fn nvarchar(50)', @firstname
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                   020    
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+--HOW TO get count of emp by certain criteria on each row with other columns
+
+    select e.FirstName,
+           e.LastName,
+           count(*) over ()
+      from Employees e
+      where Salary > 40000
+
+-- ------------------------------------------------
+      select e.FirstName,
+         e.LastName,
+         (select COUNT(*) count_of_people_with_same_salary
+            from Employees e0 
+           where e0.Salary > 40000)
+    from Employees e    
+   where e.Salary > 40000
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                             
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+-- to be continue..
+ ;with usage
+     as 
+     (select ContinentCode, CurrencyCode, COUNT(*) curUsage 
+        from Countries
+       group by ContinentCode, CurrencyCode          
+       having count(*) > 1
+     )
+      
+      select distinct ContinentCode , 
+      (select top 1 CurrencyCode from usage usg where usg.ContinentCode = usage.ContinentCode
+      order by curUsage     desc
+      ) as CurrencyCode,
+      (select top 1 curUsage from usage usg where usg.ContinentCode = usage.ContinentCode
+      order by curUsage     desc
+      ) as curUsage
+          
+      from usage
+
+      --group by ContinentCode, curUsage
+      --order by ContinentCode,curUsage desc
+
+
+
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
 
--- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             
--- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             
@@ -1129,15 +1177,34 @@ execute sp_executesql N'select * from employees where firstname=@fn', N'@fn nvar
 
 
 
+    ;with usage
+     as 
+     (select ContinentCode, CurrencyCode, COUNT(*) curUsage 
+        from Countries
+       group by ContinentCode, CurrencyCode          
+     ),
+     cunt as
+     (select ContinentCode, CountryCode
+        from Countries   
+     ),
+     cur as
+     (select CountryCode, CurrencyCode
+        from Countries   
+     )
+     select usage.ContinentCode, usage.CurrencyCode, MAX(usage.curUsage)
+      from usage
+      inner join cunt
+       on cunt.ContinentCode = usage.ContinentCode
+     INNER JOIN cur
+       on cur.CountryCode = cunt.CountryCode
+      and cur.CurrencyCode = usage.CurrencyCode
+      group by usage.ContinentCode, usage.CurrencyCode
+      
 
+    select * from Countries
+GO 
 
--- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             
--- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
+   
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

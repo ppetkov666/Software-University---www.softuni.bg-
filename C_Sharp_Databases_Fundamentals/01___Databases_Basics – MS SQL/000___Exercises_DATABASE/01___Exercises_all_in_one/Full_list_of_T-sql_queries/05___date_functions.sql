@@ -1,14 +1,16 @@
 
 
--- this querie consist the following :
--- GETDATE(), CURRENT_TIMESTAMP, SYSDATETIME(), SYSDATETIMEOFFSET(), GETUTCDATE() 
--- DATENAME(),ISDATE()
--- DATEPART, DATEDIFF, CALCULATE PERSON AGE example
--- CAST, CONVERT
 
+
+-- 001 - GETDATE(), CURRENT_TIMESTAMP, SYSDATETIME(), SYSDATETIMEOFFSET(), GETUTCDATE() 
+-- 002 - DATENAME(),ISDATE()
+-- 003 - DATEPART, DATEDIFF, CALCULATE PERSON AGE example
+-- 004 - CAST, CONVERT
+-- 005 - 
+-- 006 - 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                         GETDATE(), CURRENT_TIMESTAMP, SYSDATETIME(), SYSDATETIMEOFFSET(), GETUTCDATE()                                                                                 
+--                                              001 - GETDATE(), CURRENT_TIMESTAMP, SYSDATETIME(), SYSDATETIMEOFFSET(), GETUTCDATE()                                                                                 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 SELECT GETDATE()
@@ -19,7 +21,7 @@ SELECT GETUTCDATE()
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                             DATENAME(), ISDATE()                       
+--                                                           002 - DATENAME(), ISDATE()                       
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
  SELECT e.FirstName,
@@ -36,7 +38,7 @@ SELECT GETUTCDATE()
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                               DATEPART, DATEDIFF, CALCULATE PERSON AGE                    
+--                                                              003 - DATEPART, DATEDIFF, CALCULATE PERSON AGE                    
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 SELECT e.FirstName,
@@ -97,7 +99,7 @@ print @person_age
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                       CAST, CONVERT          
+--                                                                    004 - CAST, CONVERT          
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 -- the slight different between both is that cast is based on ansi standart and is better to be used unless we need extra style functionality wich convert give us!
 -- just a hint - whatever is in this type of brackets [] is optional parameter according to msdn documentation
@@ -120,7 +122,8 @@ SELECT e.FirstName,
   FROM Employees e
 
   -- if i dont cast it to DATE we will have different result because the time will be included 
-  SELECT CAST(e.HireDate AS DATE), COUNT(e.EmployeeID) count_of_people_per_hire_date
+  SELECT CAST(e.HireDate AS DATE), 
+         COUNT(e.EmployeeID) count_of_people_per_hire_date
     FROM Employees e
 GROUP BY CAST(e.HireDate AS DATE)
 
