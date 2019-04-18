@@ -22,7 +22,7 @@
 -- 018 : HOW TO insert the data from 2 tables into third table using guid
 -- 019 : HOW TO use cross apply 
 -- 020 : HOW TO get count of emp by certain criteria on each row with other columns
-
+-- 021 : HOW TO get only UNmatching record from 2 tables
 
 
 
@@ -1134,30 +1134,19 @@ execute sp_executesql N'select * from employees where firstname=@fn', N'@fn nvar
    where e.Salary > 40000
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             
+--                                                                     021        
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
--- to be continue..
- ;with usage
-     as 
-     (select ContinentCode, CurrencyCode, COUNT(*) curUsage 
-        from Countries
-       group by ContinentCode, CurrencyCode          
-       having count(*) > 1
-     )
-      
-      select distinct ContinentCode , 
-      (select top 1 CurrencyCode from usage usg where usg.ContinentCode = usage.ContinentCode
-      order by curUsage     desc
-      ) as CurrencyCode,
-      (select top 1 curUsage from usage usg where usg.ContinentCode = usage.ContinentCode
-      order by curUsage     desc
-      ) as curUsage
-          
-      from usage
-
-      --group by ContinentCode, curUsage
-      --order by ContinentCode,curUsage desc
+-- version one
+select t.table_one_code as table_one_code_from_table_table_one
+  from table_one t
+  full join table_two t2 on t2.table_one_code = t.table_one_code
+  where t1.table_one_code is null
+   
+ -- version two
+   SELECT t.table_one_code
+  FROM table_one t
+ WHERE NOT EXISTS(SELECT 1 FROM table_two WHERE table_one_code = t.table_one_code)
 
 
 
@@ -1177,32 +1166,6 @@ execute sp_executesql N'select * from employees where firstname=@fn', N'@fn nvar
 
 
 
-    ;with usage
-     as 
-     (select ContinentCode, CurrencyCode, COUNT(*) curUsage 
-        from Countries
-       group by ContinentCode, CurrencyCode          
-     ),
-     cunt as
-     (select ContinentCode, CountryCode
-        from Countries   
-     ),
-     cur as
-     (select CountryCode, CurrencyCode
-        from Countries   
-     )
-     select usage.ContinentCode, usage.CurrencyCode, MAX(usage.curUsage)
-      from usage
-      inner join cunt
-       on cunt.ContinentCode = usage.ContinentCode
-     INNER JOIN cur
-       on cur.CountryCode = cunt.CountryCode
-      and cur.CurrencyCode = usage.CurrencyCode
-      group by usage.ContinentCode, usage.CurrencyCode
-      
-
-    select * from Countries
-GO 
 
    
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

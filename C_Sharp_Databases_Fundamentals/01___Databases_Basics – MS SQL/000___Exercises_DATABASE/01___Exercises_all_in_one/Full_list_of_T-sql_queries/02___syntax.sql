@@ -1,6 +1,6 @@
 
 -- 001 - ADD PRIMARY AND FOREIGN KEY INSIDE THE CREATE STATEMENT
--- 002 - 
+-- 002 - ADD INDEX ON TABLE
 -- 003 - ADD DEFAULT
 -- 004 - ADD CHECK CONSTRAINT 
 -- 005 - WITH
@@ -69,10 +69,11 @@ CREATE TABLE EmployeesProjects(
 --                                                        002
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
+CREATE INDEX IX_TABLE_EMPLOYEES_SALARY
+ON employees (salary asc)
 
 
-
-
+select * from Employees
 
 -- ----------------------------------------------------------------------------------------------------------------------------------------------
 --                                                           003  
