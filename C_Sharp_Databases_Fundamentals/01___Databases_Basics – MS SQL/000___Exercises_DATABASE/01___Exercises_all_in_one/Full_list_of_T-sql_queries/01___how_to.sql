@@ -13,6 +13,7 @@
 -- 011 : HOW TO get the products without any sales
              -- get products and their sold quantities
              -- generate random numbers
+             -- how to use STUFF with FOR XML PATH with example:
 -- 012 : HOW TO use INFORMATION_SCHEMA and SYS object 
 -- 013 : HOW TO group by different criteria in one table
 -- 014 : HOW TO user OVER with partition by and order by 
@@ -275,6 +276,47 @@ UNION ALL
       from rank_cte employees
  left join rank_cte managers ON managers.EmployeeID = employees.ManagerID
 
+ -- done with stored procedure
+ exec spe_get_all_managers_by_certain_employee @i_employee_id = 3
+ 
+ go
+ create or alter procedure spe_get_all_managers_by_certain_employee
+ (
+ @i_employee_id int
+ )
+ as
+ begin
+
+DECLARE @employee_id INT  SET @employee_id = @i_employee_id;
+
+WITH emp_cte
+AS
+(
+
+   SELECT emp.EmployeeID,
+          emp.FirstName,
+          emp.LastName,
+          emp.ManagerID     
+     FROM Employees emp
+    WHERE emp.EmployeeID = @employee_id
+    UNION ALL 
+  
+   SELECT e.EmployeeID,
+          e.FirstName,
+          e.LastName,
+          e.ManagerID 
+     FROM Employees e  
+     JOIN emp_cte cte ON e.EmployeeID = cte.ManagerID 
+)
+
+   SELECT emp_table.EmployeeID,
+          emp_table.FirstName,
+          emp_table.LastName,
+          ISNULL(mngr_table.FirstName +' '+ mngr_table.LastName,'no Boss') AS 'manager' 
+     FROM emp_cte emp_table
+    left JOIN emp_cte mngr_table ON mngr_table.EmployeeID = emp_table.ManagerID
+end
+
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             003
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -332,7 +374,7 @@ SELECT *
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             005
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                                                            -- HOW TO find department with highes number of employees
+                                                            -- HOW TO find department with highest number of employees
 USE SoftUni
 
   SELECT TOP 1 D.[Name],
@@ -557,6 +599,8 @@ SELECT e.FirstName,
   -- get the products without any sales
   -- get products and their sold quantities
   -- generate random numbers
+  -- how to use STUFF with FOR XML PATH with example:
+  use student_test_db
 
  create table products_test
 (
@@ -586,33 +630,56 @@ select * from products_test
 select * from product_sales_test
 
 -- get the products without any sales
+
+-- first option--------
   select pt.id, pt.Name, pt.Description
     from products_test pt
     left join product_sales_test pst
       on pt.Id = pst.product_id
 group by pt.id, pt.Name, pt.Description
   having count(pst.product_id) < 1
+  order by pt.Name
 
+-- second option--------
   select pt.id, pt.Name, pt.Description
     from products_test pt
     left join product_sales_test pst
       on pt.Id = pst.product_id
    where isnull(pst.product_id, 0 ) = 0
+   order by pt.Name
+   -----------------------
+   select pt.Id, 
+          pt.Name, 
+          pt.Description
+     from products_test pt
+left join product_sales_test pst on pst.product_id = pt.Id
+     where pst.product_id is null
 
-      select  max(pst.product_id) from product_sales_test pst 
 
+-- third option-------
 select pt.Id, 
        pt.Name, 
        pt.Description 
   from products_test pt
  where pt.Id not in (select distinct pst.product_id 
-                        from product_sales_test pst)
+                       from product_sales_test pst)
+ order by pt.Name
+-- fourth option------
+select pt.id, 
+         pt.Name, 
+         pt.Description from products_test pt
+   where not exists(select * 
+                      from product_sales_test pst 
+                     where pst.product_id = pt.Id)
+   order by pt.Name
 
+
+   
 -- get products and their sold quantities
     select pt.Name,sold_quantity
       from products_test pt
  left join (select product_id,
-                     sum(pst.quantity_sold)  as sold_quantity 
+                   sum(pst.quantity_sold)  as sold_quantity 
               from product_sales_test pst
           group by product_id)               as quoral
         on pt.Id = quoral.product_id
@@ -624,15 +691,8 @@ select pt.Id,
              where pst.product_id = pt.Id) as sold_quantity 
       from products_test pt
 
-    SELECT pt.Name, sum(pst.quantity_sold) as sold_quantities
-      FROM products_test pt
- LEFT JOIN product_sales_test pst
-        ON pt.Id = pst.product_id
-  GROUP BY pt.Name
-  ORDER BY sold_quantities
-
-
-  -- performance testing
+  
+  -- drop tables
 
   if (exists (select * 
                 from INFORMATION_SCHEMA.TABLES
@@ -731,7 +791,7 @@ declare @testUp int set @testUp = 10
 --select ROUND((@testUp - @test) * rand() + @test, 0)
 
 declare @random int
-while (5=5)
+while (1=1)
 begin
     select @random = ROUND((@testUp - @test) * rand() + @test, 0)
     print @random
@@ -740,16 +800,25 @@ begin
       print 'error' + cast(@random as nvarchar(max))
       break
     end
+    
 end
+
+
+
 
 select * from products_test
 select * from product_sales_test pst order by Id
 
-select pt.Id, pt.Name, pt.Description 
+select pt.Id, 
+       pt.Name, 
+       pt.Description 
   from products_test pt
- where pt.Id in (select pst.product_id from product_sales_test pst)
+ where pt.Id in (select pst.product_id 
+                   from product_sales_test pst)
 
- select distinct pt.id, pt.Name, pt.Description 
+ select distinct pt.id, 
+        pt.Name, 
+        pt.Description 
    from products_test pt
    join product_sales_test pst on pst.product_id = pt.Id
 
@@ -760,14 +829,6 @@ select pt.Id, pt.Name, pt.Description
    go
    dbcc freeproccache -- clear execution plan cache
    go
-
-   select pt.id, pt.Name, pt.Description from products_test pt
-   where not exists(select * from product_sales_test pst where pst.product_id = pt.Id)
-
-   select pt.Id, pt.Name, pt.Description
-     from products_test pt
-left join product_sales_test pst on pst.product_id = pt.Id
-     where pst.product_id is null
 
 
 select * from product_sales_test pst where pst.product_id = 99000 
@@ -780,7 +841,30 @@ print @id
 select * from products_test
 select * from product_sales_test pst order by product_id
 
+-- ---------------------------------------------------------------------
 
+with cte_test
+ as
+ (
+  SELECT pt.ID, 
+         STUFF((SELECT ', ' + CAST(pst.unit_price AS varchar(10))
+                  FROM product_sales_test AS pst  
+                 WHERE pst.product_id = pt.ID 
+                   AND (pst.unit_price < 10  OR (pst.unit_price > 10 AND pst.unit_price <= 50))
+                   FOR XML PATH('')),1,1,'') AS Ids
+    FROM products_test AS pt
+GROUP BY pt.ID
+)
+
+update products_test
+   set Name = CONCAT(pt.[Name],  cast (ct.Ids AS NVARCHAR(2048)))
+   from products_test pt
+  join cte_test ct on ct.Id = pt.Id 
+  where Ids is not null
+
+select * from products_test
+select * from product_sales_test pst order by Id
+select max(product_id) from product_sales_test
 
 
 
@@ -914,7 +998,8 @@ select e.FirstName,
 
 select e.FirstName, 
        e.LastName,
-       e.Salary
+       e.Salary,
+       sum(e.salary) over (order by e.employeeId)
   from Employees e
 
 go
@@ -1054,6 +1139,11 @@ select * from Customer_all_in_one
 -- how to cast 
 select cast(cast(0 as binary) as uniqueidentifier)
 
+delete from Customer_V
+delete from Customer_V_2
+delete from Customer_all_in_one
+
+
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                            019
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1136,7 +1226,7 @@ execute sp_executesql N'select * from employees where firstname=@fn', N'@fn nvar
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                     021        
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+-- HOW TO get only UNmatching record from 2 tables
 -- version one
 select t.table_one_code as table_one_code_from_table_table_one
   from table_one t

@@ -1015,45 +1015,48 @@ SELECT * FROM temp_result_table
 SELECT * FROM employees
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        7        ||||||||||||||||||||||||||||||||||||||||||||||||| 
+use student_test_db
 
 select max(unit_price) from product_sales_test pst
 select * from products_test
 
+go
 create or alter proc spe_test_proc
 
 AS
 BEGIN
-DECLARE @product_id INT
-DECLARE @unit_price INT
-DECLARE @id INT
-DECLARE @price INT
-
-
-
-DECLARE test_cursor CURSOR FOR 
- SELECT product_id, 
-        unit_price 
-   FROM dbo.product_sales_test
-OPEN test_cursor 
-  FETCH NEXT FROM test_cursor INTO @product_id, @unit_price
-  WHILE @@FETCH_STATUS <> -1
-  BEGIN
-    
-    IF(@unit_price < 10)
-    BEGIN
-      UPDATE products_test
-      SET name += ', ' + cast (@unit_price AS NVARCHAR(max)) where id = @product_id
-    END 
-    IF(@unit_price > 10 and @unit_price < 40)
-    BEGIN
-      UPDATE products_test
-      SET name += ', ' + cast (@unit_price AS NVARCHAR(max)) where id = @product_id
-    END 
+  DECLARE @product_id INT
+  DECLARE @unit_price INT
+  DECLARE @id INT
+  DECLARE @price INT
+  
+  select * from dbo.product_sales_test order by product_id
+  select * from products_test
+  
+  DECLARE test_cursor CURSOR FOR 
+   SELECT product_id, 
+          unit_price 
+     FROM dbo.product_sales_test
+  OPEN test_cursor 
     FETCH NEXT FROM test_cursor INTO @product_id, @unit_price
-
-  END 
-CLOSE test_cursor 
-DEALLOCATE test_cursor 
+    WHILE @@FETCH_STATUS <> -1
+    BEGIN
+      
+      IF(@unit_price < 10)
+      BEGIN
+        UPDATE products_test
+        SET name += ', ' + cast (@unit_price AS NVARCHAR(max)) where id = @product_id
+      END 
+      IF(@unit_price > 10 and @unit_price <= 50)
+      BEGIN
+        UPDATE products_test
+        SET name += ', ' + cast (@unit_price AS NVARCHAR(max)) where id = @product_id
+      END 
+      FETCH NEXT FROM test_cursor INTO @product_id, @unit_price
+  
+    END 
+  CLOSE test_cursor 
+  DEALLOCATE test_cursor 
 END
 exec spe_test_proc
 
@@ -1071,7 +1074,7 @@ GO
          STUFF((SELECT ', ' + CAST(pst.unit_price AS varchar(10))
                   FROM product_sales_test AS pst  
                  WHERE pst.product_id = pt.ID 
-                   AND (pst.unit_price < 10  OR (pst.unit_price > 10 AND pst.unit_price < 40))
+                   AND (pst.unit_price < 10  OR (pst.unit_price > 10 AND pst.unit_price <= 50))
                    FOR XML PATH('')),1,1,'') AS Ids
     FROM products_test AS pt
 GROUP BY pt.ID
