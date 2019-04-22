@@ -16,7 +16,7 @@
 
 -- $001 - ADD FOREIGN KEY IN ALTER TABLE STATEMENT
 -- $002 - ADD UNIQUE CONSTRAINT 
--- $003
+-- $003 - UPDATE COMPOSITE PRIMARY KEY
 -- $004
 -- $005
 -- $006
@@ -303,7 +303,25 @@ drop constraint uq_test_constraint
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 --                                                          $003 - 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
+-- update composite primary key 
 
+CREATE TABLE test_primary_change(
+[firstname] NVARCHAR(10) NOT NULL,
+[lastname] NVARCHAR(18) NOT NULL,
+Constraint pk__test_primary_change primary key ([firstname], [lastname])
+)
+select * from test_primary_change
+
+insert into test_primary_change
+values 
+('petko','petkov'),
+('ivan','ivanov'),
+('georgi','georgiev')
+
+update test_primary_change 
+   set firstname = 'test', 
+        lastname = 'testov' 
+ where firstname = 'petko' and lastname = 'petkov'
 
 
 
@@ -312,8 +330,6 @@ drop constraint uq_test_constraint
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 --                                                         $004 - 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 
 
 
