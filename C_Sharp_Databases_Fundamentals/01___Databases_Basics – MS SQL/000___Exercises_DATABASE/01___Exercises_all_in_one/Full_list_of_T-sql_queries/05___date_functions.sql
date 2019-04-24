@@ -6,7 +6,7 @@
 -- 002 - DATENAME(),ISDATE()
 -- 003 - DATEPART, DATEDIFF, CALCULATE PERSON AGE example
 -- 004 - CAST, CONVERT
--- 005 - 
+-- 005 - FORMAT
 -- 006 - 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -132,11 +132,26 @@ GROUP BY CAST(e.HireDate AS DATE)
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                                   
+--                                                   FORMAT                                
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+select * from Employees
 
-
+select e.FirstName, 
+       e.LastName,
+       e.HireDate,
+       cast(e.HireDate as date) as  cast_format_date,
+       cast(e.HireDate as datetime) as  cast_format_datetime,
+       cast(e.HireDate as datetime2) as  cast_format_datetime2,
+       FORMAT(e.HireDate,'dd-MM-yyyy HH-mm-ssss') format_function,
+       FORMAT(e.HireDate,'dd-MM-yyyy') format_function2,
+       FORMAT(e.HireDate,'dd-MM-yyyy (MMMM)') format_function3,
+       FORMAT(e.HireDate,'d') format_function4,
+       FORMAT(e.HireDate,'D') format_function5,
+       FORMAT(e.HireDate,'MMM dd yyyy') format_function6,
+       convert(varchar,e.HireDate, 6) as convert_f
+  from Employees e
+   
 
 
 
