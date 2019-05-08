@@ -26,6 +26,7 @@
 -- 021 : HOW TO get only UNmatching record from 2 tables
 -- 022 : HOW TO find employee which name is [example]... 
 -- 023 : HOW TO set multiple variables in SELECT statement 
+-- 024 : HOW TO compare two result sets 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             001
@@ -886,14 +887,24 @@ SELECT * FROM SYSOBJECTS WHERE xtype = 'u'
 SELECT * FROM SYS.tables
 select * from INFORMATION_SCHEMA.TABLES
 
-if not exists(select * from INFORMATION_SCHEMA.TABLES where TABLE_NAME = 'example' and TABLE_SCHEMA = 'dbo')
+if not exists(select * from INFORMATION_SCHEMA.TABLES where TABLE_NAME = 'Employees' and TABLE_SCHEMA = 'dbo')
 begin
-
+ print ' not exist'
 end
 else
-begin
 
+begin
+  print 'exist'
 end
+
+-- how to get the number of the columns 
+SELECT COUNT(*)
+  FROM INFORMATION_SCHEMA.COLUMNS
+ WHERE table_catalog = 'SoftUni' -- the database
+   and TABLE_SCHEMA = 'dbo'
+   AND table_name = 'Employees'
+
+
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             013
@@ -1278,5 +1289,84 @@ select @v_exists = 1, @o_active = 1
 
    
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                             
+--                                                                  024           
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CREATE TABLE #TABLE1 (
+ID INT,
+NAME NVARCHAR(30)
+)
+
+CREATE TABLE #TABLE2 (
+ID INT,
+NAME NVARCHAR(30)
+)
+
+INSERT INTO #TABLE1 (ID,NAME) VALUES 
+(1,'ONE'),
+(2,'TWO'),
+(3,'THREE'),
+(4,'different')
+
+
+INSERT INTO #TABLE2 (ID,NAME) VALUES 
+(1,'ONE'),
+(2,'TWO'),
+(3,'THREE')
+--(4,'different')
+
+SELECT ID,NAME FROM #TABLE1 
+EXCEPT
+SELECT ID,NAME FROM #TABLE2 
+
+
+SELECT
+CASE WHEN @@ROWCOUNT = 0
+	THEN '1 - THEY ARE SAME!!'
+	ELSE '0 - NOPE THEY ARE DIFFERENT !!'
+END 	
+
+DROP TABLE #TABLE1
+DROP TABLE #TABLE2
+
+ 
+-- -------------------------------------------------------------------------------------
+
+DECLARE @table_one  int select @table_one = count(*) from #table1 
+DECLARE @table_two  int select @table_two = count(*) from #table2 
+
+declare @equal nvarchar(10)
+if @table_one = @table_two
+  begin
+    set @equal = 'yes'
+  end
+else
+  begin
+    set @equal = 'no'  
+  end
+
+SELECT * FROM #TABLE1
+EXCEPT 
+SELECT * FROM #TABLE2
+
+select case when @@ROWCOUNT = 0 and @equal = 'yes'
+THEN '1 - THEY ARE SAME!!'
+ELSE '0 - NOPE THEY ARE DIFFERENT !!'
+end
+
+-- -------------------------------------------------------------------------------------
+SELECT t1.Id,
+       t1.[name]
+  FROM #TABLE1 t1
+ WHERE NOT EXISTS (SELECT t2.id,
+                          t2.[name]
+                     FROM #TABLE2 t2
+                    WHERE t1.id = t2.id 
+                      AND t1.[name] = t2.[name])
+GROUP BY t1.id, t1.[name]
+
+SELECT
+CASE WHEN @@ROWCOUNT = 0
+	THEN '1 - THEY ARE SAME!!'
+	ELSE '0 - NOPE THEY ARE DIFFERENT !!'
+END 	
