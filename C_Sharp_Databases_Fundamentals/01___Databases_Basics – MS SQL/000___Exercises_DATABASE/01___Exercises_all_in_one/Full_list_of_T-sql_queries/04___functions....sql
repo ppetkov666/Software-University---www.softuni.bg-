@@ -11,7 +11,7 @@
 -- 009 - OFFSET + FETCH NEXT
 -- 010 - QUOTENAME
 -- 011 - IDENTITY
--- 012 - 
+-- 012 - EXISTS
 -- 013 - 
 -- 014 - 
 -- 015 - 
@@ -403,3 +403,40 @@ select * from Employees
 select SCOPE_IDENTITY()
 select @@IDENTITY
 select IDENT_CURRENT('employees')
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                    012 - EXISTS     
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+-- The EXISTS operator returns true if the subquery returns one or more records.
+  go
+  CREATE OR ALTER PROCEDURE spe_test_proc
+  AS
+  BEGIN
+    CREATE TABLE #temp_table_example ([name] NVARCHAR(50))
+    INSERT INTO #temp_table_example 
+    VALUES ('Petko')
+  
+    IF (OBJECT_ID('tempdb..#temp_table_example')) IS NOT NULL
+      BEGIN
+        SELECT 'Table exist' AS temp
+        -- if NOT EXIST returns TRUE (which means that there is no record into #temp_table_example) then we get in IF statement
+          IF ( NOT EXISTS  (SELECT 1 FROM #temp_table_example)) 
+            BEGIN
+              SELECT 'table is empthy!' AS temp
+            END
+          ELSE
+            BEGIN
+              SELECT * FROM #temp_table_example
+            END
+      END
+    ELSE 
+      BEGIN
+        SELECT 'table does not exist!' AS temp
+      END
+  END
+
+      exec spe_test_proc
+      SELECT * FROM #temp_table_example
+
+      

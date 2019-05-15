@@ -8,9 +8,9 @@
 -- 004 - WITH clause
 -- 005 - VIEW table
 -- 006 - TEMPORARY table 
---    Local
---    Global
---    Table variable
+--       Local
+--       Global
+--       Table variable
 -- 007 - TRY - CATCH block
 -- 008 - UNION and UNION ALL clause 
 -- 009 - CASE statement
