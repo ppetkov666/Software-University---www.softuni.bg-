@@ -1256,8 +1256,10 @@ select t.table_one_code as table_one_code_from_table_table_one
    
  -- version two
    SELECT t.table_one_code
-  FROM table_one t
- WHERE NOT EXISTS(SELECT 1 FROM table_two WHERE table_one_code = t.table_one_code)
+      FROM table_one t
+     WHERE NOT EXISTS(SELECT 1 
+                        FROM table_two 
+                       WHERE table_one_code = t.table_one_code)
 
 
 
@@ -1267,13 +1269,15 @@ select t.table_one_code as table_one_code_from_table_table_one
 
 -- find employee which name is.. michael - does not matter it is being writter: MIchael, Michael, MICHAEL OR...
 
-use SoftUni
-select * from Employees e where LOWER(e.FirstName) like '%michael%'
+USE SoftUni
+SELECT * 
+  FROM Employees e 
+ WHERE LOWER(e.FirstName) LIKE '%michael%'
 
-select FirstName , COUNT(FirstName)
-  from Employees
-group by FirstName
-order by COUNT(FirstName) desc
+  SELECT FirstName, COUNT(FirstName)
+    FROM Employees
+GROUP BY FirstName
+ORDER BY COUNT(FirstName) DESC
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                023             
@@ -1283,7 +1287,8 @@ DECLARE @v_exists INT; SET @v_exists = 0;
 DECLARE @o_active BIT; SET @o_active = 0; 
 
 select @v_exists = 1, @o_active = 1 
-  from Employees e where e.FirstName = 'guy'
+  from Employees e 
+ where e.FirstName = 'guy'
 
   print @v_exists
   print @o_active
@@ -1407,3 +1412,16 @@ END
 
       exec spe_test_proc 'petko petkov'
       SELECT * FROM #temp_table_example
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                  025
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+select * from Employees
+begin tran
+UPDATE Employees SET Salary = 43301 WHERE EmployeeID = 1
+begin tran
+UPDATE Employees SET Salary = 13003 WHERE EmployeeID = 3
+
+
+rollback

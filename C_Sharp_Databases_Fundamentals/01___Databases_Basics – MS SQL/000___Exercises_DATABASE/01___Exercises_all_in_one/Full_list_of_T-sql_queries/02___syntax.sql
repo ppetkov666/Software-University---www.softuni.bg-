@@ -1,13 +1,13 @@
 
 -- 001 - ADD PRIMARY AND FOREIGN KEY INSIDE THE CREATE STATEMENT
--- 002 - ADD INDEX ON TABLE
+-- 002 - ADD INDEX ON TABLE 
 -- 003 - ADD DEFAULT
 -- 004 - ADD CHECK CONSTRAINT 
 -- 005 - WITH
 -- 006 - VIEW
 -- 007 - STORED PROCEDURE
 -- 008 - FUNCTION
--- 009 - CREATE INDEX
+-- 009 - ADD CONCATENATED FIELD AS SUM OF TWO FIELD 
 -- 010 - UPDATE
 -- 011 - CURSOR
 -- 012 - TRIGGER
@@ -68,12 +68,20 @@ CREATE TABLE EmployeesProjects(
 ------------------------------------------------------------------------------------------------------------------------------------------------
 --                                                        002
 ------------------------------------------------------------------------------------------------------------------------------------------------
-
+-- non unique , non clustered
+-- it can be added in either way 
+-- by adding a constraint or with CREATE statement
+-- by default primary key constraint creates unique clustered index
 CREATE INDEX IX_TABLE_EMPLOYEES_SALARY
 ON employees (salary asc)
 
+CREATE unique nonClustered INDEX IX_TABLE_EMPLOYEES_FIRSTNAME
+ON employees (Firstname asc)
 
-select * from Employees
+
+alter table tblEmployees
+add constraint uq_tblEmployees_firstname
+unique clustered
 
 -- ----------------------------------------------------------------------------------------------------------------------------------------------
 --                                                           003  
@@ -181,11 +189,19 @@ SELECT DBO.ufn_example (30000)
 --------------------------------------------------------------------------------------------------------------------------------------------------
 --                                                                009 
 --------------------------------------------------------------------------------------------------------------------------------------------------
---  CREATE INDEX
-
-CREATE INDEX ix_employees_salary ON Employees (Salary ASC)
 
 
+CREATE TABLE tbl_example(
+  FirstName varchar(50),
+	LastName varchar(50),
+	FullName AS CONCAT(FirstName , ' ', LastName) --- > this is field as sum of 2 previous fields
+)
+
+INSERT INTO tbl_example
+VALUES
+('ivan','ivanov')
+
+select * from tbl_example
 
 
 
@@ -261,7 +277,24 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-
+PRINT @@TRANCOUNT  
+--  The BEGIN TRAN statement will increment the  
+--  transaction count by 1.  
+BEGIN TRAN  
+    PRINT @@TRANCOUNT  
+    BEGIN TRAN  
+        PRINT @@TRANCOUNT  
+--  The COMMIT statement will decrement the transaction count by 1.  
+    COMMIT  
+    PRINT @@TRANCOUNT  
+COMMIT  
+PRINT @@TRANCOUNT  
+--Results  
+--0  
+--1  
+--2  
+--1  
+--0  
 
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -305,7 +338,7 @@ drop constraint uq_test_constraint
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 -- update composite primary key 
 
-CREATE TABLE test_primary_change(
+create TABLE test_primary_change(
 [firstname] NVARCHAR(10) NOT NULL,
 [lastname] NVARCHAR(18) NOT NULL,
 Constraint pk__test_primary_change primary key ([firstname], [lastname])
@@ -319,17 +352,18 @@ values
 ('georgi','georgiev')
 
 update test_primary_change 
-   set firstname = 'test', 
-        lastname = 'testov' 
- where firstname = 'petko' and lastname = 'petkov'
+   set firstname = 'petko', 
+        lastname = 'petkov' 
+ where firstname = 'ivan' and lastname = 'ivanov'
 
 
-
+ create clustered index ci_primary_change on test_primary_change([firstname], [lastname])
 
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 --                                                         $004 - 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 
 

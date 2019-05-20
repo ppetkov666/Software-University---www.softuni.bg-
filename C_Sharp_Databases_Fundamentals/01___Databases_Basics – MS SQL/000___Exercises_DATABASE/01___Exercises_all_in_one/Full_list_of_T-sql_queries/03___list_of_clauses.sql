@@ -760,6 +760,21 @@ INNER JOIN Departments d ON D.DepartmentID = E.DepartmentID
   SELECT * FROM v_filter_by_department
   GO
 
+  -- we cannot use ORDER BY clause in VIEW statement unless we use TOP or FOR XML
+  CREATE OR ALTER VIEW v_filter_by_salary
+  AS
+  (
+    SELECT top 10 e.FirstName, 
+           e.LastName,
+           e.Salary
+      FROM Employees e
+     WHERE e.Salary > 40000
+     order by e.Salary
+  )
+  
+go
+select * from v_filter_by_salary
+go
 -- ^^^^^^^^ example 2  ^^^^^^^^
 
 -- this querie returns department with more employee than 20 
@@ -898,7 +913,7 @@ create unique clustered index idx_test on v__temp_result_indexed(employeeid)
 select * from v__temp_result_indexed
 
 update v__temp_result_indexed
-set salary = 13000
+set salary = 13001
 WHERE FirstName = 'Guy'
 
 

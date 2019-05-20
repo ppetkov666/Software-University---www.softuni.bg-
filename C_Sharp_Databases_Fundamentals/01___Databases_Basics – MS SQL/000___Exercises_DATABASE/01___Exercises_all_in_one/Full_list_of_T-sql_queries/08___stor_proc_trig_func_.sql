@@ -57,7 +57,7 @@ BEGIN
   BEGIN TRANSACTION
   -- here is what actually store procedure does 
   -- in this case it just simple concat function of two names which comes from input params
-  SET @ConcatName = @first + ' ' + @last;
+  SET @ConcatName = @first + ' ' + @last + 1;
   --custom set return codes just for test purposes
   --IF @ConcatName = @ConcatName BEGIN
   --RETURN 18
@@ -71,7 +71,29 @@ BEGIN
   END TRY
   BEGIN CATCH 
     PRINT 'Error message In CATCH Block';
-  THROW;
+
+  DECLARE @v_sql_error_number                             INT;
+  DECLARE @v_sql_error_severity                             INT;
+  DECLARE @v_sql_error_state                                INT;
+  DECLARE @v_sql_error_procedure                            NVARCHAR(126);
+  DECLARE @v_sql_error_line                                 INT;
+  DECLARE @v_sql_error_message                              NVARCHAR(2048);
+ 
+ SELECT @v_sql_error_number = ERROR_NUMBER(), 
+      @v_sql_error_severity = ERROR_SEVERITY(), 
+      @v_sql_error_state = ERROR_STATE(), 
+      @v_sql_error_procedure = ERROR_PROCEDURE(), 
+      @v_sql_error_line = ERROR_LINE(), 
+      @v_sql_error_message = ERROR_MESSAGE();
+
+      print @v_sql_error_number 
+      print @v_sql_error_severity   
+      print @v_sql_error_state
+      print @v_sql_error_line
+      print @v_sql_error_message
+
+
+  --THROW;
   END CATCH 
   IF  DATALENGTH(@ConcatName) < 50  
     BEGIN
@@ -84,7 +106,7 @@ BEGIN
     END
 END
   
-GO
+
 -- CHECK THE RESULT FROM STORED PROCEDURE
 
 DECLARE @FullName NVARCHAR(max)
@@ -92,6 +114,10 @@ declare @return_code int
 exec @return_code =  f_MyCustomConcatProcedure @firstname = 'guy',@lastname = 'gilbert', @ConcatName = @FullName OUTPUT
 SELECT @FullName AS fullname
 select @return_code
+
+DECLARE @FullName NVARCHAR(50)
+exec f_MyCustomConcatProcedure @firstname = 'guy', @lastname = 'gilbert', @ConcatName = @FullName OUTPUT
+select @FullName
 -- i want to emphasise on one very important part : when we dont change the return code it will remain by default 0, 
 -- but in the example below i will pusposely change it
 
@@ -145,7 +171,7 @@ GO
    ) 
 AS
 BEGIN
-  DECLARE @max_employee_projects_count INT  SET @max_employee_projects_count = 8
+  DECLARE @max_employee_projects_count INT  SET @max_employee_projects_count = 6
   DECLARE @employee_projects_count     INT  SET @employee_projects_count = (SELECT COUNT(*) 
                                                                               FROM EmployeesProjects ep
                                                                              WHERE ep.EmployeeID = @employeeId)
@@ -174,7 +200,7 @@ END
  BEGIN TRANSACTION
  EXEC udp_assign_employee_project 1,33
  SELECT * FROM EmployeesProjects ep where ep.EmployeeID = 1
-
+ 
 
  -- |||||||||||||||||||||||||||||||||||||||||||||||||        3        ||||||||||||||||||||||||||||||||||||||||||||||||| 
 
@@ -382,8 +408,9 @@ Create or Alter Proc spe_sell_product
 as
 Begin
  
- Declare @stock_available int Select @stock_available = quantity 
-                               from Product_v1 p where p.productid = @product_id
+ Declare @stock_available int             Select @stock_available = quantity 
+                                            from Product_v1 p 
+                                           where p.productid = @product_id
  
  
  if(@stock_available < @quantity_for_sell)
@@ -437,44 +464,78 @@ Else
 
 --  same SP but modified with try catch block --------------------------------------
 go
-Create or Alter Proc spe_sell_product_with_try_catch
-@product_id int,
-@quantity_for_sell int
-as
-Begin
-  Declare @stock_available int Select @stock_available = quantity 
-                                 from Product_v1 p 
-                                where p.productid = @product_id
+CREATE OR ALTER PROC spe_sell_product_with_try_catch
+@product_id        INT,
+@quantity_for_sell INT
+AS
+BEGIN
+  DECLARE @stock_available                                  INT          SELECT @stock_available = quantity 
+                                                                           FROM Product_v1 p 
+                                                                          WHERE p.productid = @product_id
+  DECLARE @maxproduct_id                                    INT             SET @maxproduct_id = 0
+  DECLARE @v_no_error                                       BIT             SET @v_no_error = 1
+  DECLARE @v_sql_error_number                               INT;
+  DECLARE @v_sql_error_severity                             INT;
+  DECLARE @v_sql_error_state                                INT;
+  DECLARE @v_sql_error_procedure                            NVARCHAR(126);
+  DECLARE @v_sql_error_line                                 INT;
+  DECLARE @v_sql_error_message                              NVARCHAR(2048);
+
+  BEGIN TRY 
+  BEGIN TRAN
+  IF(@stock_available < @quantity_for_sell)
+  BEGIN
+    SET @v_no_error = 0
+    RAISERROR('Not enough in Stock!!!',16,1)
+  END
  
-  if(@stock_available < @quantity_for_sell)
-  Begin
-    Raiserror('Not enough in Stock!!!',16,1)
-  End
- 
- Else
-  Begin try
-    Begin Tran     
-    Update Product_v1 
-       set quantity -= @quantity_for_sell
-     where ProductId = @product_id
-   Declare @maxproduct_id int 
-    Select @maxproduct_id = Case When isnull(MAX(product_sales_id), 0) = 0
-                                 Then 0 
-                                 else MAX(product_sales_id) end 
-                            from Product_sales 
-    Set @maxproduct_id += 1
-    Insert into Product_sales 
-         values(@maxproduct_id, @product_id, @quantity_for_sell)
-  end try
-  begin catch
+ ELSE
+  BEGIN
+    UPDATE Product_v1 
+       SET quantity -= @quantity_for_sell
+     WHERE ProductId = @product_id
     
-  
-End
+    SELECT @maxproduct_id = CASE WHEN isnull(MAX(product_sales_id), 0) = 0
+                                 THEN 0 
+                                 ELSE MAX(product_sales_id) END 
+                            FROM Product_sales 
+    Set @maxproduct_id += 1
+    INSERT INTO Product_sales 
+         VALUES(@maxproduct_id, @product_id, @quantity_for_sell)
+   END
+  END TRY
+  BEGIN CATCH
+    SET @v_no_error = 0
 
+ SELECT @v_sql_error_number = ERROR_NUMBER(), 
+      @v_sql_error_severity = ERROR_SEVERITY(), 
+      @v_sql_error_state = ERROR_STATE(), 
+      @v_sql_error_procedure = ERROR_PROCEDURE(), 
+      @v_sql_error_line = ERROR_LINE(), 
+      @v_sql_error_message = ERROR_MESSAGE();
 
+  END CATCH
 
+  IF @v_no_error = 1 
+    BEGIN
+      PRINT 'no errors - transaction will be commited!'
+      COMMIT TRAN
+    END
+    ELSE IF XACT_STATE() <> 0
+    BEGIN
+      SELECT @v_sql_error_number   AS 'error number',
+             @v_sql_error_severity AS 'error_severity',   
+             @v_sql_error_state    AS 'error_state',
+             @v_sql_error_line     AS 'error_line ',
+             @v_sql_error_message  AS 'error_message'
+      ROLLBACK
+    END
+END
+rollback
 
-
+exec spe_sell_product_with_try_catch 1, 10
+ select * from Product_v1
+ select * from Product_sales
 
 
 
@@ -1257,7 +1318,7 @@ set transaction isolation level serializable
 
 begin tran
 update UserInfoTable
-  set Salary += 1
+  set Salary += 4
   where Id = 27
   
   commit tran 
@@ -1267,13 +1328,19 @@ select * from UserInfoTable
 rollback
 
 -- SNAPSHOT isolation level --------------------------------------- 
+-- it does not use lock instead of versioning : it means we copy the last valid committed transaction and that is the result
+-- we get when we execute snapshot isolation level
+-- example : if the Salary is 200 in last committed tran , this is the value which we will see, even though we have another 
+-- UNcommitted tran ! This is valid when we SELECT the data 
+-- If we try to update it WILL be aborted if another transaction is running, because we rist to have lost update situation!
 alter  database Userinfo
 set allow_snapshot_isolation on 
 set transaction isolation level snapshot
 
  begin tran
 update UserInfoTable
-  set Salary +=66 
+  set Salary +=6
  where id = 27
 
  COMMIT TRAN
+ rollback
