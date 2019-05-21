@@ -28,6 +28,11 @@
 -- 023 : HOW TO set multiple variables in SELECT statement 
 -- 024 : HOW TO compare two result sets 
 -- 025 : HOW TO check if temp table is created or empthy with EXISTS operator
+-- 026 : HOW TO execute bulk delete with SP
+-- 027 : HOW TO update all Salaries with random data in table using SP
+-- 028 : HOW TO check isolation levels on DB
+
+
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             001
@@ -1423,5 +1428,123 @@ UPDATE Employees SET Salary = 43301 WHERE EmployeeID = 1
 begin tran
 UPDATE Employees SET Salary = 13003 WHERE EmployeeID = 3
 
-
 rollback
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                  026
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+create TABLE Employees_test_table
+(
+ [Id] int Primary Key,
+ [Name] nvarchar(50) ,
+ [Salary] int check(salary > 1000),
+ [Gender] nvarchar(10),
+ [City] nvarchar(50)
+)
+
+Insert into Employees_test_table Values(3,'John',4500,'Male','New York')
+Insert into Employees_test_table Values(1,'Sam',2500,'Male','London')
+Insert into Employees_test_table Values(4,'Sara',5500,'Female','Tokyo')
+Insert into Employees_test_table Values(5,'Todd',3100,'Male','Toronto')
+Insert into Employees_test_table Values(2,'Pam',6500,'Female','Sydney')
+
+select * from Employees_test_table
+
+GO
+CREATE OR ALTER PROCEDURE usp_delete_bulk
+AS
+BEGIN
+  DECLARE @stop               INT                   SET @stop = 0
+  DECLARE @rowAffected        INT                   
+  DECLARE @totalRowAffected   INT                   SET @totalRowAffected = 0 
+
+  WHILE @stop=0
+      BEGIN
+          DELETE TOP (4)
+          FROM    A 
+          FROM    [Employees_test_table] AS A
+                  INNER JOIN ( SELECT [e].[Id]
+                                 FROM [Employees_test_table] AS [e]
+                                WHERE [e].[Salary] > 1000) AS B ON A.[Id] = B.[Id]
+          SET @rowAffected = @@ROWCOUNT
+          SET @totalRowAffected += @rowAffected
+  
+          IF @rowAffected = 4
+            BEGIN
+              SET @stop = 1
+            END
+      END
+      select @rowAffected
+      select @totalRowAffected
+END
+SELECT * FROM Employees_test_table
+BEGIN TRAN
+EXEC usp_delete_bulk
+ROLLBACK
+select @@trancount
+
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                  027
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+USE UserInfo
+
+
+GO
+CREATE OR ALTER PROCEDURE spe_update_random_salary
+@i_initial_salary INT 
+AS
+BEGIN
+DECLARE @v_id_number             INT         SET @v_id_number = 0
+DECLARE @v_actual_salary         INT         SET @v_actual_salary = 0
+DECLARE @v_random_salary         INT         SET @v_random_salary = 0
+
+DECLARE TestCursor CURSOR FOR 
+ SELECT uit.Id,
+        uit.Salary
+   FROM UserInfoTable uit 
+
+OPEN TestCursor
+  FETCH NEXT FROM TestCursor INTO @v_id_number, @v_actual_salary
+
+  WHILE @@FETCH_STATUS <> -1
+  BEGIN
+  
+       SET @v_random_salary = round((@i_initial_salary * rand() * @v_actual_salary),0)
+    UPDATE UserInfoTable
+       SET Salary = @v_random_salary
+     WHERE Id = @v_id_number
+    FETCH NEXT FROM TestCursor INTO @v_id_number,@v_actual_salary
+    
+  END
+CLOSE TestCursor
+DEALLOCATE TestCursor
+END
+
+select * from UserInfoTable
+
+exec spe_update_random_salary 44
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                  028
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+select is_read_committed_snapshot_on, *
+from sys.databases
+DBCC useroptions
+
+
+
+
+
+
+
+
+
+
+

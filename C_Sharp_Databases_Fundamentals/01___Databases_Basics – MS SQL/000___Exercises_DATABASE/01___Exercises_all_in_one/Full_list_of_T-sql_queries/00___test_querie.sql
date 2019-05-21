@@ -30,19 +30,44 @@ SELECT * FROM ##EmployeeDetails
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        1        |||||||||||||||||||||||||||||||||||||||||||||||||
 -- TEST QUERIE FOR TRANSACTION TO SIMULATE DEADLOCK
 -- -----------------------------------------------------------
-begin transaction
-update People
-set Firstname = 'testname'
-where id = 2
 
-rollback
+-- trace flag 1222
+dbcc traceon(1222, -1)
+
+-- status of the trace flag
+dbcc Tracestatus(1222, -1)
+
+dbcc traceoff(1222, -1)
+
+execute sp_readerrorlog
+
+select * from People
+select * from UserInfoTable
+
+select OBJECT_NAME([OBJECT_ID])
+  from sys.partitions
+ where hobt_id = 72057594043105280
 
 
-begin transaction
+set deadlock_priority normal
+go
+create or alter procedure sp_tran_two
+as
+begin
+  begin transaction
+  update People
+  set Firstname = 'testname' + ' transaction 2'
+  where id = 2
+  
+  waitfor delay '00:00:05'
+  
+  update UserInfoTable 
+  SET FirstName = 'testname' + ' transaction 2'
+  where id = 27 
+  commit tran
+end
 
-update UserInfoTable 
-SET FirstName = 'testname' 
-where id = 27 
+exec sp_tran_two
 -- -----------------------------------------------
 -- trying to access from this connection  the same table which is already being executed in transaction with update statement from another connection
 SELECT * FROM UserInfoTable WHERE ID = 27 -- option one - this is statement executed from other connection with transaction
@@ -107,11 +132,20 @@ select Salary
   rollback
 
 -- SNAPSHOT  isolation level 
-set transaction isolation level snapshot
 
+alter database UserInfo SET READ_COMMITTED_SNAPSHOT ON
+
+set transaction isolation level snapshot
+select * from UserInfoTable
  begin tran
 update UserInfoTable
   set Salary +=66 
  where id = 27
 
   commit tran
+
+  rollback
+  select * from UserInfoTable where id = 27
+  begin tran
+  select * from UserInfoTable(nolock) where id = 27
+  select @@trancount

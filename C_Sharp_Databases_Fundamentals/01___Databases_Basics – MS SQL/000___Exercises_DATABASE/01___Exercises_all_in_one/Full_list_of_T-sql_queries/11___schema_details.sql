@@ -1,33 +1,4 @@
 
-go
-create or alter procedure usp_delete_bulk
-as
-begin
-DECLARE @stop int
-DECLARE @rowAffected INT
-DECLARE @totalRowAffected INT
-
-SET @stop = 0
-SET @totalRowAffected = 0
-
-WHILE @stop=0
-    BEGIN
-        DELETE TOP (4000)
-        FROM    A 
-        FROM    [Employees] AS A
-                INNER JOIN ( SELECT [e].[EmployeeID]
-FROM [Employees] AS [e]
-WHERE [e].[Salary] < 1041.0
-                           ) AS B ON A.[EmployeeID] = B.[EmployeeID]
-
-        SET @rowAffected = @@ROWCOUNT
-        SET @totalRowAffected = @totalRowAffected + @rowAffected
-
-        IF @rowAffected < 4000
-            SET @stop = 1
-    END
-end
-SELECT  @totalRowAffected
 
 -- Schema  explanation -- Distinct namespace to facilitate the separation, management and the ownership of database objects
 

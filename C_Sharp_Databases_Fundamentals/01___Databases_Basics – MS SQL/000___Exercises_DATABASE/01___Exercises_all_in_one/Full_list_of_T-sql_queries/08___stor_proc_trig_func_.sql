@@ -1186,32 +1186,41 @@ where id = 27
 
 commit transaction
 
--- if i execute the same transaction from new querie  it will wait until this transaction is committed and then the second transaction will be executed
+-- if i execute the same transaction from new querie  it will wait until this transaction is committed and then 
+-- the second transaction will be executed
 
 -- DEADLOCKING
--- in the following example if i execute from this session the UserInfoTable table and from another session the People table , these 2 tables will be locked, 
--- then when i try to execute table People from this session and accordingly UserInfoTable from the other session the deadlock will occur and sql server will 
--- choose one of both transactions as deadlock victim and it will be rollbacked and the other will be completed
--- one important addition - we are talking about locking by primary key!!!
-begin transaction
+-- in the following example if i execute from this session the UserInfoTable table and from another session the People table , 
+-- these 2 tables will be locked, then when i try to execute table People from this session and accordingly UserInfoTable 
+-- from the other session the deadlock will occur and sql server will choose one of both transactions as deadlock victim 
+-- ,it will be rollbacked and the other will be completed!!!... 
+-- one important addition - we are talking about lock by primary key!!!
+execute sp_readerrorlog
+go
+create or alter procedure sp_tran_one
+as
+begin
+  begin transaction
+  update UserInfoTable 
+  SET FirstName = 'testname' + ' transaction 1'
+  where id = 27 
+  
+  waitfor delay '00:00:05'
+  
+  update People
+  set Firstname = 'testname' + ' transaction 1'
+  where id = 2
+  commit transaction
+end
 
-update UserInfoTable 
-SET FirstName = 'testname' 
-where id = 27 
-
-begin transaction
-update People
-set Firstname = 'testname'
-where id = 2
-rollback
-
-commit transaction
+exec sp_tran_one
 
 select @@trancount  -- check the number of active transactions
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        2        ||||||||||||||||||||||||||||||||||||||||||||||||| 
--- when i update one row from this table with transaction from other connection still can access another row from this table, 
--- because when i update by primary key only the current row is LOCKED. From another connection i can access another rows , but not the whole table
+-- when i update by primary key one row from this table with transaction, from other connection still can access another row from this table, 
+-- because when i update by primary key only the current row is LOCKED. 
+-- From another connection i can access another rows , but not the one who is being updated
 SELECT * FROM UserInfoTable
 SELECT * FROM People
 
@@ -1248,7 +1257,7 @@ end catch
 -- and this is not just for transaction test but in general 
 
 -- ISOLATION LEVEL EXAMPLES
--- READ COMMITTED; 
+-- READ COMMITTED / READ_COMMITTED_SNAPSHOT;
 -- READ UNCOMMITTED; 
 -- REPEATABLE READ; 
 -- SNAPSHOT; 
@@ -1257,19 +1266,25 @@ end catch
 
 -- dirty read example - read wrong data from another connection if it is 'set transaction isolation level read uncommitted'
 -- because by default it is : set to committed'
-
+-- there is also READ_COMMITTED_SNAPSHOT ISOLATION LEVEL but if we want to enable it we must do it in this way:
+-- alter database UserInfo SET READ_COMMITTED_SNAPSHOT ON , with only one existing connection !!!
+select @@trancount
 set transaction isolation level read committed
 
+select * from UserInfoTable where id = 27
 select * from UserInfoTable(nolock) where id = 27
 
 begin tran 
   update UserInfoTable
-     set Salary =100 
+     set Salary =666 
    where Id = 27
    rollback
   waitfor delay '00:00:15'
   print 'not enough money'
   rollback
+
+   
+
 -- lost update ---------------------------------- it is valid for read commited and uncommitted isolation levels
 -- it we change it to repeatable read the result will be different and will throw an error 
 set transaction isolation level repeatable read

@@ -19,11 +19,11 @@
     </LogicalFolder>
     <LogicalFolder Name="Queries" Type="0" Sorted="true">
       <Items>
-        <FileNode Name="0___test_connection_for_temp_tables.sql">
+        <FileNode Name="00___test_querie.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new:True</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>new</AssociatedConnSrvName>
           <AssociatedConnUserName />
-          <FullPath>0___test_connection_for_temp_tables.sql</FullPath>
+          <FullPath>00___test_querie.sql</FullPath>
         </FileNode>
         <FileNode Name="01___how_to.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new:True</AssociatedConnectionMoniker>
@@ -73,47 +73,23 @@
           <AssociatedConnUserName />
           <FullPath>08___stor_proc_trig_func_.sql</FullPath>
         </FileNode>
-        <FileNode Name="10___test_for_web_app.sql">
+        <FileNode Name="09___coffeeDb_querie.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new:True</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>new</AssociatedConnSrvName>
           <AssociatedConnUserName />
-          <FullPath>10___test_for_web_app.sql</FullPath>
+          <FullPath>09___coffeeDb_querie.sql</FullPath>
         </FileNode>
-        <FileNode Name="11___coffeeDb_querie.sql">
+        <FileNode Name="10___roles.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new:True</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>new</AssociatedConnSrvName>
           <AssociatedConnUserName />
-          <FullPath>11___coffeeDb_querie.sql</FullPath>
+          <FullPath>10___roles.sql</FullPath>
         </FileNode>
-        <FileNode Name="12___roles.sql">
+        <FileNode Name="11___schema_details.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new:True</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>new</AssociatedConnSrvName>
           <AssociatedConnUserName />
-          <FullPath>12___roles.sql</FullPath>
-        </FileNode>
-        <FileNode Name="13___Indexes.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>new</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>13___Indexes.sql</FullPath>
-        </FileNode>
-        <FileNode Name="14___schema_details.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>new</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>14___schema_details.sql</FullPath>
-        </FileNode>
-        <FileNode Name="14__1_schema_script.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>new</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>14__1_schema_script.sql</FullPath>
-        </FileNode>
-        <FileNode Name="199___test_querie.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:new:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>new</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>199___test_querie.sql</FullPath>
+          <FullPath>11___schema_details.sql</FullPath>
         </FileNode>
       </Items>
     </LogicalFolder>
