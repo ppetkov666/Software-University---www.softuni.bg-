@@ -282,7 +282,7 @@ select * from tbl_example
 -- CURSOR
 
 
-
+GO
 DECLARE @v_usergames_id  INT
   
   DECLARE example_cursor cursor for
@@ -305,6 +305,97 @@ DECLARE @v_usergames_id  INT
   END
   CLOSE example_cursor
   DEALLOCATE example_cursor
+
+
+GO
+-- different types of cursors :
+use SoftUni
+-- by default cursor: it is FORWARD_ONLY by default OR SCROLL (THESE ARE DATA FETCH OPTIONS)
+
+-- it could be also(THESE ARE DIFFERENT TYPE OF CURSORS): 
+-- STATIC : create copy of SELECT statement into temp db 
+-- DYNAMIC : the most flexible type of cursor... more details in MSDN
+-- KEYSET : create copy of key values of our selected data, we can't see added or deleted records
+-- FAST_FORWARD : this is by default cursor, it is forward only cursor specifically when we dont want to make any changes
+-- it has performance optimisations (it is READ_ONLY)
+
+-- type of locks:
+-- READ_ONLY : PREVENT ANY CHANGES OF DATA..., CURSOR CANNOT BE UPDATED OR DELETED WHATSOEVER
+
+-- SCROLL_LOCKS : allow changes to the table,
+-- Provides data integrity into the cursor. 
+-- It specifies that the cursor will lock the rows as they are read into the cursor to ensure 
+-- that updates or deletes made using the cursor will succeed.
+-- shortly said: LOCK THE ROW TO GUARANTEE THAT OUR CHANGES WILL SUCCEED, AND PREVENT USERS TO MAKE CHANGES TO IT
+
+-- OPTIMISTIC - LOCK THE RECORD WHO TRY TO CHANGE, IF ANOTHER USER MADE CHANGES BEFORE THAT, MY UPDATE WOULD FAIL
+-- IF THERE IS NO CHANGE CURSOR CAN UPDATE 
+
+-- this is example how to combine different options to cursor and Update also 
+begin tran
+declare @v_salary int
+declare @v_total_salary int set @v_total_salary = 0
+
+declare test_cursor cursor GLOBAL FORWARD_ONLY /*STATIC READ_ONLY*/  
+    for select 
+        e.Salary 
+   from Employees_test_table e
+    for update of sum_salary
+  
+   open test_cursor
+    fetch next from test_cursor into @v_salary
+    while @@FETCH_STATUS <> -1
+    begin
+      set @v_total_salary += @v_salary
+       
+       update Employees_test_table
+       set sum_salary = @v_total_salary
+       where current of test_cursor
+
+
+    fetch next from test_cursor into @v_salary
+    end
+  close test_cursor
+deallocate test_cursor
+
+select * from Employees_test_table
+alter table Employees_test_table
+add  sum_salary int default 0
+commit
+
+-- SCROLL
+-- could go forward and backward
+declare test_cursor cursor /*LOCAL or GLOBAL*/ SCROLL for 
+ select e.FirstName,
+        e.LastName 
+   from Employees e
+  open test_cursor
+    fetch FIRST /*LAST*/ /*ABSOLUTE*/ from test_cursor
+    while @@FETCH_STATUS <> -1
+    begin
+    
+    fetch NEXT /*PRIOR*/ /*RELATIVE*/ from test_cursor 
+    end
+  close test_cursor
+deallocate test_cursor
+
+-- could go on each 10 .. row forward or backward only by using - minus
+DECLARE test_cursor cursor SCROLL for 
+ select e.FirstName,
+        e.LastName 
+   from Employees e
+  open test_cursor
+    fetch ABSOLUTE 10 from test_cursor
+    while @@FETCH_STATUS <> -1
+    begin
+    
+    fetch RELATIVE 10 from test_cursor 
+    end
+  close test_cursor
+deallocate test_cursor
+
+select * from Employees
+
 
 
 

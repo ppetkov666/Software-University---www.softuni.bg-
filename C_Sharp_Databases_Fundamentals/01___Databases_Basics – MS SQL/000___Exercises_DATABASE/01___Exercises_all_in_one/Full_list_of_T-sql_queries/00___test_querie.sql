@@ -1,3 +1,9 @@
+
+
+
+
+
+
 CREATE TABLE #PersonDetails( 
 Id INT PRIMARY KEY IDENTITY,
 [Name] NVARCHAR(50)
@@ -31,6 +37,7 @@ SELECT * FROM ##EmployeeDetails
 -- TEST QUERIE FOR TRANSACTION TO SIMULATE DEADLOCK
 -- -----------------------------------------------------------
 
+
 -- trace flag 1222
 dbcc traceon(1222, -1)
 
@@ -49,23 +56,33 @@ select OBJECT_NAME([OBJECT_ID])
  where hobt_id = 72057594043105280
 
 
-set deadlock_priority normal
+set deadlock_priority NORMAL
 go
-create or alter procedure sp_tran_two
-as
-begin
-  begin transaction
-  update People
-  set Firstname = 'testname' + ' transaction 2'
-  where id = 2
+CREATE OR ALTER PROCEDURE sp_tran_two
+AS
+BEGIN
+  BEGIN TRANSACTION
+  BEGIN TRY 
+  UPDATE People
+     SET Firstname = 'testname' + ' transaction 2'
+   WHERE id = 2
   
-  waitfor delay '00:00:05'
+  WAITFOR DELAY '00:00:05'
   
-  update UserInfoTable 
-  SET FirstName = 'testname' + ' transaction 2'
-  where id = 27 
-  commit tran
-end
+  UPDATE UserInfoTable 
+     SET FirstName = 'testname' + ' transaction 2'
+   WHERE id = 27 
+  COMMIT TRANSACTION
+  SELECT 'Transaction completed !'
+  END TRY 
+  BEGIN CATCH 
+    IF (ERROR_NUMBER() = 1205 )
+      BEGIN
+        SELECT 'Deadlock. Transaction failed.'
+      END
+      ROLLBACK
+  END CATCH 
+END
 
 exec sp_tran_two
 -- -----------------------------------------------

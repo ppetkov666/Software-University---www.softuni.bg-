@@ -26,7 +26,7 @@
 -- 021 : HOW TO get only UNmatching record from 2 tables
 -- 022 : HOW TO find employee which name is [example]... 
 -- 023 : HOW TO set multiple variables in SELECT statement 
--- 024 : HOW TO compare two result sets 
+-- 024 : HOW TO compare two result sets using EXCEPT 
 -- 025 : HOW TO check if temp table is created or empthy with EXISTS operator
 -- 026 : HOW TO execute bulk delete with SP
 -- 027 : HOW TO update all Salaries with random data in table using SP
@@ -1340,7 +1340,28 @@ END
 DROP TABLE #TABLE1
 DROP TABLE #TABLE2
 
- 
+-- comparing EXCEPT and BETWEEN 
+
+SELECT e.FirstName,
+       e.LastName,
+       e.Salary 
+  FROM Employees e
+ WHERE e.Salary > 50000
+except
+ SELECT e.FirstName,
+       e.LastName,
+       e.Salary 
+  FROM Employees e
+ WHERE e.Salary > 100000
+order by e.Salary,e.FirstName asc
+
+ SELECT e.FirstName,
+       e.LastName,
+       e.Salary 
+  FROM Employees e
+ WHERE e.Salary between 50000 and 100000
+ order by e.Salary, e.FirstName asc
+
 -- -------------------------------------------------------------------------------------
 
 DECLARE @table_one  int select @table_one = count(*) from #table1 
