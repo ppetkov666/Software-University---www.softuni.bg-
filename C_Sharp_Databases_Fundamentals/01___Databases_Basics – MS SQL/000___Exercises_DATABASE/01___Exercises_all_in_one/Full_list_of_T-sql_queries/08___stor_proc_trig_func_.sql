@@ -1195,6 +1195,9 @@ commit transaction
 -- from the other session the deadlock will occur and sql server will choose one of both transactions as deadlock victim 
 -- ,it will be rollbacked and the other will be completed!!!... 
 -- one important addition - we are talking about lock by primary key!!!
+
+-- the other sp used to simulate deadlock from another connection is located at 00_test_querie / 
+-- 001 -  -- TEST QUERIE FOR TRANSACTION TO SIMULATE DEADLOCK
 set deadlock_priority NORMAL
 execute sp_readerrorlog
 go
@@ -1227,9 +1230,9 @@ END
 exec sp_tran_one
 
 select @@trancount  -- check the number of active transactions
+select * from UserInfoTable
 
-
-dbcc opentran
+dbcc opentran -- check the last active transaction
 
 begin tran
 update UserInfoTable
@@ -1237,8 +1240,7 @@ update UserInfoTable
   where id = 27
 rollback
 
-
-
+-- active transactions script info
 SELECT
     [s_tst].[session_id],
     [s_es].[login_name] AS [Login Name],
@@ -1276,20 +1278,10 @@ GO
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        2        ||||||||||||||||||||||||||||||||||||||||||||||||| 
--- when i update by primary key one row from this table with transaction, from other connection still can access another row from this table, 
--- because when i update by primary key only the current row is LOCKED. 
+-- when i update by primary key one row from this table with transaction, 
+-- from other connection still can access another row from this table, because when i update by primary key 
+-- only the current row is LOCKED. 
 -- From another connection i can access another rows , but not the one who is being updated
 SELECT * FROM UserInfoTable
 SELECT * FROM People
@@ -1323,21 +1315,24 @@ end catch
 
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        4        |||||||||||||||||||||||||||||||||||||||||||||||||
--- for another transaction connection tests we are using: 0___test_connection_for_temp_tables querie file
+-- for another transaction connection tests we are using: 00___test_querie file
 -- and this is not just for transaction test but in general 
 
 -- ISOLATION LEVEL EXAMPLES
+-- READ UNCOMMITTED - dirty read side effect; 
 -- READ COMMITTED / READ_COMMITTED_SNAPSHOT;
--- READ UNCOMMITTED; 
--- REPEATABLE READ; 
--- SNAPSHOT; 
--- SERIALIZABLE
--- READ COMMITTED SNAPSHOT
+-- REPEATABLE READ - no other tran can delete or update the data before the initial tran commit; 
+-- SNAPSHOT - same as SERIALIZABLE but does not aquire LOCKS - increased concurent tran with same data consistency; 
+-- SERIALIZABLE - no other tran can delete, update or insert the data before the initial tran commit
 
+
+-- dirty read happens when one transaction is permited to read data that has been modified by onother transaction ,
+-- who is still not commited !!!
 -- dirty read example - read wrong data from another connection if it is 'set transaction isolation level read uncommitted'
--- because by default it is : set to committed'
--- there is also READ_COMMITTED_SNAPSHOT ISOLATION LEVEL but if we want to enable it we must do it in this way:
--- alter database UserInfo SET READ_COMMITTED_SNAPSHOT ON , with only one existing connection !!!
+-- because by default it is : set to read_committed'
+
+
+-- DIRTY READ : (the other connection is in 00_test_querie / -- 002 - DIRTY READ)
 select @@trancount
 set transaction isolation level read committed
 
@@ -1348,16 +1343,16 @@ begin tran
   update UserInfoTable
      set Salary =666 
    where Id = 27
-   rollback
   waitfor delay '00:00:15'
   print 'not enough money'
   rollback
 
    
 
--- lost update ---------------------------------- it is valid for read commited and uncommitted isolation levels
--- it we change it to repeatable read the result will be different and will throw an error 
-set transaction isolation level repeatable read
+-- LOST UPDATE (the other connection is in 00_test_querie / -- 003 - LOST UPDATE)
+-- it is valid for read commited and uncommitted isolation levels, for other isolation levels we dont have this problem
+-- it we change it to repeatable read the result will be different and will throw an error(deadlock error)
+-- set transaction isolation level repeatable read
 
 
 begin transaction
@@ -1368,7 +1363,7 @@ select @salary_decrease = ut.Salary
  where ut.Id = 27
 
 waitfor delay '00:00:10'
-select @salary_decrease -= 30
+select @salary_decrease -= 32
 
 update UserInfoTable
 set Salary = @salary_decrease 
@@ -1378,8 +1373,8 @@ commit tran
 
 rollback
 
--- non repeatable read --------------------------------------- 
--- when change  it again  we must use: set transaction isolation level repeatable read 
+-- NON REPEATABLE READ (the other connection is in 00_test_querie / -- 004 - NON REPEATABLE READ)
+
 select * from UserInfoTable
 
 Begin Transaction
@@ -1397,7 +1392,25 @@ Commit Transaction
 
 rollback
 
--- SERIALIZABLE  isolation level -------------------------------
+-- PHANTOM READ (the other connection is in 00_test_querie / -- 005 - PHANTOM READ)
+
+begin tran
+select * 
+  from UserInfoTable
+  where id > 8210
+  
+  waitfor delay '00:00:10'
+
+select * 
+  from UserInfoTable
+  where id > 8210
+
+  commit 
+
+
+
+
+-- SERIALIZABLE  isolation level (the other connection is in 00_test_querie / -- 006 - SERIALIZABLE )
 -- 
 set transaction isolation level serializable 
 
@@ -1412,12 +1425,13 @@ select * from UserInfoTable
 
 rollback
 
--- SNAPSHOT isolation level --------------------------------------- 
+-- SNAPSHOT isolation level (the other connection is in 00_test_querie / -- 007 - SNAPSHOT )
+
 -- it does not use lock instead of versioning : it means we copy the last valid committed transaction and that is the result
 -- we get when we execute snapshot isolation level
 -- example : if the Salary is 200 in last committed tran , this is the value which we will see, even though we have another 
 -- UNcommitted tran ! This is valid when we SELECT the data 
--- If we try to update it WILL be aborted if another transaction is running, because we rist to have lost update situation!
+-- If we try to update it WILL be aborted if another transaction is running, because we risk to have lost update situation!
 alter  database Userinfo
 set allow_snapshot_isolation on 
 set transaction isolation level snapshot
@@ -1425,6 +1439,19 @@ set transaction isolation level snapshot
  begin tran
 update UserInfoTable
   set Salary +=6
+ where id = 27
+
+ COMMIT TRAN
+ rollback
+
+ -- READ COMMITED SNAPSHOT is not a different isolation level it is just different way of implementing 
+ -- READ COMMITTED isolation level and must be implemented by single connection !
+-- id does not throw an error when we try to update, and also is statement level read consistency
+ alter database UserInfo SET READ_COMMITTED_SNAPSHOT ON
+ set transaction isolation level read committed
+ begin tran
+update UserInfoTable
+  set Salary +=33
  where id = 27
 
  COMMIT TRAN
