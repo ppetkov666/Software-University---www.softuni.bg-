@@ -141,6 +141,7 @@ BEGIN
   
   SET @ConcatName = @first + ' ' + @last;
 
+  -- BY DEFAULT THE RETURN CODE IS 0 - indicating success
   IF @ConcatName = @ConcatName BEGIN
   RETURN 18
   END

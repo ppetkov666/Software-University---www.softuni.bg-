@@ -31,7 +31,7 @@
 -- 026 : HOW TO execute bulk delete with SP
 -- 027 : HOW TO update all Salaries with random data in table using SP
 -- 028 : HOW TO check isolation levels on DB
-
+-- 029 : HOW TO insert from one to another table with different count ot columns 
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -893,7 +893,7 @@ SELECT * FROM SYSOBJECTS WHERE xtype = 'u'
 SELECT * FROM SYS.tables
 select * from INFORMATION_SCHEMA.TABLES
 
-if not exists(select * from INFORMATION_SCHEMA.TABLES where TABLE_NAME = 'Employees' and TABLE_SCHEMA = 'dbo')
+if not exists(select * from INFORMATION_SCHEMA.TABLES where TABLE_NAME = 'employees' and TABLE_SCHEMA = 'dbo')
 begin
  print ' not exist'
 end
@@ -1264,7 +1264,7 @@ select t.table_one_code as table_one_code_from_table_table_one
       FROM table_one t
      WHERE NOT EXISTS(SELECT 1 
                         FROM table_two 
-                       WHERE table_one_code = t.table_one_code)
+                       WHERE table_two_code = t.table_one_code)
 
 
 
@@ -1559,12 +1559,43 @@ select is_read_committed_snapshot_on, *
 from sys.databases
 DBCC useroptions
 
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                  029
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+use SoftUni
 
+-- demonstrate diffrent syntax of insert into table
+create table example_one_table
+(
+first_name nvarchar(50),
+last_name nvarchar(50),
+age int default 0,
+salary numeric(16,10) default 0.00,
+)
 
+INSERT into example_one_table(first_name,last_name)
+values
+('petko','petkov')
 
+declare @fistname nvarchar(50) set @fistname = 'petko1'
+declare @lastname nvarchar(50) set @lastname = 'petkov2'
+INSERT 
+  into example_one_table(first_name,last_name) 
+select @fistname,@lastname
 
+insert
+  into example_one_table (first_name,last_name)
+  select 'test','testov'
 
+insert
+  into example_one_table(first_name, last_name)
+  select top 10 e.FirstName,e.LastName from Employees e
 
+insert
+  into example_one_table
+  select top 10 e.FirstName,e.LastName, null, null from Employees e
+
+select * from example_one_table
 
 
 

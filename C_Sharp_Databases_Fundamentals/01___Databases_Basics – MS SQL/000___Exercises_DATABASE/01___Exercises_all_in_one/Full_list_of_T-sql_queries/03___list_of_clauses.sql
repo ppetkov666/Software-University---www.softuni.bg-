@@ -1070,6 +1070,7 @@ select * from Employees
   SELECT * FROM #person_details
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        2 - Global Temporary Table       |||||||||||||||||||||||||||||||||||||||||||||||||
+select * from tempdb.sys.tables
 
 -- they are existing till the last connection is closed
   CREATE TABLE ##employee_details
@@ -1150,11 +1151,6 @@ GROUP BY d.[Name],
     Salary INT
   )
   GO
-  -- or  we can just declare it like :
-  DECLARE @table_variable  TABLE (FirstName NVARCHAR(50), 
-                                  LastName  NVARCHAR(50), 
-                                  Salary    INT)
-
 
 --second step is to create a procedure and to put this variable  from type 'table_variable' as parameter and with name '@table_variable'
 -- it MUST be READONLY 
@@ -1172,17 +1168,20 @@ GROUP BY d.[Name],
     FROM @table_variable
   END
 GO
+
 -- third step we declare our variable from type 'table_variable' and we give her name '@table_variable_to_be_passed_to_sp'
 -- and we insert records into it
   DECLARE @table_variable_to_be_passed_to_sp table_variable 
 
   INSERT 
     INTO @table_variable_to_be_passed_to_sp
-  SELECT e.FirstName,
-         e.LastName, 
-         e.Salary 
-    FROM UserInfoTable e
-      
+    values
+    ('arnold','schwarzenegger', 1000000)
+  --SELECT e.FirstName,
+  --       e.LastName, 
+  --       e.Salary 
+  --  FROM UserInfoTable e
+  
 -- the final part of this is to execute our SP with the parameter this SP takes : is it from type 'table_variable' and the name is @table_variable_to_be_passed_to_sp 
   EXECUTE sp__insert_employee @table_variable_to_be_passed_to_sp
 
