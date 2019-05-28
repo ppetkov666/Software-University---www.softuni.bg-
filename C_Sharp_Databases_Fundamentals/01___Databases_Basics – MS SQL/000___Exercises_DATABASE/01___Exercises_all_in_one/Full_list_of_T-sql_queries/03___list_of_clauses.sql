@@ -1142,8 +1142,8 @@ GROUP BY d.[Name],
 
 -- this querie returns store procedure which use table variable as param and insert records into another table
 
---first step we create variable of type 'table_variable' which is nothing diffent than other variables as INT NVARCHAR and so on , just
--- this one takes table which we want with the exact columns we want
+-- first step we create variable of type 'table_variable' which is nothing different than other variables 
+-- as INT NVARCHAR and so on , just this one creates table which we want with the exact columns we want
   CREATE TYPE table_variable AS TABLE
   (
     FirstName NVARCHAR(50),
@@ -1152,8 +1152,8 @@ GROUP BY d.[Name],
   )
   GO
 
---second step is to create a procedure and to put this variable  from type 'table_variable' as parameter and with name '@table_variable'
--- it MUST be READONLY 
+-- second step is to create a procedure and to set this variable from type 'table_variable' as parameter 
+-- and with name '@table_variable'- it MUST be READONLY 
   USE UserInfo
   GO 
   CREATE or ALTER PROCEDURE sp__insert_employee
@@ -1169,24 +1169,38 @@ GROUP BY d.[Name],
   END
 GO
 
--- third step we declare our variable from type 'table_variable' and we give her name '@table_variable_to_be_passed_to_sp'
+-- third step we declare our variable from type 'table_variable' and we set name '@table_variable_to_be_passed_to_sp'
 -- and we insert records into it
-  DECLARE @table_variable_to_be_passed_to_sp table_variable 
+  DECLARE @table_variable_to_be_passed_to_sp /*from type: table_variable */ as table_variable 
 
   INSERT 
     INTO @table_variable_to_be_passed_to_sp
     values
-    ('arnold','schwarzenegger', 1000000)
-  --SELECT e.FirstName,
-  --       e.LastName, 
-  --       e.Salary 
-  --  FROM UserInfoTable e
+    ('arnold3','schwarzenegger3', 1000000),
+    ('arnold3','schwarzenegger3', 1000000),
+    ('arnold3','schwarzenegger3', 1000000)
+
   
+  insert 
+    into @table_variable_to_be_passed_to_sp
+    select 'test_1','testOFF_1',100 union all
+    select 'test_2','testOFF_2',100 union all
+    select 'test_3','testOFF_3',100
+    
+    select * from @table_variable_to_be_passed_to_sp
+
 -- the final part of this is to execute our SP with the parameter this SP takes : is it from type 'table_variable' and the name is @table_variable_to_be_passed_to_sp 
   EXECUTE sp__insert_employee @table_variable_to_be_passed_to_sp
-
   select * from UserInfoTable
+  
+-- can be found at Programmability/Types/User-defined table types
 
+SELECT name, system_type_id, user_type_id  
+FROM sys.types
+WHERE is_table_type = 1
+
+SELECT object_id, name FROM sys.parameters
+WHERE is_readonly = 1
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        4 - ExampleS  |||||||||||||||||||||||||||||||||||||||||||||||||
   USE SoftUni

@@ -31,9 +31,9 @@
 -- 026 : HOW TO execute bulk delete with SP
 -- 027 : HOW TO update all Salaries with random data in table using SP
 -- 028 : HOW TO check isolation levels on DB
--- 029 : HOW TO insert from one to another table with different count ot columns 
-
-
+-- 029 : HOW TO insert from one table to another 
+-- 030 : HOW TO create COPY of existing table in the fastest possible way
+-- 031 : HOW TO explain difference between WHERE clause and HAVING clause with example
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             001
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -919,7 +919,9 @@ SELECT COUNT(*)
 -- how to group by different criteria in one table 
 
 
-select t.Name, d.Name, sum(e.Salary) as total_salary 
+select t.Name, 
+       d.Name, 
+       sum(e.Salary) as total_salary 
   from Employees e
   join Departments d on d.DepartmentID = e.DepartmentID
   join Addresses a   on a.AddressID = e.AddressID
@@ -928,9 +930,9 @@ group by grouping sets
 (
   (t.Name, d.Name),
   (t.name),
-  ()
+  () -- by total_salary 
 )
-order by grouping(d.Name), GROUPING(t.Name)
+order by grouping(t.name), GROUPING(d.Name)
 
 
 -- done with union all ---------------------------------------------------------
@@ -1596,6 +1598,51 @@ insert
   select top 10 e.FirstName,e.LastName, null, null from Employees e
 
 select * from example_one_table
+
+insert 
+  into example_one_table
+select 'test_1','testOFF_1',22,1000 union all
+select 'test_2','testOFF_2',44,3000 union all
+select 'test_3','testOFF_3',33,5000
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                  030
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+select * into copy_user_info_table from userinfotable where 1<>1
+select * from copy_user_info_table
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                  031
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+-- WHERE cannot be use? with aggregated function , HAVING can !
+-- WHERE is used before group by and first filter the rows, unlike HAVING filtering rows after GROUP BY
+select d.Name,sum(e.Salary) sum_salary_per_dep
+  from Employees e
+  join Departments d on d.DepartmentID = e.DepartmentID
+  where d.Name like 'p%'
+  group by d.Name
+  
+
+  select d.Name,sum(e.Salary) sum_salary_per_dep
+  from Employees e
+  join Departments d on d.DepartmentID = e.DepartmentID
+  group by d.Name
+  having d.Name like 'p%' 
+  
+
+  select d.Name,sum(e.Salary) sum_salary_per_dep
+  from Employees e
+  join Departments d on d.DepartmentID = e.DepartmentID
+  where d.Name like 'p%' 
+  group by d.Name
+  having SUM(e.Salary) > 50000
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                  032
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
