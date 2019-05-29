@@ -34,6 +34,11 @@
 -- 029 : HOW TO insert from one table to another 
 -- 030 : HOW TO create COPY of existing table in the fastest possible way
 -- 031 : HOW TO explain difference between WHERE clause and HAVING clause with example
+-- 032 : HOw TO create SYNONYM and truncate it using stored procedure
+
+
+
+
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             001
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1609,7 +1614,10 @@ select 'test_3','testOFF_3',33,5000
 --                                                                  030
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-select * into copy_user_info_table from userinfotable where 1<>1
+select * 
+  into copy_user_info_table 
+  from userinfotable 
+ where 1<>1
 select * from copy_user_info_table
 
 
@@ -1644,6 +1652,77 @@ select d.Name,sum(e.Salary) sum_salary_per_dep
 --                                                                  032
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+select * into employees_copy from Employees
+
+select * from employees_copy
+
+create synonym employees_copy_synonym for employees_copy
+
+select * from employees_copy_synonym
+truncate table employees_copy_synonym
+
+go
+CREATE OR ALTER PROCEDURE dbo.spr_truncate_table_by_synonym_name 
+(
+  @schema_name AS sysname,
+  @synonym_name AS sysname
+)
+AS 
+BEGIN --Procedure
+  SET NOCOUNT ON;
+
+  DECLARE @base_object_name AS NVARCHAR(1035) = NULL;
+  DECLARE @sql NVARCHAR(MAX);
+  DECLARE @error_message NVARCHAR(255);
+
+  SELECT TOP 1 @base_object_name = base_object_name
+  FROM sys.synonyms
+  INNER JOIN sys.schemas ON schemas.schema_id = synonyms.schema_id
+  WHERE schemas.name = @schema_name
+    AND synonyms.name = @synonym_name
+    AND type = 'SN'
+    AND is_ms_shipped = 0;
+
+  IF @base_object_name IS NOT NULL
+    BEGIN
+      --SET @sql = N'TRUNCATE TABLE ' + @base_object_name;
+      SET @sql = N'DELETE FROM ' + @base_object_name + ' WHERE SALARY < 100000';
+        BEGIN TRY
+          EXECUTE sys.sp_executesql @sql;
+        
+            IF OBJECT_ID('tempdb..#RowCount', 'U') IS NOT NULL
+                DROP TABLE #RowCount;
+
+            CREATE TABLE #RowCount ( return_value INT );
+
+            SET @sql = N'INSERT INTO #RowCount SELECT Count(*) FROM ' + @schema_name + '.' + @synonym_name;
+            EXECUTE sys.sp_executesql @sql;
+        
+            DECLARE @row_count INT = 0;
+            SELECT TOP 1 @row_count = return_value
+              FROM #RowCount;
+            
+            IF @row_count > 0
+              BEGIN
+                SET @error_message = 'The base table for synonym ' + @schema_name + '.' + @synonym_name + ' was not truncated.';
+                RAISERROR(@error_message,16,1);
+                END;
+        END TRY
+    
+        BEGIN CATCH
+            THROW;
+        END CATCH;
+    END;
+ELSE
+    BEGIN
+        SET @error_message = 'The base table for synonym ' + @schema_name + '.' + @synonym_name + ' was not found.';
+        THROW 50000,@error_message,1;
+    END;
+END;
+
+begin tran
+EXECUTE dbo.spr_truncate_table_by_synonym_name  @schema_name = 'dbo', @synonym_name = 'employees_copy_synonym'
 
 
-
+select * from sys.synonyms
+select * from employees_copy_synonym
