@@ -547,19 +547,107 @@ exec spe_sell_product_with_try_catch 1, 10
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        1        ||||||||||||||||||||||||||||||||||||||||||||||||| 
--- update trigger
--- after insert/update/delete
--- instead of insert/update/delete
+-- DML triggers
+-- after(FOR) insert/update/delete - they are fired after insert, update or delete execution
+-- instead of insert/update/delete - they are fired instead of triggering action(insert, update or delete) 
 
--- inserted and deleted tables lives in the scope of the trigger and has the structure of the tables which trigger use
--- they are temp tables 
-
+-- INSERTED and DELETED TABLES lives in the scope of the trigger and has the structure of the tables which trigger use
+-- they are TEMP TABLES 
+use SoftUni
+select * from Towns
 GO
 
+-----------------------------------------------------------------------------------
+ -- FOR INSERT 
+-----------------------------------------------------------------------------------
+
+CREATE OR ALTER TRIGGER tr_townInsert ON Towns FOR INSERT
+ AS
+ BEGIN 
+  DECLARE @town_inserted BIT SET @town_inserted = 0 ;
+      SET @town_inserted = (SELECT TownID 
+                              FROM inserted 
+                             WHERE LEN(NAME) <= 3)
+    IF  (@town_inserted = 1)
+    BEGIN
+    ROLLBACK
+    RAISERROR('name cannot be less than 3 symbols',16,1)
+    END
+    select * from inserted
+ END
+
+
+ insert into Towns 
+ values ('SOFIAAA')
+ select * from Towns
+ begin transaction
+ delete  from Towns where Name = 'woe'
+ commit
+ select * from Towns
+
+ use SoftUni
+ go
+ create table Log_Table
+ (
+ id int primary key identity,
+ log_info nvarchar(200)
+ )
+
+
+ go
+ CREATE OR ALTER TRIGGER tr_townInsert_v_2 ON Towns after INSERT
+ AS
+ BEGIN
+
+  declare @town_name nvarchar(50) 
+  declare @town_id int 
+  declare @insert_town_info nvarchar(200)
+
+  -- it could be done with mass insert or cursor but mass update is bad practice in this case !
+  --insert into Log_Table select cast(i.TownID as nvarchar(10)) +' ' + i.Name from inserted i
+ DECLARE insert_cursor CURSOR FOR 
+ SELECT i.TownID,
+        i.[Name]
+   FROM inserted i 
+
+OPEN insert_cursor
+  FETCH NEXT FROM insert_cursor INTO @town_id, @town_name
+
+  WHILE @@FETCH_STATUS <> -1
+  BEGIN
+  
+   
+  select @insert_town_info = 'town with name: ' + cast(@town_name as nvarchar(50)) + ' and id: ' +
+  CAST(@town_id as nvarchar(5)) + ' were inserted at ' + CAST(GETDATE() as nvarchar(50))
+  insert into Log_Table
+  values
+  (@insert_town_info)
+
+    FETCH NEXT FROM insert_cursor INTO @town_id, @town_name
+  END
+CLOSE insert_cursor
+DEALLOCATE insert_cursor
+   
+ END
+
+ begin tran
+ insert into Towns
+ values
+ ('town 3'),
+ ('town 4'),
+ ('town 5')
+
+ rollback
+ select * from Towns
+ select * from Log_Table
+-----------------------------------------------------------------------------------
+ -- FOR UPDATE 
+-----------------------------------------------------------------------------------
+GO
 CREATE OR ALTER TRIGGER tr_townUpdate ON Towns FOR UPDATE
  AS
  BEGIN
-  IF EXISTS(SELECT * 
+  IF EXISTS(SELECT 1 
               FROM inserted 
              WHERE ISNULL([Name],'') = '' OR LEN(NAME) = 0) 
   BEGIN
@@ -567,39 +655,47 @@ CREATE OR ALTER TRIGGER tr_townUpdate ON Towns FOR UPDATE
     ROLLBACK
     RETURN 
   END
+  --select * from inserted
+  --select * from deleted
+
  END
 
    UPDATE Towns
-      SET [NAME] = '' 
+      SET [NAME] = 's o f i a' 
      FROM Towns
-    WHERE TownID = 1
+    WHERE TownID = 39
 
   select * from Towns
 
  GO
 
- -- -------------------------------------------------------------------------
-
- CREATE OR ALTER TRIGGER tr_townInsert ON Towns FOR INSERT
+ -----------------------------------------------------------------------------------
+ -- FOR DELETE
+-----------------------------------------------------------------------------------
+use master
+GO
+CREATE OR ALTER TRIGGER tr_AddressDelete ON Accounts FOR DELETE
  AS
- BEGIN 
-  DECLARE @test BIT SET @test = 0 ;
-      SET @test = (SELECT TownID 
-                     FROM inserted 
-                    WHERE LEN(NAME) < 3)
-    IF  (@test = 1)
-    BEGIN
+ BEGIN
+  IF EXISTS(SELECT 1 
+              FROM deleted 
+             WHERE username LIKE 'p%') 
+  BEGIN
+    RAISERROR('You can''t delete Accounts username starting with P',16,1)
     ROLLBACK
-    RAISERROR('name cannot be less than 3 symbols',16,1)
-    END
+    RETURN 
+  END
  END
+ begin tran
+   delete from  Accounts
+    WHERE username like 'p%'
+rollback
+  select * from Accounts
+  
 
- insert into Towns values ('woe')
- select * from Towns
- begin transaction
- delete  from Towns where TownID = 37
- commit
 
+ GO
+ 
  -- |||||||||||||||||||||||||||||||||||||||||||||||||        2        ||||||||||||||||||||||||||||||||||||||||||||||||| 
  -- delete trigger 
  GO

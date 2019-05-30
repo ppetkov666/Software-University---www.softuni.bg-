@@ -223,7 +223,7 @@ exec spe_example 'guy'
 --                                                                   008
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 -- FUNCTION
-
+use SoftUni
 go
 CREATE OR ALTER FUNCTION ufn_example
 (
@@ -232,12 +232,52 @@ CREATE OR ALTER FUNCTION ufn_example
 RETURNS NVARCHAR(MAX)
 AS
 BEGIN
-	RETURN (select DISTINCT FirstName 
-            from Employees 
-           where Salary = @salary)   
+	RETURN (SELECT DISTINCT FirstName 
+            FROM Employees 
+           WHERE Salary = @salary)   
 END
 GO
 SELECT DBO.ufn_example (30000)
+
+
+use UserInfo
+-- syntax of function 
+-- 1 - when returns a table
+  go
+  create or alter function test_funk_inline()
+  returns table
+  as
+    return  select * from UserInfoTable
+  go
+  select * from dbo.test_funk_inline()
+
+-- 2 - when returns a table variable
+  go
+  create or alter function test_funk_multi()
+  returns @table_var table (firstname nvarchar(50), lastname nvarchar(50))
+  as
+  begin
+    insert into @table_var   
+    select uit.FirstName, uit.LastName from UserInfoTable uit
+    return 
+  end
+  go
+  select * from dbo.test_funk_multi()
+
+-- 3 - when returns a result (int in this particular case)
+  go
+  create or alter function test_funk_normal_result()
+  returns int
+  
+  begin
+    declare @result int = (select sum(uit.Salary) from UserInfoTable uit)
+     return @result
+  end
+
+  go
+  
+  select  [dbo].[test_funk_normal_result]()
+
 --------------------------------------------------------------------------------------------------------------------------------------------------
 --                                                                009 
 --------------------------------------------------------------------------------------------------------------------------------------------------
@@ -262,6 +302,9 @@ select * from tbl_example
 --------------------------------------------------------------------------------------------------------------------------------------------------
 -- UPDATE
 
+select * from UsersGames
+select * from Users
+select * from Games
 
 
  UPDATE ug

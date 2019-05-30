@@ -1726,3 +1726,46 @@ EXECUTE dbo.spr_truncate_table_by_synonym_name  @schema_name = 'dbo', @synonym_n
 
 select * from sys.synonyms
 select * from employees_copy_synonym
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                  033
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- OLTP                                           OLAP
+-- On Line Transaction Processing                 On Line Analytical Processing
+-- INSERT , UPDATE , DELETE                       SELECT mainly 
+-- normalized                                     denormalized
+-- more tables                                    less tables 
+-- limited num of indexes                         more indexes
+-- source system                                  target system
+-- end users                                      business analysis
+-- single source system                           multi source system
+-- cashed querie plan reuse                       unique querie plans
+
+-- old way... not a good practice
+go
+
+   
+   
+

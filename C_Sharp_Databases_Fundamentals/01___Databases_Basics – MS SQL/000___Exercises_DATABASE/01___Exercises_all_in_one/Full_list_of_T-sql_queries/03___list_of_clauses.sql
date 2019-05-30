@@ -151,6 +151,15 @@ SELECT * FROM Department
       FROM Users u
 INNER JOIN Department d on d.Id = u.DepartmentId
 
+-- 'old way' to make join 
+select *
+  from Users u,
+  (select * 
+     from Department ) d 
+  where u.DepartmentID = d.Id 
+  go
+-- 'old way' to make join 
+
 -- ^^^^^^^^ example 2  ^^^^^^^^
 
 -- left join match all records from left table + common record from right table
@@ -385,6 +394,7 @@ LEFT JOIN (SELECT e.Salary,
                                 WHERE e.row_num = ctr.row_num + 1 ))) column_difference
    FROM v__custom_table_rows AS ctr
 
+   select * from v__custom_table_rows
 -- second option
 -- calculate column differences WITHOUT using any VIEW, just with derived tables
   SELECT ctr.EmployeeID,
@@ -571,7 +581,7 @@ SELECT e.FirstName,
     
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
---                                                                       004 - WITH 
+--                                          004 - WITH (named sub querie)
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 use SoftUni
 GO
@@ -743,10 +753,11 @@ GO
   GO
  -- view cannot be created from temporary tables
  -- view cannot have parameters
-
+ -- view does not store any data , it is just stored querie
  -- ^^^^^^^^ example 1  ^^^^^^^^
 
 -- this querie filter employee by department name and in this example this is 'Engineering'
+  sp_helptext v_filter_by_department
   CREATE OR ALTER VIEW v_filter_by_department
   AS
   (
@@ -812,7 +823,7 @@ go
 
 
 
--- indexed view -------------------------------
+-- INDEXED VIEW -------------------------------
 
 create table Product
 (
@@ -863,19 +874,39 @@ go
 create or alter view v_totalorders
 with schemabinding
 as
-select p.name, sum(isnull((p.price * o.quantity), 0)) as total, count_big(*) as total_as_sum
-  from dbo.orders o
-  join dbo.Product p on p.id = o.product_id 
-  group by p.name
+  select p.[name], 
+         sum(isnull((p.price * o.quantity), 0)) as total, 
+         count_big(*) as total_as_sum
+    from dbo.orders o
+    join dbo.Product p on p.id = o.product_id 
+group by p.[name]
 go
 create unique clustered index uix_total_orders on v_totalorders(name)
 
 select * from v_totalorders
 
+go
 
+-- it can be without count_big just as it shown below but when we dont user aggregated funktions and group by clause
+create or alter view v__temp_result_indexed_
+with schemabinding
+as
+(
+  select e.employeeid, 
+         e.FirstName,
+         e.Salary 
+    from dbo.Employees e
+)
+go
+create unique clustered index idx_test on v__temp_result_indexed_(employeeid)
+
+select * from v__temp_result_indexed_
 -- ----------------------------------------------------------------------------------------------------------------
+-- UPDATABLE VIEW
+--------------------------------------------------------------------------------------------------------------------
 
--- view example : it shows how after update one field from the table is changed on both tables - this is because view is just virtual table
+-- view example : it shows how after update one field from the table is changed on both tables 
+-- this is because view is just virtual table
 -- updating views has limitations - in this example i have pointed particular case where i can update it
 
 GO
@@ -912,17 +943,18 @@ create unique clustered index idx_test on v__temp_result_indexed(employeeid)
 
 select * from v__temp_result_indexed
 
+begin tran
 update v__temp_result_indexed
 set salary = 13001
 WHERE FirstName = 'Guy'
-
-
+rollback
+select * from Employees
 
  SELECT * FROM employees
  SELECT * FROM v__temp_result
  SELECT * FROM v__temp_result_indexed
 
- -- next 2 examples show limitations of updating view
+ -- NEXT 2 EXAMPLES SHOW LIMITATIONS OF UPDATING VIEW
  go
  create or alter view v_test
  as
@@ -953,22 +985,59 @@ go
     join Departments d on d.DepartmentID = e.DepartmentID
  )
 go
-select * from Employees
+ select * from Employees
+ select * from Departments
  select * from v_test_v2
  update v_test_v2
  set  Salary = 12500, Name = 'prod techn'
  where FirstName = 'guy' and LastName = 'gilbert'
 
 
+ -- --------------------------------------------------
+-- this is interesting case with updating VIEW !!!
+-- in this case we have incorrect update !
+ go
+ create or alter view v_test_v3
+ as
+ (
+  select e.FirstName,
+         e.LastName, 
+         e.Salary, 
+         d.[Name] as department_name
+    from dbo.Employees e 
+    join Departments d on d.DepartmentID = e.DepartmentID
+ )
+go
+select * from v_test_v3
+select * from Employees
+select * from Departments
 
+-- first approach
+begin tran
+UPDATE v_test_v3
+SET department_name = 'ENGINEERING'
+where FirstName = 'roberto' and LastName = 'tamburello'
 
+rollback
 
+-- the other 2 approach are just for demonstration
+begin tran
+UPDATE Departments SET [Name] = 'ENGINEERING'
+  WHERE EXISTS (SELECT 1 from Employees 
+                 where Employees.DepartmentID = Departments.DepartmentID
+                   AND Employees.FirstName = 'roberto' and Employees.LastName = 'tamburello')
+rollback
+   
 
+   begin tran
+    update d 
+       set Name = 'ENGINEERING'
+      from Departments d
+      join Employees e on e.DepartmentID = d.DepartmentID
+      
 
-
-
-
-
+   
+   
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                             006 - TEMPORARY TABLES(Local and Global Examples)
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
