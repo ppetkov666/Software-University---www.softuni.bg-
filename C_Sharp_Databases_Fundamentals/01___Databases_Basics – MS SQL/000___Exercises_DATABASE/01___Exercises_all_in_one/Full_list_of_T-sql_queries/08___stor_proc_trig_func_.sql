@@ -548,14 +548,15 @@ exec spe_sell_product_with_try_catch 1, 10
 
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        1        ||||||||||||||||||||||||||||||||||||||||||||||||| 
 -- DML triggers
--- after(FOR) insert/update/delete - they are fired after insert, update or delete execution
--- instead of insert/update/delete - they are fired instead of triggering action(insert, update or delete) 
+-- AFTER(FOR) insert/update/delete - they are fired after insert, update or delete execution
+-- INSTEAD OF insert/update/delete - they are fired INSTEAD OF triggering action(insert, update or delete) 
 
--- INSERTED and DELETED TABLES lives in the scope of the trigger and has the structure of the tables which trigger use
+-- INSERTED and DELETED tables lives in the scope of the trigger and has the structure of the tables which trigger use
 -- they are TEMP TABLES 
 use SoftUni
 select * from Towns
 GO
+
 
 -----------------------------------------------------------------------------------
  -- FOR INSERT 
@@ -565,25 +566,26 @@ CREATE OR ALTER TRIGGER tr_townInsert ON Towns FOR INSERT
  AS
  BEGIN 
   DECLARE @town_inserted BIT SET @town_inserted = 0 ;
-      SET @town_inserted = (SELECT TownID 
+      SET @town_inserted = (SELECT 1 
                               FROM inserted 
-                             WHERE LEN(NAME) <= 3)
+                             WHERE LEN([NAME]) <= 3)
     IF  (@town_inserted = 1)
     BEGIN
     ROLLBACK
-    RAISERROR('name cannot be less than 3 symbols',16,1)
+    RAISERROR('name cannot be less than 3 symbols',16,1)    
     END
     select * from inserted
  END
 
 
  insert into Towns 
- values ('SOFIAAA')
+ values ('SrF')
  select * from Towns
  begin transaction
  delete  from Towns where Name = 'woe'
  commit
  select * from Towns
+
 
  use SoftUni
  go
@@ -595,7 +597,7 @@ CREATE OR ALTER TRIGGER tr_townInsert ON Towns FOR INSERT
 
 
  go
- CREATE OR ALTER TRIGGER tr_townInsert_v_2 ON Towns after INSERT
+ CREATE OR ALTER TRIGGER tr_townInsert_v_2 ON Towns FOR INSERT
  AS
  BEGIN
 
@@ -603,7 +605,7 @@ CREATE OR ALTER TRIGGER tr_townInsert ON Towns FOR INSERT
   declare @town_id int 
   declare @insert_town_info nvarchar(200)
 
-  -- it could be done with mass insert or cursor but mass update is bad practice in this case !
+  -- it could be done with mass insert or cursor but mass Iinsert is bad practice in this case !
   --insert into Log_Table select cast(i.TownID as nvarchar(10)) +' ' + i.Name from inserted i
  DECLARE insert_cursor CURSOR FOR 
  SELECT i.TownID,
@@ -647,26 +649,62 @@ GO
 CREATE OR ALTER TRIGGER tr_townUpdate ON Towns FOR UPDATE
  AS
  BEGIN
+
+  -- FIRST APPROACH
+  --declare @old_name nvarchar(50)
+  --declare @new_name nvarchar(50)
+  --select @old_name = I.[Name] FROM inserted I
+  --select @new_name = d.[Name] FROM deleted d
+  --if @old_name = @new_name 
+  --  begin
+  --    raiserror('you must use different name in case of update',16,1)
+  --    rollback
+  --  end
+  
+  -- SECOND APPROACH
+  --if exists(select 1 
+  --            from inserted i
+  --            join deleted d on d.TownID = i.TownID
+  --            where i.[Name] = d.[Name] )
+  --  begin
+      
+  --    raiserror('you must use different name in case of update',16,1)
+  --    rollback
+  --  end
+
+  -- THIRD and the best one approach
+    DECLARE @v_exists BIT SET @v_exists = 0
+
+    SELECT TOP 1 @v_exists  = 1  
+      FROM inserted i
+      JOIN deleted d ON d.TownID = i.TownID
+     WHERE i.[Name] = d.[Name]
+
+     IF @v_exists = 1
+      BEGIN
+        RAISERROR('Error while trying to update with the same data',16,1)
+        ROLLBACK
+      END
+
   IF EXISTS(SELECT 1 
               FROM inserted 
              WHERE ISNULL([Name],'') = '' OR LEN(NAME) = 0) 
-  BEGIN
-    RAISERROR('NAME CANNOT BE NULL OR EMPTHY',16,1)
-    ROLLBACK
-    RETURN 
-  END
+    BEGIN
+      RAISERROR('NAME CANNOT BE NULL OR EMPTHY',16,1)
+      ROLLBACK
+      RETURN 
+    END
   --select * from inserted
   --select * from deleted
-
  END
-
+  
    UPDATE Towns
-      SET [NAME] = 's o f i a' 
+      SET [NAME] = 'S o f i a' 
      FROM Towns
     WHERE TownID = 39
+    
 
   select * from Towns
-
  GO
 
  -----------------------------------------------------------------------------------
@@ -696,8 +734,10 @@ rollback
 
  GO
  
- -- |||||||||||||||||||||||||||||||||||||||||||||||||        2        ||||||||||||||||||||||||||||||||||||||||||||||||| 
- -- delete trigger 
+ -----------------------------------------------------------------------------------
+ -- INSTEAD OF DELETE
+-----------------------------------------------------------------------------------
+
  GO
  CREATE TABLE Accounts(
   username VARCHAR(10) NOT NULL PRIMARY KEY,
@@ -721,14 +761,82 @@ BEGIN
   UPDATE a
      SET a.Active = 'N'
     FROM Accounts a
-    JOIN deleted d 
-    ON d.username = a.username
+    JOIN deleted d ON d.username = a.username
    WHERE d.Active = 'Y'
 END 
 
+begin tran
 DELETE FROM Accounts WHERE username = 'ivan'
 SELECT * FROM Accounts
+rollback
 GO
+
+
+-----------------------------------------------------------------------------------
+ -- INSTEAD OF INSERT (insert into VIEW)
+-----------------------------------------------------------------------------------
+go
+
+create or alter view v_emp_dep
+as
+(
+  select 
+         e.firstname,
+         e.lastname,
+         d.name as department_name
+    from employees e
+    join departments d on d.departmentID = e.departmentID
+    
+)
+go
+select * from v_emp_dep
+
+go
+create or alter trigger tr_instead_of_insert on v_emp_dep instead of insert  
+as
+begin
+
+   declare @dep_id int
+
+   select @dep_id  = DepartmentID from departments d  
+                                  join inserted i on i.department_name = d.[name]
+  if (@dep_id is null)
+    begin
+      raiserror('there is no such a department!', 16,1)
+      rollback
+      return
+    end
+  -- some fields are hard coded just because this is test example                  
+    insert into employees 
+    select i.firstname, 
+           i.lastname,
+           'p',
+           'ceo',
+           @dep_id,
+           null,
+           '2019',
+           0,
+           166 
+      from inserted i
+end
+go  
+
+begin tran
+insert into v_emp_dep
+values
+('petko','petkov','Engineering')
+rollback
+commit
+
+ select * from departments
+ select * from employees
+
+
+
+
+
+
+
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
