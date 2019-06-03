@@ -18,7 +18,7 @@
 -- 013 : HOW TO group by different criteria in one table
 -- 014 : HOW TO user OVER with partition by and order by 
 -- 015 : HOW TO get running total value as additional column
--- 016 : HOW TO check for dependency in any sp
+-- 016 : HOW TO check for dependency in any sp (SYS)
 -- 017 : HOW TO create sequence and set increment value
 -- 018 : HOW TO insert the data from 2 tables into third table using guid
 -- 019 : HOW TO use cross apply 
@@ -916,7 +916,10 @@ SELECT COUNT(*)
    AND table_name = 'Employees'
 
 
-
+-- how to get primary key of table
+SELECT * FROM sys.objects
+    WHERE type = 'PK' 
+    AND  parent_object_id = OBJECT_ID ('[dbo].Employees')
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             013
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1273,6 +1276,28 @@ select t.table_one_code as table_one_code_from_table_table_one
                         FROM table_two 
                        WHERE table_two_code = t.table_one_code)
 
+SELECT t1.ID,
+       t1.NAME 
+  FROM #TABLE1 t1
+  WHERE t1.ID NOT IN (SELECT T1.ID
+                        from #TABLE1 t1
+                        join #TABLE2 t2 on t2.ID = t1.ID)
+
+SELECT t1.ID,
+       t1.NAME 
+  FROM #TABLE1 t1
+  WHERE t1.ID NOT IN (SELECT T1.ID
+                   from #TABLE2 t2
+                   where t2.ID = t1.id)       
+                   
+SELECT t1.ID,
+       t1.NAME 
+  FROM #TABLE1 t1
+  WHERE NOT EXISTS (SELECT 1
+                      from #TABLE2 t2
+                     where t2.ID = t1.id)       
+
+
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1333,6 +1358,13 @@ INSERT INTO #TABLE2 (ID,NAME) VALUES
 (3,'THREE')
 --(4,'different')
 
+SELECT t1.ID,
+       t1.NAME 
+  FROM #TABLE1 t1
+  WHERE t1.ID NOT IN (SELECT T1.ID
+                        from #TABLE2 t2
+                      where t2.ID = t1.id)                         
+
 SELECT ID,NAME FROM #TABLE1 
 EXCEPT
 SELECT ID,NAME FROM #TABLE2 
@@ -1354,7 +1386,7 @@ SELECT e.FirstName,
        e.Salary 
   FROM Employees e
  WHERE e.Salary > 50000
-except
+EXCEPT
  SELECT e.FirstName,
        e.LastName,
        e.Salary 
@@ -1752,20 +1784,6 @@ select * from employees_copy_synonym
 
 
 
--- OLTP                                           OLAP
--- On Line Transaction Processing                 On Line Analytical Processing
--- INSERT , UPDATE , DELETE                       SELECT mainly 
--- normalized                                     denormalized
--- more tables                                    less tables 
--- limited num of indexes                         more indexes
--- source system                                  target system
--- end users                                      business analysis
--- single source system                           multi source system
--- cashed querie plan reuse                       unique querie plans
 
--- old way... not a good practice
-go
-
-   
    
 

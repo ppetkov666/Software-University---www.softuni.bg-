@@ -434,6 +434,7 @@ Begin
                                else MAX(product_sales_id) end 
                           from Product_sales
   
+  -- i am having this maxproduct_id because the field is not identity 
   Set @maxproduct_id += 1
   Insert into Product_sales 
        values(@maxproduct_id, @product_id, @quantity_for_sell)
@@ -496,7 +497,7 @@ BEGIN
        SET quantity -= @quantity_for_sell
      WHERE ProductId = @product_id
     
-    SELECT @maxproduct_id = CASE WHEN isnull(MAX(product_sales_id), 0) = 0
+    SELECT @maxproduct_id = CASE WHEN ISNULL(MAX(product_sales_id), 0) = 0
                                  THEN 0 
                                  ELSE MAX(product_sales_id) END 
                             FROM Product_sales 
@@ -517,7 +518,7 @@ BEGIN
 
   END CATCH
 
-  IF @v_no_error = 1 
+  IF NOT (@v_no_error = 0 )
     BEGIN
       PRINT 'no errors - transaction will be commited!'
       COMMIT TRAN
@@ -534,7 +535,7 @@ BEGIN
 END
 rollback
 
-exec spe_sell_product_with_try_catch 1, 10
+exec spe_sell_product_with_try_catch 2, 10
  select * from Product_v1
  select * from Product_sales
 
@@ -566,15 +567,15 @@ CREATE OR ALTER TRIGGER tr_townInsert ON Towns FOR INSERT
  AS
  BEGIN 
   DECLARE @town_inserted BIT SET @town_inserted = 0 ;
-      SET @town_inserted = (SELECT 1 
-                              FROM inserted 
-                             WHERE LEN([NAME]) <= 3)
-    IF  (@town_inserted = 1)
+    SELECT TOP 1 @town_inserted = (SELECT 1 
+                                     FROM inserted 
+                                    WHERE LEN([NAME]) <= 3)
+    IF (@town_inserted = 1)
     BEGIN
     ROLLBACK
-    RAISERROR('name cannot be less than 3 symbols',16,1)    
+    RAISERROR('name cannot be less ?r equal to 3 symbols',16,1)    
     END
-    select * from inserted
+    SELECT * FROM inserted
  END
 
 
@@ -595,15 +596,19 @@ CREATE OR ALTER TRIGGER tr_townInsert ON Towns FOR INSERT
  log_info nvarchar(200)
  )
 
+ -- ///////////////////////
+ --      EXAMPLE  2
+ -- ///////////////////////
+
 
  go
  CREATE OR ALTER TRIGGER tr_townInsert_v_2 ON Towns FOR INSERT
  AS
  BEGIN
 
-  declare @town_name nvarchar(50) 
-  declare @town_id int 
-  declare @insert_town_info nvarchar(200)
+  DECLARE @town_name NVARCHAR(50) 
+  DECLARE @town_id INT 
+  DECLARE @insert_town_info NVARCHAR(200)
 
   -- it could be done with mass insert or cursor but mass Iinsert is bad practice in this case !
   --insert into Log_Table select cast(i.TownID as nvarchar(10)) +' ' + i.Name from inserted i
@@ -612,13 +617,12 @@ CREATE OR ALTER TRIGGER tr_townInsert ON Towns FOR INSERT
         i.[Name]
    FROM inserted i 
 
-OPEN insert_cursor
+  OPEN insert_cursor
   FETCH NEXT FROM insert_cursor INTO @town_id, @town_name
 
   WHILE @@FETCH_STATUS <> -1
   BEGIN
   
-   
   select @insert_town_info = 'town with name: ' + cast(@town_name as nvarchar(50)) + ' and id: ' +
   CAST(@town_id as nvarchar(5)) + ' were inserted at ' + CAST(GETDATE() as nvarchar(50))
   insert into Log_Table
@@ -653,9 +657,9 @@ CREATE OR ALTER TRIGGER tr_townUpdate ON Towns FOR UPDATE
   -- FIRST APPROACH
   --declare @old_name nvarchar(50)
   --declare @new_name nvarchar(50)
-  --select @old_name = I.[Name] FROM inserted I
-  --select @new_name = d.[Name] FROM deleted d
-  --if @old_name = @new_name 
+  --select @new_name = I.[Name] FROM inserted I
+  --select @old_name = d.[Name] FROM deleted d
+  --if @new_name = @old_name 
   --  begin
   --    raiserror('you must use different name in case of update',16,1)
   --    rollback
@@ -707,6 +711,171 @@ CREATE OR ALTER TRIGGER tr_townUpdate ON Towns FOR UPDATE
   select * from Towns
  GO
 
+
+
+
+ -- ///////////////////////
+ --      EXAMPLE  2
+ -- ///////////////////////
+
+
+
+SELECT * FROM Employees
+select * from Log_table_employees
+GO
+CREATE or ALTER TRIGGER tr_tbl_employee_for_update ON Employees FOR UPDATE
+AS
+BEGIN
+  -- Declare variables to hold old and updated data
+  DECLARE @v_id             INT
+  DECLARE @v_old_name       NVARCHAR(50)
+  DECLARE @v_new_name       NVARCHAR(50)
+  DECLARE @v_old_salary     INT
+  DECLARE @v_new_salary     INT
+  DECLARE @v_old_job_title  NVARCHAR(50) 
+  DECLARE @v_new_job_title  NVARCHAR(50)
+  DECLARE @v_old_deptId     INT 
+  DECLARE @v_new_deptId     INT  
+  Declare @v_log_string     NVARCHAR(1000) 
+  
+  -- Load the updated records into temporary table
+  --SELECT *
+  --INTO #TempTable
+  --FROM inserted
+  
+  -- here i will provide 2 approach: WHILE LOOP and CURSOR
+
+  --While(Exists(Select EmployeeID from #TempTable))
+  --Begin
+  --  --Initialize the audit string to empty string
+  --  
+    
+  --  -- Select first row data from temp table
+  --  Select Top 1 @v_id = EmployeeID, 
+  --               @v_new_name = FirstName, 
+  --               @v_new_job_title = JobTitle, 
+  --               @v_new_salary = Salary,
+  --               @v_new_deptId = DepartmentId
+  --  from #TempTable
+    
+  --  -- Select the corresponding row from deleted table
+  --  Select @v_old_name = FirstName, 
+  --         @v_old_job_title = JobTitle, 
+  --         @v_old_salary = Salary, 
+  --         @v_old_deptId = DepartmentId
+  --    from deleted 
+  --   where EmployeeID = @v_id
+    
+  --     -- Build the log string dynamically           
+  --  Set @v_log_string = 'Employee with Id = ' + Cast(@v_id as nvarchar(4)) + ' changed'
+  --  if(@v_old_name <> @v_new_name)
+  --    Set @v_log_string = @v_log_string + ' FirstName from ' + 
+  --    @v_old_name + ' to ' + @v_new_name
+         
+  --  if(@v_old_job_title <> @v_new_job_title)
+  --    Set @v_log_string = @v_log_string + ' JobTitle from ' + 
+  --    @v_old_job_title + ' to ' + @v_new_job_title
+         
+  --  if(@v_old_salary <> @v_new_salary)
+  --    Set @v_log_string = @v_log_string + ' SALARY from ' + 
+  --    Cast(@v_old_salary as nvarchar(10))+ ' to ' + Cast(@v_new_salary as nvarchar(10))
+          
+  --  if(@v_old_deptId <> @v_new_deptId)
+  --    Set @v_log_string = @v_log_string + ' DepartmentId from ' + 
+  --    Cast(@v_old_deptId as nvarchar(10))+ ' to ' + Cast(@v_new_deptId as nvarchar(10))
+    
+  --  insert into Log_table_employees 
+  --  values
+  --  (@v_log_string)
+    
+  --  -- Delete the row from temp table, so we can move to the next row
+  --  Delete from #TempTable 
+  --   where EmployeeID = @v_id
+  --End
+
+
+  --Initialize the audit string to empty string
+  DECLARE log_cursor CURSOR 
+      FOR 
+   SELECT i.EmployeeID, 
+          i.FirstName, 
+          i.JobTitle,
+          i.Salary,
+          i.DepartmentID
+     FROM inserted i
+     
+    OPEN log_cursor
+    FETCH NEXT FROM log_cursor INTO @v_id, 
+                                    @v_new_name, 
+                                    @v_new_job_title,
+                                    @v_new_salary,
+                                    @v_new_deptId
+    WHILE @@FETCH_STATUS <> -1
+  BEGIN
+
+    SELECT @v_old_name = FirstName, 
+           @v_old_job_title = JobTitle, 
+           @v_old_salary = Salary, 
+           @v_old_deptId = DepartmentId
+      FROM deleted 
+     WHERE EmployeeID = @v_id
+    
+    if(@v_new_name      = @v_old_name      and 
+       @v_new_job_title = @v_old_job_title and 
+       @v_new_salary = @v_old_salary       and 
+       @v_new_deptId = @v_old_deptId)
+       BEGIN
+         SET @v_log_string = 'no changes has beed made!'
+       END
+    ELSE
+    BEGIN
+       -- Build the log string dynamically           
+    SET @v_log_string = 'Employee with Id = ' + CAST(@v_id AS NVARCHAR(4)) + ' changed'
+    IF(@v_old_name <> @v_new_name)
+      SET @v_log_string = @v_log_string + '   FirstName from ' + 
+      @v_old_name + ' to ' + @v_new_name
+         
+    IF(@v_old_job_title <> @v_new_job_title)
+      SET @v_log_string = @v_log_string + ',   JobTitle from ' + 
+      @v_old_job_title + ' to ' + @v_new_job_title
+         
+    IF(@v_old_salary <> @v_new_salary)
+      SET @v_log_string = @v_log_string + ',   SALARY from ' + 
+      CAST(@v_old_salary AS NVARCHAR(10))+ ' to ' + CAST(@v_new_salary AS NVARCHAR(10))
+          
+    IF(@v_old_deptId <> @v_new_deptId)
+      SET @v_log_string = @v_log_string + ',   DepartmentId from ' + 
+      CAST(@v_old_deptId AS NVARCHAR(10))+ ' to ' + CAST(@v_new_deptId AS NVARCHAR(10))
+    END
+
+    INSERT INTO Log_table_employees 
+    VALUES
+    (@v_log_string)
+    
+    -- Delete the row from temp table, so we can move to the next row
+    FETCH NEXT FROM log_cursor INTO @v_id, 
+                                    @v_new_name, 
+                                    @v_new_job_title,
+                                    @v_new_salary,
+                                    @v_new_deptId
+  END
+  CLOSE log_cursor
+  DEALLOCATE log_cursor
+END
+
+begin tran
+update Employees
+  set FirstName = 'Petko',
+      JobTitle = 'CEO',
+      DepartmentID = '2',
+      Salary = 0
+  where EmployeeID in (1,2,3,4)
+rollback
+
+SELECT * FROM Employees
+select * from Log_table_employees
+
+
  -----------------------------------------------------------------------------------
  -- FOR DELETE
 -----------------------------------------------------------------------------------
@@ -724,10 +893,10 @@ CREATE OR ALTER TRIGGER tr_AddressDelete ON Accounts FOR DELETE
     RETURN 
   END
  END
- begin tran
-   delete from  Accounts
+ BEGIN TRAN
+   DELETE FROM  Accounts
     WHERE username like 'p%'
-rollback
+ROLLBACK
   select * from Accounts
   
 
@@ -747,9 +916,9 @@ rollback
  GO
  INSERT INTO Accounts
 VALUES
-('petko','petkov','y'),
-('ivan','ivanov','y'),
-('georgi','georgiev','y')
+('petko','123456','y'),
+('ivan','1234','y'),
+('georgi','12345','y')
 GO
 SELECT * FROM Accounts 
 
@@ -760,14 +929,15 @@ BEGIN
 
   UPDATE a
      SET a.Active = 'N'
-    FROM Accounts a
+    FROM Accounts a 
     JOIN deleted d ON d.username = a.username
    WHERE d.Active = 'Y'
 END 
 
-begin tran
+BEGIN TRAN
 DELETE FROM Accounts WHERE username = 'ivan'
 SELECT * FROM Accounts
+
 rollback
 GO
 
@@ -775,12 +945,16 @@ GO
 -----------------------------------------------------------------------------------
  -- INSTEAD OF INSERT (insert into VIEW)
 -----------------------------------------------------------------------------------
+-- in this particular case without trigger we CAN'T insert into this view
 go
 
+SET IDENTITY_INSERT employees ON
+SELECT * FROM v_emp_dep
+go
 create or alter view v_emp_dep
 as
 (
-  select 
+  select e.EmployeeID,
          e.firstname,
          e.lastname,
          d.name as department_name
@@ -797,9 +971,9 @@ as
 begin
 
    declare @dep_id int
-
    select @dep_id  = DepartmentID from departments d  
                                   join inserted i on i.department_name = d.[name]
+
   if (@dep_id is null)
     begin
       raiserror('there is no such a department!', 16,1)
@@ -807,36 +981,133 @@ begin
       return
     end
   -- some fields are hard coded just because this is test example                  
-    insert into employees 
-    select i.firstname, 
+    insert into employees(EmployeeID,FirstName,LastName,MiddleName,JobTitle,DepartmentID,HireDate,Salary,AddressID)
+    select i.EmployeeID,
+           i.firstname, 
            i.lastname,
            'p',
            'ceo',
            @dep_id,
-           null,
            '2019',
            0,
            166 
       from inserted i
+    
+      
 end
 go  
 
 begin tran
 insert into v_emp_dep
 values
-('petko','petkov','Engineering')
+(296,'petko','petkov','Engineering')
 rollback
 commit
-
+SET IDENTITY_INSERT employees OFF
  select * from departments
  select * from employees
 
+-----------------------------------------------------------------------------------
+ -- INSTEAD OF UPDATE
+-----------------------------------------------------------------------------------
+
+select * from v_emp_dep
+select * from Employees
+select * from Departments
+go
+CREATE OR ALTER TRIGGER tr_instead_of_update ON v_emp_dep INSTEAD OF UPDATE  
+AS
+BEGIN
+ 
+ IF(UPDATE(employeeID))
+ BEGIN
+  RAISERROR('Emoloyee ID cannot be modified!',16,1)
+  RETURN
+ END
+
+ IF (UPDATE(department_name))
+ BEGIN
+   DECLARE @dep_id INT
+    SELECT @dep_id  = DepartmentID 
+      FROM departments d  
+      JOIN inserted i ON i.department_name = d.[name]
+                                 
+    IF (@dep_id IS NULL)
+    BEGIN
+      RAISERROR('there is no such a department!', 16,1)
+      RETURN
+    END
+    UPDATE Employees
+       SET DepartmentID = @dep_id
+      FROM Employees e
+      JOIN inserted i on i.EmployeeID = e.EmployeeID       
+  END
+
+  IF(UPDATE(firstname))
+    BEGIN
+      DECLARE @firstname NVARCHAR(50)
+      SELECT @firstname = i.FirstName 
+        FROM inserted i
+        
+      UPDATE e
+         SET e.FirstName = @firstname
+        FROM Employees e
+        JOIN inserted i ON i.EmployeeID = e.EmployeeID
+
+      -- another syntax
+      --update e
+      --   set e.FirstName = i.FirstName
+      --  from inserted i
+      --  join Employees e
+      --    on e.EmployeeID = i.EmployeeID
+    END
+
+    IF(UPDATE(lastname))
+    BEGIN
+      DECLARE @lastname NVARCHAR(50)
+      SELECT @lastname = i.LastName 
+        FROM inserted i
+        
+      UPDATE e
+         SET e.LastName = @lastname
+        FROM Employees e
+        JOIN inserted i ON i.EmployeeID = e.EmployeeID
+    END
+END
+go
+
+begin tran
+update vep
+   set department_name = 'Tool Design'
+  from v_emp_dep vep
+ where EmployeeID = 1
+rollback
+
+begin tran
+update vep
+   set FirstName = 'first_name_change_test'
+  from v_emp_dep vep
+ where EmployeeID = 1
+rollback
+
+begin tran
+update vep
+   set LastName = 'last_name_change_test'
+  from v_emp_dep vep
+ where EmployeeID = 1
+rollback
+
+begin tran
+update vep
+   set EmployeeID = 300
+  from v_emp_dep vep
+ where EmployeeID = 1
+rollback
 
 
-
-
-
-
+select * from v_emp_dep
+select * from Employees
+select * from Departments
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

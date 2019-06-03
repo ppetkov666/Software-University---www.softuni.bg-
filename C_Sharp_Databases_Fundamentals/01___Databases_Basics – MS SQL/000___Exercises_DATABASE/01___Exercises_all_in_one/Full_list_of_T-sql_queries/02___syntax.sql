@@ -319,6 +319,18 @@ select * from Games
     UPDATE UserInfoTable
    SET Salary = 600
  WHERE Id = 6 AND LastName = 'PETKOV'
+
+      UPDATE e
+         SET e.FirstName = @firstname
+        FROM Employees e
+        JOIN inserted i ON i.EmployeeID = e.EmployeeID
+
+      -- another syntax
+      --update e
+      --   set e.FirstName = i.FirstName
+      --  from inserted i
+      --  join Employees e
+      --    on e.EmployeeID = i.EmployeeID
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 --                                                                   011 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
