@@ -1032,6 +1032,7 @@ select e.FirstName,
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 -- how to get running total value as additional column
 
+
 select e.FirstName, 
        e.LastName,
        e.Salary,
@@ -1060,7 +1061,7 @@ SELECT * FROM #tempEmp
 
 DECLARE @Salary INT;
 DECLARE @row_num BIGINT;
-declare @temp_salary int SET @temp_salary = 0
+DECLARE @temp_salary int SET @temp_salary = 0
 
   DECLARE total_result_c CURSOR FOR 
    SELECT Salary, 
@@ -1073,12 +1074,18 @@ OPEN total_result_c
   PRINT @row_num;
   WHILE @@FETCH_STATUS <> -1
   BEGIN
+    
     set @temp_salary +=@Salary 
+    
     update #tempEmp
-    set running_total_salary += @temp_salary
-    where row_num = @row_num
-     set @temp_salary = (select running_total_salary from #tempEmp where row_num = @row_num)
-    PRINT @temp_salary
+       set running_total_salary += @temp_salary
+     where row_num = @row_num
+     
+    -- set @temp_salary = (select running_total_salary 
+    --                       from #tempEmp 
+    --                      where row_num = @row_num)
+    --PRINT @temp_salary
+    
     FETCH NEXT FROM total_result_c INTO  @Salary, @row_num
   END
 CLOSE total_result_c
@@ -1762,12 +1769,6 @@ select * from employees_copy_synonym
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                  033
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
 
 
 

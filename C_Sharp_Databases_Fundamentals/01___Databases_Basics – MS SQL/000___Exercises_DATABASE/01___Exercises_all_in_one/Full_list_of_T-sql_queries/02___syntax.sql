@@ -444,13 +444,13 @@ DECLARE test_cursor cursor SCROLL for
     while @@FETCH_STATUS <> -1
     begin
     
-    fetch RELATIVE 10 from test_cursor 
+    FETCH RELATIVE 10 from test_cursor 
     end
   close test_cursor
 deallocate test_cursor
 
 select * from Employees
-
+rollback
 
 
 

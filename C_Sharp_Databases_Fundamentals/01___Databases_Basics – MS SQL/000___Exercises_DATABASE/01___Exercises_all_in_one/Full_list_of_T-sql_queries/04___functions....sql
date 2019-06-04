@@ -326,13 +326,13 @@ begin
 
   select * 
     from Employees e
-    order by e.EmployeeID
+order by e.EmployeeID
   offset (@v_page_number - 1) * @v_page_size rows
   fetch next @v_page_size rows only
 
 end
 
-exec spe_offset_fetch_example_proc 2, 50
+exec spe_offset_fetch_example_proc 2, 10
 
 -- same proc but without  offset and fetch
 
@@ -344,20 +344,36 @@ create or alter proc spe_get_page_info
 )
 as
 begin
-select e.FirstName,
-       e.LastName,
-       e.Salary,
-       [row_number]
+--select e.FirstName,
+--       e.LastName,
+--       e.Salary,
+--       [row_number]
+--  from Employees e
+--  join (select e.EmployeeID, 
+--               ROW_NUMBER() over (order by e.EmployeeID) [row_number]
+--          from Employees e
+--      group by e.EmployeeID) as emp on emp.EmployeeID = e.EmployeeID 
+--         where row_number between ((@page_number - 1) * @page_size) and (@page_number * @page_size)
+  
+  with cte_emp_rows
+  as
+  (
+    select e.EmployeeID,
+         e.FirstName,
+         e.LastName,
+         e.Salary,
+         ROW_NUMBER() over (order by e.EmployeeID) [row_number_column]
   from Employees e
-  join (select e.EmployeeID, 
-               ROW_NUMBER() over (order by e.EmployeeID) [row_number]
-          from Employees e
-      group by e.EmployeeID) as emp on emp.EmployeeID = e.EmployeeID 
-         where row_number between ((@page_number - 1) * @page_size) and (@page_number * @page_size)
+  --group by e.EmployeeID,FirstName,e.LastName,e.Salary
+  )
+  select * 
+    from cte_emp_rows
+  where [row_number_column] between ((@page_number - 1) * @page_size) and (@page_number * @page_size)
+
 end
 
 
-exec spe_get_page_info 2,50
+exec spe_get_page_info 2,5
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

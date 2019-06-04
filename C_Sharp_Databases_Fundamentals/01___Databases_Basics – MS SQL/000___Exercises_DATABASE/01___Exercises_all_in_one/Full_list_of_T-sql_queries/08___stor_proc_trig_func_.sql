@@ -120,7 +120,7 @@ exec f_MyCustomConcatProcedure @firstname = 'guy', @lastname = 'gilbert', @Conca
 select @FullName
 -- i want to emphasise on one very important part : when we dont change the return code it will remain by default 0, 
 -- but in the example below i will pusposely change it
-
+rollback
 GO
 CREATE OR ALTER PROCEDURE f_my_custom_concat_procedure_version_return_type 
 (
@@ -942,6 +942,33 @@ rollback
 GO
 
 
+--///////////////////
+-- example 2
+--///////////////////
+--
+CREATE OR ALTER TRIGGER emp_del ON v_emp_dep INSTEAD OF DELETE 
+AS 
+BEGIN 
+
+  select * from deleted
+
+  delete ep 
+  from EmployeesProjects ep
+  join Employees e on e.EmployeeID = ep.EmployeeID
+  where ep.EmployeeID = 1
+
+delete Employees
+  from Employees e
+  join Departments d on d.DepartmentID = e.DepartmentId
+ where e.EmployeeID = 1
+  
+END 
+
+begin tran
+delete from v_emp_dep where EmployeeID = 1
+
+select * from Employees
+rollback
 -----------------------------------------------------------------------------------
  -- INSTEAD OF INSERT (insert into VIEW)
 -----------------------------------------------------------------------------------
@@ -1010,7 +1037,7 @@ SET IDENTITY_INSERT employees OFF
 -----------------------------------------------------------------------------------
  -- INSTEAD OF UPDATE
 -----------------------------------------------------------------------------------
-
+-- the example below show different approaches for demonstration purposes
 select * from v_emp_dep
 select * from Employees
 select * from Departments
@@ -1018,7 +1045,8 @@ go
 CREATE OR ALTER TRIGGER tr_instead_of_update ON v_emp_dep INSTEAD OF UPDATE  
 AS
 BEGIN
- 
+ -- this update function will return TRUE if any particular column is specified in set clause
+ -- usually in real world scenario will be done manually with comparing both tables inserted and deleted 
  IF(UPDATE(employeeID))
  BEGIN
   RAISERROR('Emoloyee ID cannot be modified!',16,1)
@@ -1046,13 +1074,23 @@ BEGIN
   IF(UPDATE(firstname))
     BEGIN
       DECLARE @firstname NVARCHAR(50)
+      DECLARE @inserted_id INT
+
       SELECT @firstname = i.FirstName 
         FROM inserted i
-        
+      
+      select top 1 @inserted_id = i.EmployeeID from inserted i 
+
+      select * from inserted
+      select * 
+        FROM Employees e
+        JOIN inserted i ON i.EmployeeID = e.EmployeeID
+
       UPDATE e
          SET e.FirstName = @firstname
         FROM Employees e
         JOIN inserted i ON i.EmployeeID = e.EmployeeID
+        where e.EmployeeID = @inserted_id
 
       -- another syntax
       --update e
@@ -1308,7 +1346,7 @@ OPEN CustomCursor
   FETCH NEXT FROM CustomCursor INTO  @FirstName, @LastName
   WHILE @@FETCH_STATUS <> -1
   BEGIN
-    EXEC SP_PRINT_EMPLOYEE_DETAILS @FirstName,@LastName
+    EXEC SP_PRINT_EMPLOYEE_DETAILS @FirstName, @LastName
     FETCH NEXT FROM CustomCursor INTO  @FirstName, @LastName
   END
 CLOSE CustomCursor
@@ -1389,6 +1427,32 @@ CLOSE CustomCursor
 DEALLOCATE CustomCursor
 
 select * from employees e where e.salary > 30000 
+
+
+
+DECLARE CustomCursor CURSOR SCROLL FOR 
+ SELECT e.FirstName,
+        e.LastName 
+   FROM Employees e 
+  WHERE e.Salary > 30000
+
+OPEN CustomCursor
+  FETCH next 10 rows FROM CustomCursor   
+  WHILE @@FETCH_STATUS <> -1
+  BEGIN
+    FETCH RELATIVE 10 FROM CustomCursor 
+  END
+CLOSE CustomCursor
+DEALLOCATE CustomCursor
+
+select * from employees e where e.salary > 30000 
+
+
+
+
+
+
+
 -- |||||||||||||||||||||||||||||||||||||||||||||||||        4        ||||||||||||||||||||||||||||||||||||||||||||||||| 
 
 DECLARE @FullName NVARCHAR(MAX) SET @FullName = ''
