@@ -35,7 +35,7 @@
 -- 030 : HOW TO create COPY of existing table in the fastest possible way
 -- 031 : HOW TO explain difference between WHERE clause and HAVING clause with example
 -- 032 : HOw TO create SYNONYM and truncate it using stored procedure
-
+-- 033 : HOW TO create querie with BETTER performace comparing 4 different examples
 
 
 
@@ -159,7 +159,7 @@ SELECT  tbl.FirstName,
 GO
   -- second option shows all managers of certain employee 
 GO
- DECLARE @employee_id INT  SET @employee_id = 1;
+ DECLARE @employee_id INT  SET @employee_id = 66;
 
 WITH emp_cte
 AS
@@ -183,6 +183,12 @@ AS
      -- in this way because Anchor part is used as input param for recurive member: e.EmployeeID = cte.ManagerID = 16
      -- it is 16 because employeeID = 1 has managerId equal to 16
 )
+
+  --SELECT emp_table.EmployeeID,
+  --        emp_table.FirstName,
+  --        emp_table.LastName
+  --   FROM emp_cte emp_table
+    
 
    SELECT emp_table.EmployeeID,
           emp_table.FirstName,
@@ -648,7 +654,7 @@ Insert into product_sales_test values(3, 450, 4)
 Insert into product_sales_test values(3, 450, 9)
 
 select * from products_test
-select * from product_sales_test
+select * from product_sales_test order by Id
 
 -- get the products without any sales
 
@@ -1770,6 +1776,51 @@ select * from employees_copy_synonym
 --                                                                  033
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+-- all fourth approached are pretty simular, the only significant diffrence is when we are using the foreign key 
+-- in group by clause  - it has better performance !!!
+
+ -- first approach
+select emp.department_name,
+       salary_per_department 
+  from (select d.Name as department_name,
+               sum(e.Salary) salary_per_department
+          from Employees e
+          join Departments d on d.DepartmentID = e.DepartmentID
+          group by d.name) as emp
+  where salary_per_department > 100000
+  order by salary_per_department
+
+  -- second approach
+  select d.Name,
+         sum(e.Salary) as salary_per_department
+    from Employees e
+    join Departments d on d.DepartmentID = e.DepartmentID
+   group by d.Name
+   having sum(e.Salary) > 100000
+   order by salary_per_department
+
+   -- third approach
+
+select emp.department_name,
+       salary_per_department 
+  from (select e.DepartmentID,
+               d.Name as department_name,
+               sum(e.Salary) salary_per_department
+          from Employees e
+          join Departments d on d.DepartmentID = e.DepartmentID
+          group by d.name,e.DepartmentID) as emp
+  where salary_per_department > 100000
+  order by salary_per_department
+
+
+  -- fourth approach
+  select d.Name,
+         sum(e.Salary) as salary_per_department
+    from Employees e
+    join Departments d on d.DepartmentID = e.DepartmentID
+   group by d.Name,e.DepartmentID
+   having sum(e.Salary) > 100000
+   order by salary_per_department
 
 
 
@@ -1779,12 +1830,4 @@ select * from employees_copy_synonym
 
 
 
-
-
-
-
-
-
-
-   
 
