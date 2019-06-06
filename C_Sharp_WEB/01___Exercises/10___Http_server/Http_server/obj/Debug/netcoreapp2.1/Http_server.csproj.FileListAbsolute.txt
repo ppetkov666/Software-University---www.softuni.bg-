@@ -1,0 +1,11 @@
+C:\Users\User\source\repos\Http_server\Http_server\bin\Debug\netcoreapp2.1\Http_server.deps.json
+C:\Users\User\source\repos\Http_server\Http_server\bin\Debug\netcoreapp2.1\Http_server.runtimeconfig.json
+C:\Users\User\source\repos\Http_server\Http_server\bin\Debug\netcoreapp2.1\Http_server.runtimeconfig.dev.json
+C:\Users\User\source\repos\Http_server\Http_server\bin\Debug\netcoreapp2.1\Http_server.dll
+C:\Users\User\source\repos\Http_server\Http_server\bin\Debug\netcoreapp2.1\Http_server.pdb
+C:\Users\User\source\repos\Http_server\Http_server\obj\Debug\netcoreapp2.1\Http_server.csprojAssemblyReference.cache
+C:\Users\User\source\repos\Http_server\Http_server\obj\Debug\netcoreapp2.1\Http_server.csproj.CoreCompileInputs.cache
+C:\Users\User\source\repos\Http_server\Http_server\obj\Debug\netcoreapp2.1\Http_server.AssemblyInfoInputs.cache
+C:\Users\User\source\repos\Http_server\Http_server\obj\Debug\netcoreapp2.1\Http_server.AssemblyInfo.cs
+C:\Users\User\source\repos\Http_server\Http_server\obj\Debug\netcoreapp2.1\Http_server.dll
+C:\Users\User\source\repos\Http_server\Http_server\obj\Debug\netcoreapp2.1\Http_server.pdb
