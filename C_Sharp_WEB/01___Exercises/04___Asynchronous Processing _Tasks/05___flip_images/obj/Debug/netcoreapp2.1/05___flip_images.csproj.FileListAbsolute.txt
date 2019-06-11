@@ -1,0 +1,11 @@
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\05___flip_images\bin\Debug\netcoreapp2.1\05___flip_images.deps.json
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\05___flip_images\bin\Debug\netcoreapp2.1\05___flip_images.runtimeconfig.json
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\05___flip_images\bin\Debug\netcoreapp2.1\05___flip_images.runtimeconfig.dev.json
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\05___flip_images\bin\Debug\netcoreapp2.1\05___flip_images.dll
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\05___flip_images\bin\Debug\netcoreapp2.1\05___flip_images.pdb
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\05___flip_images\obj\Debug\netcoreapp2.1\05___flip_images.csprojAssemblyReference.cache
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\05___flip_images\obj\Debug\netcoreapp2.1\05___flip_images.csproj.CoreCompileInputs.cache
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\05___flip_images\obj\Debug\netcoreapp2.1\05___flip_images.AssemblyInfoInputs.cache
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\05___flip_images\obj\Debug\netcoreapp2.1\05___flip_images.AssemblyInfo.cs
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\05___flip_images\obj\Debug\netcoreapp2.1\05___flip_images.dll
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\05___flip_images\obj\Debug\netcoreapp2.1\05___flip_images.pdb

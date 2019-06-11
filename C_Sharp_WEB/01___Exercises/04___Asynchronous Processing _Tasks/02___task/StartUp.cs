@@ -31,7 +31,7 @@
             {
                 //Thread.Sleep(1000); - it means the currect thread (parallelThread) will sleep for each second
                 Thread.Sleep(1000);
-                Console.WriteLine(i);
+                //Console.WriteLine(i);
             }
         }
     }

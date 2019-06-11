@@ -30,8 +30,7 @@
         {
             try
             {
-
-            throw new InvalidOperationException();
+                throw new InvalidOperationException();
             }
             catch (Exception)
             {

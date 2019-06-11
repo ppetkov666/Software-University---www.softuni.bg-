@@ -12,7 +12,8 @@
             Task.Run(async() =>
             {
                 await GetHeaders("https://www.softuni.bg");
-            }).GetAwaiter().GetResult();
+            }).GetAwaiter()
+              .GetResult();
             
         }
         public static async Task GetHeaders(string url)

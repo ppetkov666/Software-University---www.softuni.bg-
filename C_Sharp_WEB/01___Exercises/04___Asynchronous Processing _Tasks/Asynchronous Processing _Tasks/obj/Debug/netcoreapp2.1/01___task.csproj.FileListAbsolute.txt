@@ -1,0 +1,11 @@
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\Asynchronous Processing _Tasks\bin\Debug\netcoreapp2.1\01___task.deps.json
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\Asynchronous Processing _Tasks\bin\Debug\netcoreapp2.1\01___task.runtimeconfig.json
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\Asynchronous Processing _Tasks\bin\Debug\netcoreapp2.1\01___task.runtimeconfig.dev.json
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\Asynchronous Processing _Tasks\bin\Debug\netcoreapp2.1\01___task.dll
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\Asynchronous Processing _Tasks\bin\Debug\netcoreapp2.1\01___task.pdb
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\Asynchronous Processing _Tasks\obj\Debug\netcoreapp2.1\01___task.csprojAssemblyReference.cache
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\Asynchronous Processing _Tasks\obj\Debug\netcoreapp2.1\01___task.csproj.CoreCompileInputs.cache
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\Asynchronous Processing _Tasks\obj\Debug\netcoreapp2.1\01___task.AssemblyInfoInputs.cache
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\Asynchronous Processing _Tasks\obj\Debug\netcoreapp2.1\01___task.AssemblyInfo.cs
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\Asynchronous Processing _Tasks\obj\Debug\netcoreapp2.1\01___task.dll
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\Asynchronous Processing _Tasks\obj\Debug\netcoreapp2.1\01___task.pdb

@@ -13,12 +13,12 @@
         {
             Task.Run(async() =>
             {
-                var output = await ReadFileAsync("test.txt");
+                string output = await ReadFileAsync("test.txt");
                 Console.WriteLine(output);
             })
             .GetAwaiter()
             .GetResult();
-            
+            Console.WriteLine("reading from file");
         }
         public static async Task<string> ReadFileAsync(string fileName)
         {
