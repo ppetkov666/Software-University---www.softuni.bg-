@@ -1237,7 +1237,7 @@ GROUP BY d.[Name],
     FROM @table_variable
   END
 GO
-
+      
 -- third step we declare our variable from type 'table_variable' and we set name '@table_variable_to_be_passed_to_sp'
 -- and we insert records into it
   DECLARE @table_variable_to_be_passed_to_sp /*from type: table_variable */ as table_variable 

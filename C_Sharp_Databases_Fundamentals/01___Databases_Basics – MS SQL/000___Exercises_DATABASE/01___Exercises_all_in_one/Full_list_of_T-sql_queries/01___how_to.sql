@@ -36,7 +36,7 @@
 -- 031 : HOW TO explain difference between WHERE clause and HAVING clause with example
 -- 032 : HOw TO create SYNONYM and truncate it using stored procedure
 -- 033 : HOW TO create querie with BETTER performace comparing 4 different examples
-
+-- 034 : HOW TO add a one digit after decimal point and to return it as nvarchar
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1822,9 +1822,21 @@ select emp.department_name,
    having sum(e.Salary) > 100000
    order by salary_per_department
 
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                  034
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+-- how to add 'zero'0 to a nvarchar and to return it as nvarchar.
+-- in the input we can have 193,;193.;193.0;193 - the final output always must be 193.{0}(one digit after the decimal point)
+DECLARE @MyValue NVARCHAR(max)
+SET @MyValue = '193.'
+SELECT cast(CONVERT(decimal(10, 1), @MyValue) as nvarchar)
 
 
-
+go
+declare @MyValue nvarchar(max)
+set @MyValue = '193,'
+select REPLACE(REPLACE(CONVERT(NVARCHAR(10), CAST(REPLACE(@MyValue,',','.') AS DECIMAL(16,1)), 1),',',''),'.',',');
 
 
 

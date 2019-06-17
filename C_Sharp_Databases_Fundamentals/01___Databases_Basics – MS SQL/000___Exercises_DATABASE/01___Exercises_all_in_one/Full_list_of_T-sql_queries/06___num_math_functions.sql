@@ -34,10 +34,11 @@
 -- random between 0 and 100(by default if there is no seed as param numbers will be between 0 and 1 )
 SELECT FLOOR(RAND()*100)
 
-SELECT ROUND(666.666,2) --666.670
+SELECT ROUND(666.21,2) --666.670
 -- the third param is either 0 or 1 or 99 just indicate whether to round it or truncate it
 SELECT ROUND(666.666,2,1) --666.660 JUST TRUNCATE THE RESULT(ignore the result after the second digit)
 SELECT ROUND(666.666,-2) -- 700.000 
+SELECT ROUND(666,2,1)
 
 
 GO
