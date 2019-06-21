@@ -16,7 +16,7 @@
              -- how to use STUFF with FOR XML PATH with example:
 -- 012 : HOW TO use INFORMATION_SCHEMA and SYS object 
 -- 013 : HOW TO group by different criteria in one table
--- 014 : HOW TO user OVER with partition by and order by 
+-- 014 : HOW TO use OVER with partition by and order by 
 -- 015 : HOW TO get running total value as additional column
 -- 016 : HOW TO check for dependency in any sp (SYS)
 -- 017 : HOW TO create sequence and set increment value
@@ -37,7 +37,7 @@
 -- 032 : HOw TO create SYNONYM and truncate it using stored procedure
 -- 033 : HOW TO create querie with BETTER performace comparing 4 different examples
 -- 034 : HOW TO add a one digit after decimal point and to return it as nvarchar
-
+-- 035 : HOW TO find open TRANSACTIONS IN SQL SERVER
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             001
@@ -1832,14 +1832,36 @@ DECLARE @MyValue NVARCHAR(max)
 SET @MyValue = '193.'
 SELECT cast(CONVERT(decimal(10, 1), @MyValue) as nvarchar)
 
-
+rollback
 go
 declare @MyValue nvarchar(max)
 set @MyValue = '193,'
 select REPLACE(REPLACE(CONVERT(NVARCHAR(10), CAST(REPLACE(@MyValue,',','.') AS DECIMAL(16,1)), 1),',',''),'.',',');
 
+begin tran
+
+select * from Employees
 
 
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                  035
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-- how to find open transactions in sql server
 
-
-
+SELECT
+trans.session_id AS [SESSION ID],
+ESes.host_name AS [HOST NAME],login_name AS [Login NAME],
+trans.transaction_id AS [TRANSACTION ID],
+tas.name AS [TRANSACTION NAME],tas.transaction_begin_time AS [TRANSACTION 
+BEGIN TIME],
+tds.database_id AS [DATABASE ID],DBs.name AS [DATABASE NAME]
+FROM sys.dm_tran_active_transactions tas
+JOIN sys.dm_tran_session_transactions trans
+ON (trans.transaction_id=tas.transaction_id)
+LEFT OUTER JOIN sys.dm_tran_database_transactions tds
+ON (tas.transaction_id = tds.transaction_id )
+LEFT OUTER JOIN sys.databases AS DBs
+ON tds.database_id = DBs.database_id
+LEFT OUTER JOIN sys.dm_exec_sessions AS ESes
+ON trans.session_id = ESes.session_id
+WHERE ESes.session_id IS NOT NULL
