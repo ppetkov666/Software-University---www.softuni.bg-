@@ -12,7 +12,7 @@
 -- 010 - QUOTENAME
 -- 011 - IDENTITY
 -- 012 - EXISTS
--- 013 - 
+-- 013 - 013 - @@PROCID, PROGRAM_NAME(), APP_NAME(),DB_NAME()
 -- 014 - 
 -- 015 - 
 -- 016 - 
@@ -418,7 +418,7 @@ DBCC CHECKIDENT(Employees, RESEED, 0)
 select * from Employees
 select SCOPE_IDENTITY()
 select @@IDENTITY
-select IDENT_CURRENT('employees')
+select IDENT_CURRENT('Employees') -- return the last identity value
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                    012 - EXISTS     
@@ -456,3 +456,23 @@ select IDENT_CURRENT('employees')
       SELECT * FROM #temp_table_example
 
       
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                         013 - @@PROCID, PROGRAM_NAME(), APP_NAME(),DB_NAME()    
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+declare @variable_test_02 int 
+declare @variable_test_03 nvarchar(max)
+declare @variable_test_04 nvarchar(max)
+declare @variable_test_05 nvarchar(max)
+
+select @variable_test_02 = @@PROCID
+select @variable_test_03 = PROGRAM_NAME()
+select @variable_test_04 = APP_NAME()
+select @variable_test_05 = DB_NAME()
+
+print @variable_test_02
+print @variable_test_03
+print @variable_test_04
+print @variable_test_05

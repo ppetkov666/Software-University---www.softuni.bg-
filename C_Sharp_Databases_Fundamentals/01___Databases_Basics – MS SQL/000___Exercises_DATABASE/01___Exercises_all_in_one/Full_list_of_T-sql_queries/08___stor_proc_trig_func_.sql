@@ -46,18 +46,31 @@ BEGIN
                                     --               FROM Employees e
                                     --              WHERE e.FirstName = @firstname 
                                     --                AND e.LastName = @lastname)
- -- here is the advantage of using select when we set a variables because here we can set more than one variable only with one statement
- SELECT @first = FirstName , @last = LastName
-   FROM Employees e 
-  WHERE e.FirstName = @firstname
-    AND e.LastName = @lastname 
+  DECLARE @v_sql_error_number                               INT;
+  DECLARE @v_sql_error_severity                             INT;
+  DECLARE @v_sql_error_state                                INT;
+  DECLARE @v_sql_error_procedure                            NVARCHAR(126);
+  DECLARE @v_sql_error_line                                 INT;
+  DECLARE @v_sql_error_message                              NVARCHAR(2048);
+ 
   -- INITIALIZATION
   -- ==============
   BEGIN TRY
   BEGIN TRANSACTION
+
+  -- here is the advantage of using select when we set a variables because here we can set more than one variable only with one statement
+ SELECT @first = FirstName , @last = LastName
+   FROM Employees e 
+  WHERE e.FirstName = @firstname
+    AND e.LastName = @lastname 
   -- here is what actually store procedure does 
   -- in this case it just simple concat function of two names which comes from input params
-  SET @ConcatName = @first + ' ' + @last + 1;
+ 
+  SET @ConcatName = @first + ' ' + @last -- + 1;
+  select @first
+  select @last
+  select @ConcatName
+
   --custom set return codes just for test purposes
   --IF @ConcatName = @ConcatName BEGIN
   --RETURN 18
@@ -70,15 +83,8 @@ BEGIN
   -- if i UNcomment the other case and comment this one  it will change the return code from it;s default value (0) to 18 (just a random number i picked) 
   END TRY
   BEGIN CATCH 
-    PRINT 'Error message In CATCH Block';
-
-  DECLARE @v_sql_error_number                             INT;
-  DECLARE @v_sql_error_severity                             INT;
-  DECLARE @v_sql_error_state                                INT;
-  DECLARE @v_sql_error_procedure                            NVARCHAR(126);
-  DECLARE @v_sql_error_line                                 INT;
-  DECLARE @v_sql_error_message                              NVARCHAR(2048);
- 
+    --PRINT 'Error message In CATCH Block'; !!!
+      PRINT 'IN CATCH'
  SELECT @v_sql_error_number = ERROR_NUMBER(), 
       @v_sql_error_severity = ERROR_SEVERITY(), 
       @v_sql_error_state = ERROR_STATE(), 
@@ -95,7 +101,7 @@ BEGIN
 
   --THROW;
   END CATCH 
-  IF  DATALENGTH(@ConcatName) < 50  
+  IF DATALENGTH(@ConcatName) < 50  
     BEGIN
     COMMIT TRANSACTION
     END 
@@ -106,7 +112,6 @@ BEGIN
     END
 END
   
-
 -- CHECK THE RESULT FROM STORED PROCEDURE
 
 DECLARE @FullName NVARCHAR(max)
