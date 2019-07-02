@@ -39,6 +39,7 @@
 -- 034 : HOW TO add a one digit after decimal point and to return it as nvarchar
 -- 035 : HOW TO find open TRANSACTIONS IN SQL SERVER
 -- 036 : HOW TO find if a table column IS IDENTITY 
+-- 037 : HOW TO create fibonachi numbers with SP
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             001
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1875,5 +1876,42 @@ WHERE ESes.session_id IS NOT NULL
       from sys.objects o 
 inner join sys.columns c on o.object_id = c.object_id
      where c.is_identity = 1
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                  037
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+create or alter procedure sp__fibonachi 
+(
+@limit_number int 
+)
+AS
+BEGIN
+
+DECLARE @param TABLE (id int)
+INSERT INTO @param 
+  VALUES (@limit_number);
+
+with fibonachi_numbers as 
+(
+
+    select 0 as first_number, 
+           0 as second_number, 
+           1 as seed, 
+           1 as  number
+    union all
+    select seed + first_number,  
+           first_number + second_number, 
+           first_number,
+           number+1
+    from fibonachi_numbers
+    where number < (select id from @param)
+)
+select first_number 
+  from fibonachi_numbers
+END
+
+exec sp__fibonachi 200
 
 
