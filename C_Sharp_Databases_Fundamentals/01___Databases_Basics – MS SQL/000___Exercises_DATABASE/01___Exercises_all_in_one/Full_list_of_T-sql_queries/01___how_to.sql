@@ -40,6 +40,7 @@
 -- 035 : HOW TO find open TRANSACTIONS IN SQL SERVER
 -- 036 : HOW TO find if a table column IS IDENTITY 
 -- 037 : HOW TO create fibonachi numbers with SP
+-- 038 : HOW TO add new line on a variable from(couple diff approaches)
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             001
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1914,4 +1915,37 @@ END
 
 exec sp__fibonachi 200
 
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                  038
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+use SoftUni
+-- adding a new line
+declare @test_variable         nvarchar(max) set @test_variable = '<Just some random text for test pusposes>'
+declare @name                  nvarchar(50)  set @name = 'guy'
+ select @test_variable = @test_variable + char(10) + char(13) + e.FirstName + ' ' + e.LastName 
+   from employees e
+  where e.FirstName = @name
+  print @test_variable
+
+-- option 2 without a new line (most common usage)
+declare @test_variable         nvarchar(max) set @test_variable = '<Just some random text for test pusposes>'
+declare @name                  nvarchar(50)  set @name = 'guy'
+ select @test_variable = @test_variable + char(13) + char(10) + e.FirstName + ' ' + e.LastName 
+   from employees e
+  where e.FirstName = @name
+  print @test_variable
+-- option 3
+declare @test_variable         nvarchar(max) set @test_variable = '<Just some random text for test pusposes>'
+declare @name                  nvarchar(50)  set @name = 'guy'
+ select @test_variable = @test_variable + char(13) +  e.FirstName + ' ' + e.LastName 
+   from employees e
+  where e.FirstName = @name
+  print @test_variable
+-- option 4
+declare @test_variable         nvarchar(max) set @test_variable = '<Just some random text for test pusposes>'
+declare @name                  nvarchar(50)  set @name = 'guy'
+ select @test_variable = @test_variable + char(10) +  e.FirstName + ' ' + e.LastName 
+   from employees e
+  where e.FirstName = @name
+  print @test_variable
