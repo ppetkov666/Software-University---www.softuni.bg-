@@ -544,8 +544,81 @@ exec spe_sell_product_with_try_catch 2, 10
  select * from Product_v1
  select * from Product_sales
 
+go
+-- |||||||||||||||||||||||||||||||||||||||||||||||||        8        |||||||||||||||||||||||||||||||||||||||||||||||||
+
+ -- this is just demonstration of how output params works specially when we have nested stored procedures
+-- and this is why example is done in the most simple way
+-- it can be expanded in couple more nested levels of SP  but the main idea is the same
+-- print statements are done to show each step of execution 
+
+declare @output_test_param int set @output_test_param = 30
+
+exec spe_test 
+  @i_one = 10,
+  @i_two = 20,
+  @o_three = @output_test_param output
+
+print @output_test_param
+
+-- external sp
+create or alter procedure spe_test
+(
+@i_one int,
+@i_two int,
+@o_three int output
+)
+as
+begin 
+  -- declaration
+  declare @external_variable_test int set @external_variable_test = @i_one + @i_two + @o_three
+
+  print '-------------- external'
+  print @i_one
+  print @i_two
+  print @o_three
+  print '-------------- external'
+  -- call the internal SP
+  exec spi_test_inside 
+  @i_one_inside = @i_one,
+  @i_two_inside = @i_two,
+  @o_three_inside = @o_three output
+  print '-------- after execution of internal SP'  
+  print @o_three
+
+  set @o_three = @o_three + @i_one + @external_variable_test
+  print @o_three
+  print '-------- exit sp'  
+  
+end 
 
 
+-- internal sp 
+create or alter procedure spi_test_inside
+(
+@i_one_inside int,
+@i_two_inside int,
+@o_three_inside int output 
+)
+as
+begin 
+  -- declaration
+  declare @internal_variable_test int set @internal_variable_test = @i_one_inside + @o_three_inside  
+  
+  print '-------------- internal'
+  print @i_one_inside
+  print @i_two_inside
+  print @o_three_inside
+  print @internal_variable_test
+  
+  select @o_three_inside = @i_one_inside + @i_two_inside + @o_three_inside + @internal_variable_test
+  print @o_three_inside
+  print '-------------- internal'
+end 
+
+
+
+go
 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
