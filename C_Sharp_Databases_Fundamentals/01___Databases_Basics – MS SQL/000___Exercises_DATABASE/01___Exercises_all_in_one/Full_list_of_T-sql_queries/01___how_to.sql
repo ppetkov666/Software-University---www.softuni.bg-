@@ -41,6 +41,7 @@
 -- 036 : HOW TO find if a table column IS IDENTITY 
 -- 037 : HOW TO create fibonachi numbers with SP
 -- 038 : HOW TO add new line on a variable from(couple diff approaches)
+-- 039 : HOW TO insert current date without time in table with DATETIME format
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             001
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -694,7 +695,7 @@ select pt.Id,
                        from product_sales_test pst)
  order by pt.Name
 -- fourth option------
-select pt.id, 
+  select pt.id, 
          pt.Name, 
          pt.Description from products_test pt
    where not exists(select * 
@@ -705,7 +706,8 @@ select pt.id,
 
    
 -- get products and their sold quantities
-    select pt.Name,sold_quantity
+    select pt.Name,
+           sold_quantity
       from products_test pt
  left join (select product_id,
                    sum(pst.quantity_sold)  as sold_quantity 
@@ -871,7 +873,8 @@ select * from products_test
 select * from product_sales_test pst order by product_id
 
 -- ---------------------------------------------------------------------
-
+-- it gets all prices who are less than 10 or between 50 and 100
+-- in the comment section in cte  is the result without stuff.All that STUFF does it to remove FIRST comma from the result
 with cte_test
  as
  (
@@ -879,24 +882,52 @@ with cte_test
          STUFF((SELECT ', ' + CAST(pst.unit_price AS varchar(10))
                   FROM product_sales_test AS pst  
                  WHERE pst.product_id = pt.ID 
-                   AND (pst.unit_price < 10  OR (pst.unit_price > 10 AND pst.unit_price <= 50))
-                   FOR XML PATH('')),1,1,'') AS Ids
+                   AND (pst.unit_price < 10  OR (pst.unit_price > 50 AND pst.unit_price < 100))
+                   FOR XML PATH('')),1,1,'') AS price
     FROM products_test AS pt
 GROUP BY pt.ID
+
+--SELECT pt.ID, 
+--       ((SELECT ', ' + CAST(pst.unit_price AS varchar(10))
+--                  FROM product_sales_test AS pst  
+--                 WHERE pst.product_id = pt.ID 
+--                   AND (pst.unit_price < 10  OR (pst.unit_price > 50 AND pst.unit_price < 100))
+--                   FOR XML PATH(''))) AS Ids
+--    FROM products_test AS pt
 )
 
-update products_test
-   set Name = CONCAT(pt.[Name],  cast (ct.Ids AS NVARCHAR(2048)))
-   from products_test pt
-  join cte_test ct on ct.Id = pt.Id 
-  where Ids is not null
+UPDATE products_test
+   SET Name = CONCAT(pt.[Name],  cast (ct.price AS NVARCHAR(2048)))
+  FROM products_test pt
+  JOIN cte_test ct on ct.Id = pt.Id 
+ WHERE price is not null
 
 select * from products_test
-select * from product_sales_test pst order by Id
+select * from product_sales_test pst  where pst.product_id between 1 and 100 order by product_id
 select max(product_id) from product_sales_test
 
+-- demonstration for this specific case: FOR XML PATH('petko')
+SELECT pt.ID, 
+       ((SELECT ', ' + CAST(pst.unit_price AS varchar(10))
+                  FROM product_sales_test AS pst  
+                 WHERE pst.product_id = pt.ID 
+                   AND (pst.unit_price < 10  OR (pst.unit_price > 50 AND pst.unit_price < 100))
+                   FOR XML PATH(''))) AS Ids
+  FROM products_test AS pt
 
 
+
+  SELECT pt.ID as id, 
+       ((SELECT ', ' + CAST(pst.unit_price AS varchar(10))
+                  FROM product_sales_test AS pst  
+                 WHERE pst.product_id = pt.ID 
+                   AND (pst.unit_price < 10  OR (pst.unit_price > 50 AND pst.unit_price < 100))
+                   FOR XML AUTO, TYPE, ROOT('root'))) AS Ids
+  FROM products_test AS pt
+
+  SELECT * 
+    FROM product_sales_test AS PST
+   FOR XML AUTO, TYPE, ROOT('root')
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             012
@@ -1949,3 +1980,26 @@ declare @name                  nvarchar(50)  set @name = 'guy'
    from employees e
   where e.FirstName = @name
   print @test_variable
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                  039
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+declare @date date set @date = getdate()
+select @date as [current_date]
+select cast(@date as datetime) as [current_datetime]
+
+GO
+create table #temp
+(
+creation_dt datetime NULL
+)
+
+declare @date date = GETDATE()
+select @date 
+insert into #temp values(@date)
+select * from #temp 
+
+
