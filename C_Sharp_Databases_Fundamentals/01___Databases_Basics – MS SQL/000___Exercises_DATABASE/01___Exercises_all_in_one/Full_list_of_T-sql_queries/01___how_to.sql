@@ -42,6 +42,7 @@
 -- 037 : HOW TO create fibonachi numbers with SP
 -- 038 : HOW TO add new line on a variable from(couple diff approaches)
 -- 039 : HOW TO insert current date without time in table with DATETIME format
+-- 040 : HOW TO find if ansi_def.. and .. are set to on or of 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             001
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2003,3 +2004,35 @@ insert into #temp values(@date)
 select * from #temp 
 
 
+convert(NVARCHAR(12),e.HireDate,101)
+create table #temp_one
+(
+creation_dt nvarchar(30) NULL
+)
+declare @date date = getdate()
+declare @date_converted nvarchar(20)
+select @date_converted = convert(nvarchar, @date)
+print @date_converted
+insert into #temp_one values(cast(GETDATE() as date))
+insert into #temp_one values(GETDATE())
+
+select convert(nvarchar(10),cast(GETDATE() as date),103)
+
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                  040
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+SELECT @@OPTIONS AS [user_options],
+       CASE WHEN @@OPTIONS & 2 = 2 THEN 'ON' ELSE 'OFF' END AS [implicit_transactions],
+       CASE WHEN @@OPTIONS & 4 = 4 THEN 'ON' ELSE 'OFF' END AS [cursor_close_on_commit],
+       CASE WHEN @@OPTIONS & 8 = 8 THEN 'ON' ELSE 'OFF' END AS [ansi_warnings],
+       CASE WHEN @@OPTIONS & 16 = 16 THEN 'ON' ELSE 'OFF' END AS [ansi_padding],
+       CASE WHEN @@OPTIONS & 32 = 32 THEN 'ON' ELSE 'OFF' END AS [ansi_nulls],
+       CASE WHEN @@OPTIONS & 256 = 256 THEN 'ON' ELSE 'OFF' END AS [quoted_identifier],
+       CASE WHEN @@OPTIONS & 1024 = 1024 THEN 'ON' ELSE 'OFF' END AS [ansi_null_dflt_on],
+       -- all above options combined
+       CASE WHEN @@OPTIONS & 1342 = 1342 THEN 'ON' ELSE 'OFF' END AS [ansi_defaults]
