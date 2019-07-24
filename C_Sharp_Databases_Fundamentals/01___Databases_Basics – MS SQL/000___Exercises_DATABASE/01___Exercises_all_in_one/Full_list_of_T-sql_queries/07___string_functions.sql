@@ -44,10 +44,44 @@
   SELECT @v_log_info = SUBSTRING(
   'Procedure spr__printing_report_data <'   
   + '@i_creation_dt = '                  +    COALESCE(CAST(@i_creation_dt   AS NVARCHAR(50)),'NULL')
-  + ', @i_completion_dt = '             +    COALESCE(CAST(@i_completion_dt AS NVARCHAR(50)),'NULL')
-  + ', @i_handling_user_code = ' + '''' +   COALESCE(@i_handling_user_code, 'NULL') + ''''
+  + ', @i_completion_dt = '              +    COALESCE(CAST(@i_completion_dt AS NVARCHAR(50)),'NULL')
+  + ', @i_handling_user_code = ' + ''''  +    COALESCE(@i_handling_user_code, 'NULL') + ''''
   + ', @i_task_status = '                +    COALESCE(CAST(@i_task_status   AS NVARCHAR(20)),'NULL')
   + '>', 1, 4096);
+
+  PRINT @v_log_info
+  GO
+  DECLARE @v_log_info             NVARCHAR(2048);   SET @v_log_info = '';
+  DECLARE @i_creation_dt          DATETIME ;        SET @i_creation_dt = '2017-06-14 09:13:02.150';
+  DECLARE @i_completion_dt        DATETIME ;        SET @i_completion_dt = NULL--'2017-06-14 09:15:56.490'
+  DECLARE @i_handling_user_code   NVARCHAR(30)      SET @i_handling_user_code = '<NULL>'--'JDO'
+  DECLARE @i_task_status          SMALLINT          SET @i_task_status = 80
+
+  SELECT @v_log_info = SUBSTRING(REPLACE(REPLACE(
+  'Procedure spr__printing_report_data <'   
+  + '@i_creation_dt = '                  +    COALESCE(CAST(@i_creation_dt   AS NVARCHAR(50)),'NULL')
+  + ', @i_completion_dt = '              +    COALESCE(CAST(@i_completion_dt AS NVARCHAR(50)),'NULL')
+  + ', @i_handling_user_code = ' + ''''  +    COALESCE(@i_handling_user_code, 'NULL') + ''''
+  + ', @i_task_status = '                +    COALESCE(CAST(@i_task_status   AS NVARCHAR(20)),'NULL')
+  + '>', 'N''<null>''', 'NULL'), '''<null>''', 'NULL-'), 1, 4096);
+
+  PRINT @v_log_info
+  GO
+  PRINT @v_log_info
+  GO
+  DECLARE @v_log_info             NVARCHAR(2048);   SET @v_log_info = '';
+  DECLARE @i_creation_dt          DATETIME ;        SET @i_creation_dt = '2017-06-14 09:13:02.150';
+  DECLARE @i_completion_dt        DATETIME ;        SET @i_completion_dt = NULL--'2017-06-14 09:15:56.490'
+  DECLARE @i_handling_user_code   NVARCHAR(30)      SET @i_handling_user_code = '<NULL>'--'JDO'
+  DECLARE @i_task_status          SMALLINT          SET @i_task_status = 80
+
+  SELECT @v_log_info = SUBSTRING(REPLACE(
+  'Procedure spr__printing_report_data <'   
+  + '@i_creation_dt = '                  +    COALESCE(CAST(@i_creation_dt   AS NVARCHAR(50)),'NULL')
+  + ', @i_completion_dt = '              +    COALESCE(CAST(@i_completion_dt AS NVARCHAR(50)),'NULL')
+  + ', @i_handling_user_code = ' + ''''  +    COALESCE(@i_handling_user_code, 'NULL') + ''''
+  + ', @i_task_status = '                +    COALESCE(CAST(@i_task_status   AS NVARCHAR(20)),'NULL')
+  + '>', '''<null>''', 'NULL'), 1, 4096);
 
   PRINT @v_log_info
 
