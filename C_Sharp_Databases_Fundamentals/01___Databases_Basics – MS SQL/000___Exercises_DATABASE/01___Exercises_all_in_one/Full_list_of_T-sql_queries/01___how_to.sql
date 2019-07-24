@@ -1526,6 +1526,24 @@ END
       SELECT * FROM #temp_table_example
 
 
+      go
+      create or  alter proc test_exist_operator
+      (
+      @i_hire_date datetime,
+      @i_job_title nvarchar(50)
+      )
+      as
+      begin 
+        select e.JobTitle 
+          from Employees e
+         where e.HireDate > @i_hire_date
+         and not exists(select 1 
+                          from Employees
+                          where JobTitle = @i_job_title)
+      end
+      exec test_exist_operator @i_hire_date = '2002-03-23 00:00:00', @i_job_title = 'sdfsdfsdf'
+
+      
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                  025
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2016,7 +2034,9 @@ print @date_converted
 insert into #temp_one values(cast(GETDATE() as date))
 insert into #temp_one values(GETDATE())
 
-select convert(nvarchar(10),cast(GETDATE() as date),103)
+select convert(datetime,cast(GETDATE() as date),103)
+select getdate()
+select cast(GETDATE() as date)
 
 
 
