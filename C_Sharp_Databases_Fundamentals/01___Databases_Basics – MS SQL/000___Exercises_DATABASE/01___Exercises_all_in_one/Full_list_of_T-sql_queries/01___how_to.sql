@@ -43,6 +43,7 @@
 -- 038 : HOW TO add new line on a variable from(couple diff approaches)
 -- 039 : HOW TO insert current date without time in table with DATETIME format
 -- 040 : HOW TO find if ansi_def.. and .. are set to on or of 
+-- 041 : HOW to use OPTION clause
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             001
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2056,3 +2057,36 @@ SELECT @@OPTIONS AS [user_options],
        CASE WHEN @@OPTIONS & 1024 = 1024 THEN 'ON' ELSE 'OFF' END AS [ansi_null_dflt_on],
        -- all above options combined
        CASE WHEN @@OPTIONS & 1342 = 1342 THEN 'ON' ELSE 'OFF' END AS [ansi_defaults]
+
+       
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                  041
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-- using  Option is good practice only in some particular cases !!!
+
+select * from Employees where Salary > 90000
+
+  select e.FirstName,
+         e.LastName 
+    from Employees e
+    join Departments d on d.DepartmentID = e.DepartmentID
+    join Addresses a on a.AddressID = a.AddressID
+   where e.Salary > 70000
+   --group by e.FirstName, e.LastName
+   OPTION (hash group,fast 300);
+   --OPTION (merge join, hash join);
+
+declare @q int;
+set @q=70000;
+select * from Employees e
+where e.Salary>@q
+order by e.FirstName
+OPTION(OPTIMIZE FOR (@q UNKNOWN));
+
+begin tran
+declare @q int;
+set @q=90000;
+update Employees set FirstName='fictious'
+where Salary > @q 
+OPTION(OPTIMIZE FOR (@q UNKNOWN));
+rollback
