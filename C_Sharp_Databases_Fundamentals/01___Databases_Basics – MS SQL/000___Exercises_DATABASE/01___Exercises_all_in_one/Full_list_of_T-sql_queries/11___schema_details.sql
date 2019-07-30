@@ -39,7 +39,7 @@ CREATE TABLE [test].[EmployeesTest](
 GO
 
 -- after i want to change the name ot this schema but  it is not allowed  - does not matter with f2 or right click Rename - i can just change the name of the table
--- so thay is why i will create new schema with name 'T' and move Employees table to the new Schema
+-- so that is why i will create new schema with name 'T' and move Employees table to the new Schema
 go
 create schema T
 -- when we alter it one by one is ok but if we have many object then we need different approach

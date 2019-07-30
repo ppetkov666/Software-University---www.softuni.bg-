@@ -267,7 +267,7 @@ GO
 -- sp WITHOUT and WITH optional param
 GO
 
-CREATE OR ALTER PROCEDURE udp_add_numbers
+CREATE OR ALTER PROCEDURE petko.udp_add_numbers
 (
   @first_number  INT,
   @second_number INT,
@@ -277,14 +277,20 @@ CREATE OR ALTER PROCEDURE udp_add_numbers
   WITH ENCRYPTION
 AS
 BEGIN
-  SET @result = @first_number + @second_number
+  SET @result = @first_number + @second_number + 66
 END  
  -- @result = @answer or just @answer on the param is the same 
 DECLARE @answer INT
 EXEC DBO.udp_add_numbers 10, 100, @answer OUTPUT 
 SELECT CONCAT('the result is ',@answer) 'Final Answer'
 
+DECLARE @answer INT
+EXEC petko.udp_add_numbers 10, 100, @answer OUTPUT 
+SELECT CONCAT('the result is ',@answer) 'Final Answer'
+
 GO
+
+
 
 -- -----------------------------------------------------------
 -- basically it tells : Give me id,firstname, lastname and jobtitle from this table WHERE
@@ -1828,7 +1834,7 @@ BEGIN
      SET FirstName = 'testname' + ' transaction 1'
    WHERE id = 27 
   
-  WAITFOR DELAY '00:00:05'
+  WAITFOR DELAY '00:00:15'
   
   UPDATE People
      SET Firstname = 'testname' + ' transaction 1'

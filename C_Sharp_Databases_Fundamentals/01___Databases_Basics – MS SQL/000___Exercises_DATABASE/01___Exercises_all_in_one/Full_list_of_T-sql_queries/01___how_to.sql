@@ -44,6 +44,10 @@
 -- 039 : HOW TO insert current date without time in table with DATETIME format
 -- 040 : HOW TO find if ansi_def.. and .. are set to on or of 
 -- 041 : HOW to use OPTION clause
+-- 042 : HOW to test stored procedure with transaction
+
+
+
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             001
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2090,3 +2094,40 @@ update Employees set FirstName='fictious'
 where Salary > @q 
 OPTION(OPTIMIZE FOR (@q UNKNOWN));
 rollback
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                  042
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+-- this is a simple SP for test purposes
+
+CREATE OR ALTER PROCEDURE sp_test_proc
+(
+ @firstname VARCHAR(50),
+ @lastname VARCHAR(50),
+ @employeeID INT
+)
+AS
+BEGIN
+  
+  DECLARE @first VARCHAR(MAX)                                    
+  DECLARE @last VARCHAR(MAX)        
+                                     
+ 
+ update Employees
+    set FirstName = @firstname,
+        LastName = @lastname
+   from Employees 
+  where EmployeeID = @employeeID
+
+END
+
+  begin transaction 
+
+  select * from Employees
+  exec sp_test_proc 'petko', 'petkov', 1
+  select * from Employees
+  rollback
+
+  select * from Employees

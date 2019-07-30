@@ -52,7 +52,7 @@ BEGIN
      SET Firstname = 'testname' + ' transaction 2'
    WHERE id = 2
   
-  WAITFOR DELAY '00:00:05'
+  WAITFOR DELAY '00:00:15'
   
   UPDATE UserInfoTable 
      SET FirstName = 'testname' + ' transaction 2'
@@ -68,7 +68,7 @@ BEGIN
       ROLLBACK
   END CATCH 
 END
-
+rollback
 exec sp_tran_two
 -- -----------------------------------------------
 -- trying to access from this connection  the same table which is already being executed in transaction 
