@@ -621,13 +621,48 @@ select DATEADD(DAY, 5, cast(getdate() as date))
          Salary,
          NULL AS NextSalary,
          ROW_NUMBER() OVER (ORDER BY employeeID) row_num
-    INTO #tempEmp
+    INTO emp_test_copy
     FROM Employees 
 
-    select * from #tempEmp
+    select * from emp_test_copy
+    select * from Employees
+   
+go
+   
+ create or alter view cte_test_view
+AS
+(
+  SELECT emp.EmployeeID,  
+         emp.FirstName,
+         emp.LastName,
+         emp.Salary,
+         emp.NextSalary,
+         emp.row_num
+    FROM emp_test_copy emp
+ )
+ go
+   SET IDENTITY_INSERT emp_test_copy on
+   select * from cte_test_view
+   delete from cte_test_view where EmployeeID = @@SPID
+   
+   declare @emp_id      int            select @emp_id = @@spid
+   declare @firstname   varchar(25)    select @firstname = 'petko'
+   declare @lastname    varchar(25)    select @lastname = 'petko'
+   declare @salary      money          select @salary = 1000000
+   declare @nextsalary  int            select @nextsalary = 2000000
+   declare @row_num     bigint         select @row_num = 1--row_number() over (order by employeeID) from employees 
 
-
-
+   insert into cte_test_view(
+    EmployeeID, FirstName, LastName, Salary, NextSalary, row_num)
+   select 
+    EmployeeId = @emp_id,
+    FirstName = @firstname,
+    LastName = @lastname,
+    Salary = @salary,
+    NextSalary = @nextsalary,
+    row_num = @row_num
+   from cte_test_view
+   
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                             011
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
