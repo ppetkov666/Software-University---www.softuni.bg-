@@ -1791,6 +1791,7 @@ select d.Name,sum(e.Salary) sum_salary_per_dep
 
 select * into employees_copy from Employees
 
+drop table employees_copy
 select * from employees_copy
 
 create synonym employees_copy_synonym for employees_copy
@@ -1798,6 +1799,23 @@ create synonym employees_copy_synonym for employees_copy
 select * from employees_copy_synonym
 truncate table employees_copy_synonym
 
+
+DECLARE @base_object_name AS NVARCHAR(1035) = NULL;
+SELECT TOP 1 @base_object_name = base_object_name
+  FROM sys.synonyms
+  INNER JOIN sys.schemas ON schemas.schema_id = synonyms.schema_id
+  WHERE schemas.name = 'dbo'
+    AND synonyms.name = 'employees_copy_synonym'
+    AND type = 'SN'
+    AND is_ms_shipped = 0;
+    select @base_object_name
+
+
+ CREATE TABLE #RowCount ( return_value INT );
+ DECLARE @sql NVARCHAR(MAX);
+ SET @sql = N'INSERT INTO #RowCount SELECT Count(*) FROM ' + 'dbo' + '.' + 'employees_copy_synonym';
+ EXECUTE sys.sp_executesql @sql;
+ select * from #RowCount
 go
 CREATE OR ALTER PROCEDURE dbo.spr_truncate_table_by_synonym_name 
 (
@@ -1808,10 +1826,13 @@ AS
 BEGIN --Procedure
   SET NOCOUNT ON;
 
+  -- step 1 : declare variables
   DECLARE @base_object_name AS NVARCHAR(1035) = NULL;
   DECLARE @sql NVARCHAR(MAX);
   DECLARE @error_message NVARCHAR(255);
-
+  DECLARE @message NVARCHAR(255)
+  DECLARE @row_count INT
+  -- step 2 : we find the base object(table) which in our case is : employees_copy
   SELECT TOP 1 @base_object_name = base_object_name
   FROM sys.synonyms
   INNER JOIN sys.schemas ON schemas.schema_id = synonyms.schema_id
@@ -1819,30 +1840,42 @@ BEGIN --Procedure
     AND synonyms.name = @synonym_name
     AND type = 'SN'
     AND is_ms_shipped = 0;
-
+  -- step 3: if there is such a object .. DO WORK
   IF @base_object_name IS NOT NULL
     BEGIN
-      --SET @sql = N'TRUNCATE TABLE ' + @base_object_name;
+     
+      -- step 4: we truncate or delete.. it is just for demonstration purposes 
+      --SET @sql = N'TRUNCATE TABLE ' + @base_object_name;      
       SET @sql = N'DELETE FROM ' + @base_object_name + ' WHERE SALARY < 100000';
         BEGIN TRY
           EXECUTE sys.sp_executesql @sql;
-        
+      -- step 5:  if temp table object id is not null we just drop it
             IF OBJECT_ID('tempdb..#RowCount', 'U') IS NOT NULL
                 DROP TABLE #RowCount;
-
+      -- step 6: we create it and the main purpose is to insert the count of rows in #RowCount temp table
             CREATE TABLE #RowCount ( return_value INT );
 
             SET @sql = N'INSERT INTO #RowCount SELECT Count(*) FROM ' + @schema_name + '.' + @synonym_name;
             EXECUTE sys.sp_executesql @sql;
-        
+        -- step 7: once we got the row count we assign it to variable
             DECLARE @row_count INT = 0;
             SELECT TOP 1 @row_count = return_value
               FROM #RowCount;
-            
+        -- and here we just perform check and raiserror , but because thie scenario is for case where we truncate the table i will add comments 
+            --IF @row_count > 0
+            --  BEGIN
+            --    SET @error_message = 'The base table for synonym ' + @schema_name + '.' + @synonym_name + ' was not truncated.';
+            --    RAISERROR(@error_message,16,1);
+            --    END;
             IF @row_count > 0
               BEGIN
-                SET @error_message = 'The base table for synonym ' + @schema_name + '.' + @synonym_name + ' was not truncated.';
-                RAISERROR(@error_message,16,1);
+                IF @row_count = 1 BEGIN 
+                  SET @message = cast(@row_count as nvarchar) + '  row left from base table ' +  @schema_name + '.' + @base_object_name
+                  SELECT @message
+                END
+                ELSE
+                  SET @message = cast(@row_count as nvarchar) + '  deleted from base table ' +  @schema_name + '.' + @base_object_name
+                  SELECT @message
                 END;
         END TRY
     
@@ -1857,12 +1890,122 @@ ELSE
     END;
 END;
 
-begin tran
-EXECUTE dbo.spr_truncate_table_by_synonym_name  @schema_name = 'dbo', @synonym_name = 'employees_copy_synonym'
+
+-- VERSION 2:
+
+
+CREATE OR ALTER procedure spe_get_count 
+(
+@schema_name sysname,
+@synonym_name sysname,
+@row_count int output
+)
+
+AS
+BEGIN
+  DECLARE @sql NVARCHAR(MAX);
+  
+  IF OBJECT_ID('tempdb..#RowCount', 'U') IS NOT NULL
+    DROP TABLE #RowCount;
+  
+  CREATE TABLE #RowCount ( return_value INT );
+  
+  SET @sql = N'INSERT INTO #RowCount SELECT Count(*) FROM ' + @schema_name + '.' + @synonym_name;
+  EXECUTE sys.sp_executesql @sql;
+  
+  SELECT TOP 1 @row_count = return_value
+    FROM #RowCount;
+
+END
+
+
+
+-- updated procedure
+CREATE OR ALTER PROCEDURE dbo.spr_truncate_table_by_synonym_name_v2 
+(
+  @schema_name AS sysname,
+  @synonym_name AS sysname
+)
+AS 
+BEGIN --Procedure
+  SET NOCOUNT ON;
+
+  
+  DECLARE @base_object_name AS NVARCHAR(1035) = NULL;
+  DECLARE @sql NVARCHAR(MAX);
+  DECLARE @message NVARCHAR(255)
+  DECLARE @initial_row_count INT
+  DECLARE @row_count_left INT
+  DECLARE @deleted_row_count INT
+
+  
+  SELECT TOP 1 @base_object_name = base_object_name
+  FROM sys.synonyms
+  INNER JOIN sys.schemas ON schemas.schema_id = synonyms.schema_id
+  WHERE schemas.name = @schema_name
+    AND synonyms.name = @synonym_name
+    AND type = 'SN'
+    AND is_ms_shipped = 0;
+ 
+  IF @base_object_name IS NOT NULL
+    BEGIN
+        BEGIN TRY
+          EXEC spe_get_count 
+            @schema_name = dbo,
+            @synonym_name = employees_copy_synonym ,
+            @row_count = @initial_row_count output
+            SELECT @initial_row_count
+
+          SET @sql = N'DELETE FROM ' + @base_object_name + ' WHERE SALARY < 100000';
+        
+          EXECUTE sys.sp_executesql @sql;
+          
+          EXEC spe_get_count 
+            @schema_name = dbo,
+            @synonym_name = employees_copy_synonym ,
+            @row_count = @row_count_left output
+          
+          SELECT @row_count_left
+          SELECT @deleted_row_count = @initial_row_count - @row_count_left
+
+           IF @row_count_left > 0
+             BEGIN
+               IF @deleted_row_count = 1 
+               BEGIN 
+                SELECT @message = cast(@deleted_row_count as nvarchar) + ' row deleted from base table ' +  @schema_name + '.' + @base_object_name
+                SELECT @message
+               END ELSE
+               SELECT @message = cast(@deleted_row_count as nvarchar) + ' rows deleted from base table ' +  @schema_name + '.' + @base_object_name
+               SELECT @message
+             END;            
+        END TRY
+        BEGIN CATCH
+            THROW;
+        END CATCH;
+    END;
+    ELSE
+      BEGIN
+          SET @message = 'The base table for synonym ' + @schema_name + '.' + @synonym_name + ' was not found.';
+          THROW 50000,@message,1;
+      END;
+END;
+
+
+
+
+
+
+
+EXECUTE dbo.spr_truncate_table_by_synonym_name_v2  
+  @schema_name = 'dbo', 
+  @synonym_name = 'employees_copy_synonym'
 
 
 select * from sys.synonyms
 select * from employees_copy_synonym
+
+select * into employees_copy from Employees
+drop table employees_copy
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 --                                                                  033
@@ -2166,3 +2309,58 @@ END
   rollback
 
   select * from Employees
+
+
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--                                                                  043
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+-- the main point here is that each save point of transaction keep the value in this transaction. In other words said.. once we rollback this particular save transation it will rollback till previous transaction
+-- the example is pretty clear
+
+-- Create a temporary table to test with, we'll drop it at the end.
+CREATE TABLE #ATable(
+    [Column_A] [varchar](5) NULL
+) ON [primary]
+
+GO
+SET NOCOUNT ON
+-- Ensure just one row - delete all rows, add one
+DELETE #ATable
+-- Insert just one row
+INSERT INTO #ATable VALUES('000')
+
+SELECT 'Before TRANSACTION starts, value in table is: ' AS Note, * FROM #ATable
+
+SELECT @@trancount AS CurrentTrancount
+--insert into a values ('abc')
+UPDATE #ATable SET Column_A = 'abc'
+SELECT 'UPDATED without a TRANSACTION, value in table is: ' AS Note, * FROM #ATable
+
+BEGIN TRANSACTION
+SELECT 'BEGIN TRANSACTION, trancount is now ' AS Note, @@TRANCOUNT AS TranCount
+UPDATE #ATable SET Column_A = '123'
+SELECT 'Row updated inside TRANSACTION, value in table is: ' AS Note, * FROM #ATable
+
+SAVE TRANSACTION MySavepoint
+SELECT 'Save point MySavepoint created, transaction count now:' as Note, @@TRANCOUNT AS TranCount
+UPDATE #ATable SET Column_A = '456'
+SELECT 'Updated after MySavepoint created, value in table is: ' AS Note, * FROM #ATable
+
+SAVE TRANSACTION point2
+SELECT 'Save point point2 created, transaction count now:' as Note, @@TRANCOUNT AS TranCount
+UPDATE #ATable SET Column_A = '789'
+SELECT 'Updated after point2 savepoint created, value in table is: ' AS Note, * FROM #ATable
+ROLLBACK TRANSACTION point2
+
+SELECT 'Just rolled back savepoint "point2", value in table is: ' AS Note, * FROM #ATable
+ROLLBACK TRANSACTION MySavepoint
+
+SELECT 'Just rolled back savepoint "MySavepoint", value in table is: ' AS Note, * FROM #ATable
+SELECT 'Both save points were rolled back, transaction count still:' as Note, @@TRANCOUNT AS TranCount
+ROLLBACK TRANSACTION
+
+SELECT 'Just rolled back the entire transaction..., value in table is: ' AS Note, * FROM #ATable
+
+DROP TABLE #ATable
+
