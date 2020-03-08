@@ -10,7 +10,7 @@ GO
 CREATE OR ALTER PROCEDURE usp_GetEmployeesSalaryAbove35000 
 AS
 BEGIN
-	SELECT e.FirstName,e.LastName 
+	SELECT e.FirstName, e.LastName 
 	FROM Employees AS e
 	WHERE e.Salary > 35000
 END
@@ -142,8 +142,8 @@ BEGIN
 
 	DELETE FROM EmployeesProjects
 	WHERE EmployeeID IN (SELECT EmployeeID 
-					 FROM Employees 
-					 WHERE DepartmentID = @departmentId)
+					               FROM Employees 
+					              WHERE DepartmentID = @departmentId)
 
 	ALTER TABLE Departments
 	ALTER COLUMN ManagerID INT
@@ -151,14 +151,14 @@ BEGIN
 	UPDATE Employees
 	SET ManagerID = NULL
 	WHERE ManagerID IN (SELECT EmployeeID 
-					FROM Employees 
-					WHERE DepartmentID = @departmentId)
+				              	FROM Employees 
+				               WHERE DepartmentID = @departmentId)
 
 	UPDATE Departments
 	SET ManagerID = NULL
 	WHERE ManagerID IN (SELECT EmployeeID 
-					FROM Employees 
-					WHERE DepartmentID = @departmentId)
+					              FROM Employees 
+					             WHERE DepartmentID = @departmentId)
 
 	DELETE FROM Employees
 	WHERE DepartmentID = @departmentId
@@ -167,8 +167,8 @@ BEGIN
 	WHERE DepartmentID = @departmentId
 
 	SELECT * 
-	FROM Employees
-	WHERE DepartmentID = @departmentId
+	  FROM Employees
+	 WHERE DepartmentID = @departmentId
 
 	SELECT COUNT(*)
 	FROM Employees
@@ -214,15 +214,19 @@ CREATE OR ALTER PROCEDURE usp_GetHoldersWithBalanceHigherThan(@ballance DECIMAL(
 AS
 BEGIN
 	WITH CTE_AccountHolderBallance(ACcountHolderId, Ballance) 
-	AS (
-	SELECT  a.AccountHolderId, SUM(a.Balance) AS TotalBallance
-	FROM Accounts AS a
-	GROUP BY a.AccountHolderId)
+	AS 
+  (
+	SELECT a.AccountHolderId, 
+         SUM(a.Balance) AS TotalBallance
+	  FROM Accounts AS a
+GROUP BY a.AccountHolderId
+  )
 
-	SELECT  ah.FirstName,ah.LastName
-	FROM AccountHolders AS ah
-	JOIN CTE_AccountHolderBallance AS c ON c.ACcountHolderId = ah.Id
-	GROUP BY AH.FirstName,AH.LastName
+	SELECT ah.FirstName,
+         ah.LastName
+	  FROM AccountHolders AS ah
+ 	  JOIN CTE_AccountHolderBallance AS c ON c.ACcountHolderId = ah.Id
+GROUP BY AH.FirstName,AH.LastName
 	HAVING SUM(c.Ballance) > @ballance
 END
 
@@ -314,8 +318,8 @@ BEGIN
 		--select * from inserted
 		--select * from deleted
 		DECLARE @accountID INT = (SELECT Id FROM inserted)
-		DECLARE @oldSum DECIMAL(15,4) = (SELECT Balance FROM deleted)
-		DECLARE @newSum DECIMAL(15,4) = (SELECT Balance FROM inserted)
+		DECLARE @oldSum DECIMAL(15,4) = (SELECT Balance FROM deleted where id = @accountID)
+		DECLARE @newSum DECIMAL(15,4) = (SELECT Balance FROM inserted where id = @accountID)
 
 		INSERT INTO Logs 
 		VALUES
@@ -324,7 +328,7 @@ BEGIN
 END
 
 UPDATE Accounts 
-   SET Balance = 9999 WHERE Id = 2
+   SET Balance = 6666 WHERE Id = 2
 SELECT * FROM Accounts
 SELECT * FROM Logs
 SELECT * FROM AccountHolders
@@ -342,28 +346,29 @@ create table notification_emails(
 )
 ALTER TABLE notification_emails
 ADD CONSTRAINT PK_notification_email PRIMARY KEY(Id)
--- RECIPIENT could be foregn key but for the purpose of this task it does not matter 
--- in this way is much easier for readING
+-- RECIPIENT could be foreign key but for the purpose of this task it does not matter 
+-- in this way is much easier for reading
 GO
 create OR ALTER trigger tr_email_notification
 on Logs
 for insert
 as
 begin
-		declare @Id  int  set @id = (select i.AccountId from inserted i )
-		declare @recipient varchar(64) set @recipient = (select concat('Balance change for account: ',(select i.AccountId from inserted i)))
+		declare @Recipient_Id  int     set @Recipient_Id = (select i.AccountId from inserted i )
+		declare @Subject varchar(64)   set @Subject = (select concat('Balance change for account: ',(@Recipient_Id)))
 		declare @old_sum decimal(15,4) set @old_sum = (select i.OldSum from inserted i)
 		declare @new_sum decimal(15,4) set @new_sum = (select i.NewSum from inserted i)
 
-		declare @body varchar(max)  set @body = (select CONCAT('On ', GETDATE(), ' your balance was changed from ', @old_sum, ' to ', @new_sum, '.'))
+		declare @body varchar(max)     set @body = (select CONCAT('On ', GETDATE(), ' your balance was changed from ', @old_sum, ' to ', @new_sum, '.'))
 		insert into notification_emails 
-		values (@Id,@recipient, @body)
+		values 
+    (@Recipient_Id,@Subject, @body)
 
 end
 
 INSERT INTO Logs(AccountId,OldSum,NewSum)
 VALUES
-(2,777,999)
+(6,666,999)
 SELECT * FROM notification_emails
 SELECT * FROM Logs
 
@@ -470,53 +475,81 @@ Problem 17. Withdraw Money
 
 GO
 
-CREATE PROCEDURE usp_WithdrawMoney(
+CREATE or alter PROCEDURE usp_WithdrawMoney(
                  @accountId   INT,
                  @moneyAmount DECIMAL(15,4))
 AS
 BEGIN
+
+  DECLARE @v_sql_error_number                               INT;
+  DECLARE @v_sql_error_severity                             INT;
+  DECLARE @v_sql_error_state                                INT;
+  DECLARE @v_sql_error_procedure                            NVARCHAR(126);
+  DECLARE @v_sql_error_line                                 INT;
+  DECLARE @v_sql_error_message                              NVARCHAR(2048);
+
+BEGIN TRY 
 	IF(@moneyAmount < 0)
-		BEGIN
-			RAISERROR('Negative Amount,Please Enter positive value', 16, 1);
-		END;
+		BEGIN;
+			--RAISERROR('Negative Amount,Please Enter positive value', 16, 1);
+      THROW 66666, 'Negative Amount,Please Enter positive value', 1;
+		END
 	ELSE
 		BEGIN
 			IF(@accountId IS NULL OR @moneyAmount IS NULL)
 				BEGIN
 					RAISERROR('Please enter a value', 16, 1);
-                END;
-         END;
-
+        END;
+    END;
 		 DECLARE @actualBallance DECIMAL(15,4) = (SELECT Balance FROM Accounts WHERE Id = @accountId)
-
+     
 BEGIN TRANSACTION;
-	-- if we dont have enough money we won't make the transaction at all, so that's why i check only if i my ballance is >= of @moneyAmount
-	IF(@actualBallance >= @moneyAmount)
-	BEGIN
-		UPDATE Accounts
-		   SET Balance -= @moneyAmount
-		 WHERE Id = @accountId;
-		IF(@@ROWCOUNT <> 1)
-			BEGIN
-				ROLLBACK;
-				RAISERROR('Account does not  exists', 16, 1);
-				RETURN
-			END;
-	END
-	COMMIT
+  
+  	-- if we dont have enough money we won't make the transaction at all, so that's why i check only if i my ballance is >= of @moneyAmount
+  	IF(@actualBallance >= @moneyAmount)
+  	BEGIN
+  		UPDATE Accounts
+  		   SET Balance -= @moneyAmount
+  		 WHERE Id = @accountId;
+       COMMIT TRANSACTION;
+  		IF XACT_STATE() <> 0
+  			BEGIN
+  				ROLLBACK;
+  				RAISERROR('Account does not  exists', 16, 1);
+  				RETURN 1
+  			END;
+  	END
+END TRY
+BEGIN CATCH 
+
+  SELECT @v_sql_error_number = ERROR_NUMBER(), 
+      @v_sql_error_severity = ERROR_SEVERITY(), 
+      @v_sql_error_state = ERROR_STATE(), 
+      @v_sql_error_procedure = ERROR_PROCEDURE(), 
+      @v_sql_error_line = ERROR_LINE(), 
+      @v_sql_error_message = ERROR_MESSAGE();
+
+      print @v_sql_error_number 
+      print @v_sql_error_severity   
+      print @v_sql_error_state
+      print @v_sql_error_line
+      print @v_sql_error_message
+
+END CATCH
 END;
 
-
+exec usp_WithdrawMoney 1, -23
+select * from Accounts 
 /*****************************************************
 Problem 18. Money Transfer
 ******************************************************/
-
+use Bank
 GO
 CREATE PROCEDURE usp_TransferMoney
 (
-                 @senderId   INT,
-                 @receiverId INT,
-                 @amount     MONEY
+ @senderId   INT,
+ @receiverId INT,
+ @amount     MONEY
 )
 AS
      BEGIN
@@ -610,8 +643,8 @@ begin
 	declare @item_id int set @item_id = (select top(1) i.ItemId from inserted i )
 	declare @user_games_id int set @user_games_id = (select top(1) i.UserGameId from inserted i )
 	
-	declare @item_level int set @item_level = (select top(1) i.MinLevel from Items i where i.Id  = @item_id)
-	declare @user_level int set @user_level = (select top (1) ug.Level from UsersGames ug where ug.Id  = @user_games_id)
+	declare @item_level int set @item_level = (select top(1) i.MinLevel from Items i         where i.Id  = @item_id)
+	declare @user_level int set @user_level = (select top (1) ug.Level  from UsersGames ug   where ug.Id  = @user_games_id)
 
 	if(@user_level >= @item_level)
 	begin
@@ -633,11 +666,11 @@ select *
   join Games g on g.Id = ug.GameId
   join Users u on u.Id = ug.UserId
  where g.Name = 'Bali' -- if we i dont put a bracket on the second condition will get wrong result !!!!
-   and (u.Username like 'baleremuda' or
-		u.Username like 'loosenoise' or
-		u.Username like 'inguinalself' or
-		u.Username like 'buildingdeltoid' or
-		u.Username like 'monoxidecos') 
+   and (u.Username like 'baleremuda'      or
+		    u.Username like 'loosenoise'      or
+		    u.Username like 'inguinalself'    or
+		    u.Username like 'buildingdeltoid' or
+		    u.Username like 'monoxidecos') 
 
 	
 	-- first approach
@@ -663,26 +696,33 @@ update UsersGames
 	DECLARE @v_user_id int
 	DECLARE @v_game_id int
 	
-	select @v_game_id = g.Id from Games g where g.Name = 'Bali'
+	  SELECT @v_game_id = g.Id 
+      FROM Games g 
+     WHERE g.[Name] = 'Bali'
 
-	DECLARE cur cursor for
-	select u.Id from Users u where u.Username in ('baleremuda', 'loosenoise', 'inguinalself', 'buildingdeltoid', 'monoxidecos')
+	DECLARE cur CURSOR FOR
+	 SELECT u.Id 
+     FROM Users u 
+    WHERE u.Username in ('baleremuda', 'loosenoise', 'inguinalself', 'buildingdeltoid', 'monoxidecos')
 	
 	OPEN cur
 	FETCH NEXT FROM cur INTO @v_user_id 
 
-	  WHILE @@FETCH_STATUS <> -1 BEGIN
-	 update UsersGames
-		set  Cash += 50000
-	  where UserId = @v_user_id
-		and GameId = @v_game_id
-	  FETCH NEXT FROM cur INTO @v_user_id 
-	END
-	close cur
-	deallocate cur
+	  WHILE @@FETCH_STATUS <> -1 
+    BEGIN
+	    UPDATE UsersGames
+	   	  SET  Cash += 50000
+	     WHERE UserId = @v_user_id
+	   	  AND GameId = @v_game_id
+    
+	    FETCH NEXT FROM cur INTO @v_user_id 
+	  END
+	CLOSE cur
+	DEALLOCATE cur
 
+  select * from UsersGames
 
-	-- fourth approach  - that is who cursor must be done - always by PRIMARY KEY
+	-- fourth approach  - that is how the cursor must be done - always by PRIMARY KEY
 	DECLARE @v_usergames_id  int
 	
 	DECLARE cur cursor for
@@ -807,22 +847,22 @@ Problem 20. *Massive Shopping
 -- stamat -id 9
 -- safflower - id - 87
 select * from Users u  where u.username = 'stamat'
-select * from Games g where g.Name = 'safflower'
-select * from items i where (i.MinLevel between 11 and 12)
+select * from Games g  where g.Name = 'safflower'
+select * from items i  where (i.MinLevel between 11 and 12)
 select * from UserGameItems
 go
  declare @user_game_id int set @user_game_id = (select ug.Id 
                                                   from UsersGames ug  
-												 where ug.UserId = 9 
-											       and ug.GameId = 87)
+												                         where ug.UserId = 9 
+											                             and ug.GameId = 87)
 
  declare @user_stamat_money decimal (16,2) set @user_stamat_money = (select ug.Cash 
-																	   from UsersGames ug 
-																	  where ug.Id = @user_game_id)
+																	                                     from UsersGames ug 
+																	                                    where ug.Id = @user_game_id)
 
  declare @items_total_price  decimal(16,2) set @items_total_price =  (select sum(i.Price) 
-																		from Items i 
-																	   where (i.MinLevel between 11 and 12))
+																		                                    from Items i 
+																	                                     where (i.MinLevel between 11 and 12))
 
 
 
@@ -842,8 +882,8 @@ go
 
 
  set @items_total_price =  (select sum(i.Price) 
-							 from Items i 
-						    where (i.MinLevel between 19 and 21))
+							                from Items i 
+						                 where (i.MinLevel between 19 and 21))
 
  if(@user_stamat_money >= @items_total_price)
 	begin

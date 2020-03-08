@@ -34,7 +34,9 @@
                     string clientMessage = Encoding.UTF8.GetString(buffer);
                     Console.WriteLine(clientMessage);
                     // we can use "\n" also for new line but this option which i wrote is better
-                    string responseMessage = $"HTTP/1.1 200 OK{Environment.NewLine}Content-Type:text/plain{Environment.NewLine}{Environment.NewLine}Hello from Petko Petkov server";
+                    string responseMessage = $"HTTP/1.1 200 OK{Environment.NewLine}" +
+                                             $"Content-Type:text/plain{Environment.NewLine}{Environment.NewLine}" +
+                                             $"Hello from Petko Petkov server";
                     byte[] responseInBytes = Encoding.UTF8.GetBytes(responseMessage);
                     await client.GetStream().WriteAsync(responseInBytes, 0, responseInBytes.Length);
                 }

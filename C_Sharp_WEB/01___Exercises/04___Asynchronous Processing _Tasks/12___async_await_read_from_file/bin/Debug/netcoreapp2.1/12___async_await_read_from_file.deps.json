@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v2.1",
+    "signature": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v2.1": {
+      "12___async_await_read_from_file/1.0.0": {
+        "runtime": {
+          "12___async_await_read_from_file.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "12___async_await_read_from_file/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

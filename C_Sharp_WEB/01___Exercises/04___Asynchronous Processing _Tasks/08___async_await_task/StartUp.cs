@@ -37,7 +37,8 @@
             }
             // without wait the currect task is blocked and is waiting till all the calculations are done
             //Task.WaitAll(tasks.ToArray());
-            // with await the current thread is released and actually is not waithing, and only after all the operations are done then 
+            // with await the current thread is released and actually is not waiting, 
+            // and only after all the operations are done then 
             // code continue from this point
             await Task.WhenAll(tasks.ToArray());
             Console.WriteLine("the program is finished");

@@ -93,15 +93,14 @@ Problem 8.	Employee 24
 ******************************************************/
 
     SELECT e.EmployeeID,
-	       e.FirstName,
-      CASE 
-	  WHEN p.StartDate > '2005'
-	  THEN NULL
-	  ELSE p.Name
-	   END AS ProjectName
+	         e.FirstName,
+      CASE WHEN p.StartDate > '2005'
+	         THEN NULL
+	         ELSE p.Name
+	         END AS ProjectName
       FROM Employees         AS e
  LEFT JOIN EmployeesProjects AS ep ON ep.EmployeeID = e.EmployeeID
- LEFT JOIN Projects          AS p ON p.ProjectID = ep.ProjectID
+ LEFT JOIN Projects          AS p  ON p.ProjectID = ep.ProjectID
      WHERE E.EmployeeID = 24 
 
 /*****************************************************
@@ -180,20 +179,75 @@ Problem 15.	*Continents and Currencies
 
       WITH CTE_CurrencyInfo(ContinentCode,CurrencyCode,Ccounter) 
 	    AS (
-    SELECT ContinentCode,CurrencyCode,COUNT(CurrencyCode)   AS Ccounter 
+    SELECT ContinentCode,
+           CurrencyCode,
+           COUNT(CurrencyCode)   AS Ccounter 
       FROM Countries
   GROUP BY ContinentCode,CurrencyCode
     HAVING COUNT(CurrencyCode) > 1)
 
-    SELECT e.ContinentCode,cci.CurrencyCode,e.MaxCurrency 
-	  FROM (
-    SELECT ContinentCode,MAX(Ccounter) AS MaxCurrency
-      FROM CTE_CurrencyInfo
-  GROUP BY ContinentCode )   AS e
-      JOIN CTE_CurrencyInfo  AS cci 
-        ON cci.ContinentCode = e.ContinentCode 
-       AND cci.Ccounter = e.MaxCurrency
-  ORDER BY e.ContinentCode
+    SELECT e.ContinentCode,
+           cci.CurrencyCode,
+           e.MaxCurrency 
+	   FROM (SELECT ContinentCode,
+                  MAX(Ccounter)     AS MaxCurrency
+             FROM CTE_CurrencyInfo
+         GROUP BY ContinentCode )   AS e
+     JOIN CTE_CurrencyInfo  AS cci ON cci.ContinentCode = e.ContinentCode 
+      AND cci.Ccounter = e.MaxCurrency
+ ORDER BY e.ContinentCode
+
+  select * from Countries
+
+--  with VIEW ----------------------------------
+
+   create or alter view v_count_currency
+    as
+    (
+      select c.ContinentCode,
+             c.CurrencyCode,
+             COUNT(CurrencyCode) currency_count
+        from Countries c
+    group by c.ContinentCode,
+             c.CurrencyCode
+      having COUNT(CurrencyCode) > 1
+    )
+
+
+    select d_view.ContinentCode,
+           i_view.CurrencyCode,
+           d_view.max_currency_count 
+      from (select v.ContinentCode,
+                   max(v.currency_count) max_currency_count
+              from v_count_currency v
+          group by v.ContinentCode) as d_view
+       join v_count_currency i_view 
+         on  i_view.ContinentCode = d_view.ContinentCode 
+        and i_view.currency_count = d_view.max_currency_count
+
+-- just with SELECT statements -------------------------------------------------------------------------
+
+
+select c.ContinentCode,
+           c1.CurrencyCode,
+           c.max_count
+      from ( select cc.ContinentCode,
+                    max(cc.currency_count) max_count
+               from (select c.ContinentCode,
+                            c.CurrencyCode,
+                            COUNT(CurrencyCode) currency_count
+                       from Countries c
+                   group by c.ContinentCode,c.CurrencyCode
+                     having COUNT(CurrencyCode) > 1)cc
+                   group by cc.ContinentCode) c
+      join (select c.ContinentCode,
+                   c.CurrencyCode,
+                   COUNT(CurrencyCode) currency_count
+              from Countries c
+          group by c.ContinentCode,c.CurrencyCode
+            having COUNT(CurrencyCode) > 1) c1 
+                on c1.ContinentCode = c.ContinentCode 
+               and c.max_count = c1.currency_count
 
 /*****************************************************
 Problem 16.	Countries without any Mountains
@@ -226,34 +280,33 @@ Problem 18.	* Highest Peak Name and Elevation by Country
 ******************************************************/
 
         WITH CTE_CountriesInfo(
-		     CountryName, 
+		         CountryName, 
              PeakName, 
-		     Elevation, 
-			 MountainRange) 
-		  AS (
-      SELECT c.CountryName,
-			 p.PeakName,
-			 MAX(p.Elevation),
-			 m.MountainRange
-        FROM Countries                           AS c
-   LEFT JOIN MountainsCountries                  AS mc 
-          ON  mc.CountryCode = c.CountryCode 
-   LEFT JOIN Mountains                           AS m 
-          ON m.Id = mc.MountainId
-   LEFT JOIN Peaks                               AS p 
-          ON p.MountainId = m.Id
-    GROUP BY c.CountryName, P.PeakName,M.MountainRange 
-	         )
+		         Elevation, 
+			       MountainRange) 
+		  AS (SELECT c.CountryName,
+    			       p.PeakName,
+    			       MAX(p.Elevation),
+    			       m.MountainRange
+            FROM Countries                           AS c
+       LEFT JOIN MountainsCountries                  AS mc 
+              ON  mc.CountryCode = c.CountryCode 
+       LEFT JOIN Mountains                           AS m 
+              ON m.Id = mc.MountainId
+       LEFT JOIN Peaks                               AS p 
+              ON p.MountainId = m.Id
+        GROUP BY c.CountryName, P.PeakName,M.MountainRange 
+	        )
 
       SELECT e.CountryName                       AS Country,
 	  ISNULL (cci.PeakName,'(no highest peak)')  AS [Highest Peak Name],
 	  ISNULL (cci.Elevation,'0')                 AS [Highest Peak Elevation],
 	  ISNULL (cci.MountainRange,'(no mountain)') AS [Mountain]
-        FROM (
-      SELECT TOP(5)CountryName,MAX(Elevation)    AS MaxElevation
-        FROM CTE_CountriesInfo
-    GROUP BY CountryName)                        AS e
-   LEFT JOIN CTE_CountriesInfo                   AS cci 
+        FROM (SELECT TOP(5)CountryName,
+                     MAX(Elevation)                      AS MaxElevation
+                FROM CTE_CountriesInfo
+            GROUP BY CountryName)                        AS e
+   LEFT JOIN CTE_CountriesInfo   AS cci 
           ON cci.CountryName = e.CountryName 
          AND cci.Elevation = e.MaxElevation
     ORDER BY e.CountryName, cci.PeakName

@@ -11,7 +11,7 @@
         public static void Main(string[] args)
         {
             List<int> numbers = Enumerable.Range(0, 100000).ToList();
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < numbers.Count; i++)
             {
                 Thread thread = new Thread(() =>
                 {
@@ -23,7 +23,8 @@
                             {
                                 break;
                             }
-                        numbers.RemoveAt(numbers.Count - 1);
+                            numbers.RemoveAt(numbers.Count - 1);
+                            //Console.WriteLine("removed element");
                         }
                     }
                 });

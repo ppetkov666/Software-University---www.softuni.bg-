@@ -1,0 +1,11 @@
+D:\06___VS\GITHUB\GIT_PUSHED\Software-University---www.softuni.bg-\C_Sharp_WEB\01___Exercises\03___Web_Url_parse\Web_Url_tests\bin\Debug\netcoreapp2.1\Web_Url_tests.deps.json
+D:\06___VS\GITHUB\GIT_PUSHED\Software-University---www.softuni.bg-\C_Sharp_WEB\01___Exercises\03___Web_Url_parse\Web_Url_tests\bin\Debug\netcoreapp2.1\Web_Url_tests.runtimeconfig.json
+D:\06___VS\GITHUB\GIT_PUSHED\Software-University---www.softuni.bg-\C_Sharp_WEB\01___Exercises\03___Web_Url_parse\Web_Url_tests\bin\Debug\netcoreapp2.1\Web_Url_tests.runtimeconfig.dev.json
+D:\06___VS\GITHUB\GIT_PUSHED\Software-University---www.softuni.bg-\C_Sharp_WEB\01___Exercises\03___Web_Url_parse\Web_Url_tests\bin\Debug\netcoreapp2.1\Web_Url_tests.dll
+D:\06___VS\GITHUB\GIT_PUSHED\Software-University---www.softuni.bg-\C_Sharp_WEB\01___Exercises\03___Web_Url_parse\Web_Url_tests\bin\Debug\netcoreapp2.1\Web_Url_tests.pdb
+D:\06___VS\GITHUB\GIT_PUSHED\Software-University---www.softuni.bg-\C_Sharp_WEB\01___Exercises\03___Web_Url_parse\Web_Url_tests\obj\Debug\netcoreapp2.1\Web_Url_tests.csprojAssemblyReference.cache
+D:\06___VS\GITHUB\GIT_PUSHED\Software-University---www.softuni.bg-\C_Sharp_WEB\01___Exercises\03___Web_Url_parse\Web_Url_tests\obj\Debug\netcoreapp2.1\Web_Url_tests.csproj.CoreCompileInputs.cache
+D:\06___VS\GITHUB\GIT_PUSHED\Software-University---www.softuni.bg-\C_Sharp_WEB\01___Exercises\03___Web_Url_parse\Web_Url_tests\obj\Debug\netcoreapp2.1\Web_Url_tests.AssemblyInfoInputs.cache
+D:\06___VS\GITHUB\GIT_PUSHED\Software-University---www.softuni.bg-\C_Sharp_WEB\01___Exercises\03___Web_Url_parse\Web_Url_tests\obj\Debug\netcoreapp2.1\Web_Url_tests.AssemblyInfo.cs
+D:\06___VS\GITHUB\GIT_PUSHED\Software-University---www.softuni.bg-\C_Sharp_WEB\01___Exercises\03___Web_Url_parse\Web_Url_tests\obj\Debug\netcoreapp2.1\Web_Url_tests.dll
+D:\06___VS\GITHUB\GIT_PUSHED\Software-University---www.softuni.bg-\C_Sharp_WEB\01___Exercises\03___Web_Url_parse\Web_Url_tests\obj\Debug\netcoreapp2.1\Web_Url_tests.pdb

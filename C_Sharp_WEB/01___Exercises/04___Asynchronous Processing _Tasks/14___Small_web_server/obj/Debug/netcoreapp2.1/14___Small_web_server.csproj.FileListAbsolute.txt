@@ -1,0 +1,10 @@
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\14___Small_web_server\bin\Debug\netcoreapp2.1\14___Small_web_server.deps.json
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\14___Small_web_server\bin\Debug\netcoreapp2.1\14___Small_web_server.runtimeconfig.json
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\14___Small_web_server\bin\Debug\netcoreapp2.1\14___Small_web_server.runtimeconfig.dev.json
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\14___Small_web_server\bin\Debug\netcoreapp2.1\14___Small_web_server.dll
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\14___Small_web_server\bin\Debug\netcoreapp2.1\14___Small_web_server.pdb
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\14___Small_web_server\obj\Debug\netcoreapp2.1\14___Small_web_server.csproj.CoreCompileInputs.cache
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\14___Small_web_server\obj\Debug\netcoreapp2.1\14___Small_web_server.AssemblyInfoInputs.cache
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\14___Small_web_server\obj\Debug\netcoreapp2.1\14___Small_web_server.AssemblyInfo.cs
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\14___Small_web_server\obj\Debug\netcoreapp2.1\14___Small_web_server.dll
+D:\06___VS\GITHUB\05___C# WEB\02___C# MVC Frameworks - ASP.NET Core and Framework\01___Exercises\04___Asynchronous Processing _Tasks\14___Small_web_server\obj\Debug\netcoreapp2.1\14___Small_web_server.pdb
